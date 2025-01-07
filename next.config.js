@@ -1,6 +1,10 @@
-// /** @type {import('next').NextConfig} */
-// const nextConfig = {
-//   reactStrictMode: false
-// };
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    outputFileTracingIncludes: {
+      "/app/[map]/topojson": ["./app/[map]/topojson/**/*"]
+    }
+  }
+};
 
-// export default nextConfig;
+export default nextConfig;
