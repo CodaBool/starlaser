@@ -4,9 +4,9 @@ import path from "path"
 import { feature } from 'topojson-client'
 import Cartographer from "@/components/cartographer"
 
-const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
 
 export default async function mapLobby({ params }) {
+  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
   const { map } = await params
   const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
