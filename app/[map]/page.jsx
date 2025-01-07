@@ -11,7 +11,8 @@ export default async function mapLobby({ params }) {
   const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
   if (map === "lancer") return
-  const content = await fs.promises.readFile(filePath, 'utf8');
+  // const content = await fs.promises.readFile(filePath, 'utf8');
+  const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}`), "utf8",)
   // const content = fs.readFileSync(filePath, 'utf-8')
   const topojson = JSON.parse(content)
 
