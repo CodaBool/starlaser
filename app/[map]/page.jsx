@@ -10,7 +10,9 @@ export default async function mapLobby({ params }) {
   const { map } = await params
   const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
-  const content = fs.readFileSync(filePath, 'utf-8')
+  if (map === "lancer") return
+  const content = await fs.promises.readFile(filePath, 'utf8');
+  // const content = fs.readFileSync(filePath, 'utf-8')
   const topojson = JSON.parse(content)
 
   // TODO: the layer name here will be different for each map
