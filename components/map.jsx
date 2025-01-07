@@ -60,6 +60,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
   }
 
   useEffect(() => {
+    window.holdTimer
     svg = d3.select('.map')
     g = d3.select('g')
     projection = geoMercator().scale(SCALE).center(CENTER).translate([width / 2, height / 2])
@@ -176,33 +177,21 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
 
 
 
-    // mobile "click"
-    console.log(svg, svgRef.current)
-    //
-    svg.on("touchstart", (e) => {
-      if (mode.has("crosshair")) {
-        // use timeout because zooming and panning will also count as touch starts
-        const touchStartTimeout = setTimeout(() => {
-          const [touchX, touchY] = [e.touches[0].clientX, e.touches[0].clientY]
 
-          d3.selectAll('.crosshair-x').attr('y1', touchY - 0).attr('y2', touchY - 0).style('visibility', 'visible')
-          d3.selectAll('.crosshair-y').attr('x1', touchX).attr('x2', touchX).style('visibility', 'visible')
-          const transform = d3.zoomTransform(svg.node())
-          // const transform = d3.zoomTransform(svgRef.current);
-          const transformedX = (touchX - transform.x) / transform.k;
-          const transformedY = (touchY - transform.y - 0) / transform.k;
-          const [x, y] = projection.invert([transformedX, transformedY])
-          d3.selectAll('.textbox').text(`X: ${x.toFixed(1)}, Y: ${y.toFixed(1)}`).style('visibility', 'visible')
-        }, 80)
-      } else if (mode.has("measure")) {
-      }
-    })
 
     zoom = d3.zoom()
       // .scaleExtent([1, 8])
       // .translateExtent([[-2800, 2000], [2000, 2000]])
       .on('zoom', e => {
         g.attr('transform', e.transform)
+
+        // prevents measure dot from being moved on pan for both mobile and desktop
+        if (mode.add("measureStart")) {
+          mode.delete("measureStart")
+        }
+
+        d3.selectAll('.crosshair').style("visibility", "hidden")
+
         // TODO: prevents measure dot from being moved on pan for both mobile and desktop
         // if (holdTimer) clearTimeout(holdTimer)
         g.selectAll('.location').style('r', d => {
@@ -247,7 +236,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} map={map} />
       <svg width={width} height={height} className='map select-none' ref={svgRef}>
         <g>
-          {mount && <Toolbox mode={mode} svg={svg} svgRef={svgRef} width={width} height={height} projection={projection} mobile={mobile} holdTimer={holdTimer} map={map} />}
+          {mount && <Toolbox mode={mode} svg={svg} svgRef={svgRef} width={width} height={height} projection={projection} mobile={mobile} map={map} />}
         </g>
       </svg>
     </>

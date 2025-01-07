@@ -1,13 +1,29 @@
-import { zoomIdentity } from 'd3'
-import { useEffect } from "react"
+import { zoomIdentity, selectAll } from 'd3'
+import { useEffect, useState } from "react"
 
 let resizeTimeout
+
 export default function AutoResize({ svg, zoom, projection, mobile, width, height, setTooltip, positionTooltip, center }) {
+
   useEffect(() => {
-    // has issues on mobile, just disable
-    if (!svg || !zoom || !projection || mobile) return
+    if (!svg || !zoom || !projection) return
+
+    // resize crosshair
+    selectAll('.crosshair-x')
+      .attr('x2', width)
+      .attr('y1', height / 2)
+      .attr('y2', height / 2)
+    selectAll('.crosshair-y')
+      .attr('x1', width / 2)
+      .attr('x2', width / 2)
+      .attr('y2', height)
     setTooltip()
     positionTooltip({ pageX: 0, pageY: 0 })
+
+    if (mobile) {
+      console.log("you opened a keyboard probably, ignoring")
+      return
+    }
 
     // recenter back on Cradle if the window is resized
     // TODO: support mobile landscape (currently is offcentered)
@@ -22,6 +38,11 @@ export default function AutoResize({ svg, zoom, projection, mobile, width, heigh
       console.log("window resized, recentering by", Math.floor(width / 2 - x + resizeOffsetX), Math.floor(height / 2 - y - 200 + resizeOffsetY))
       const transform = zoomIdentity.translate(width / 2 - x + resizeOffsetX, height / 2 - y - 200 + resizeOffsetY).scale(1)
       svg.transition().duration(500).call(zoom.transform, transform)
+
+
+
+      // document.querySelector(".searchbar")
+      // document.querySelector(".searchbar").style.width = '100%';
     }, 250)
   }, [width, height])
 

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Map from './map'
 import { getConsts, isMobile } from '@/lib/utils'
-import MenuV2 from './menuv2'
+import SearchBar from './searchbar'
 
 export default function Cartographer({ map, data }) {
   const { SCALE, CENTER } = getConsts(map)
@@ -28,7 +28,7 @@ export default function Cartographer({ map, data }) {
 
   return (
     <>
-      <MenuV2 map={map} data={data} width={size.width} height={size.height} mobile={mobile} />
+      <SearchBar map={map} data={data} width={size.width} height={size.height} mobile={mobile} />
       <Map width={size.width} height={size.height} map={map} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
     </>
   )

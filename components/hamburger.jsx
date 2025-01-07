@@ -29,13 +29,13 @@ function toggle(name, mode) {
 export default function Hamburger({ mode }) {
   return (
     <DropdownMenu >
-      <DropdownMenuTrigger className="m-5 ml-12 absolute cursor-pointer z-10"><Menu width={40} height={40} className="cursor-pointer" /></DropdownMenuTrigger>
+      <DropdownMenuTrigger className="m-5 ml-12 absolute hamburger cursor-pointer z-10"><Menu width={40} height={40} className="cursor-pointer" /></DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>Tools</DropdownMenuLabel>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => toggle("measure", mode)}>
+        <DropdownMenuItem className="cursor-pointer" onPointerUp={() => toggle("measure", mode)}>
           <Ruler /> Measure <input type="checkbox" checked={mode.has("measure")} readOnly />
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => toggle("crosshair", mode)}>
+        <DropdownMenuItem className="cursor-pointer" onPointerUp={() => toggle("crosshair", mode)}>
           <Crosshair /> Coordinate <input type="checkbox" checked={mode.has("crosshair")} readOnly />
         </DropdownMenuItem>
         <DropdownMenuSeparator />

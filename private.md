@@ -30,10 +30,8 @@
 
 # todo:
 - elevation [NEW]
-- mobile support [REDO]
-  - need to press and hold on mobile to see which location is which
+- need to press and hold on mobile to see which location is which [NEW]
 - add from other online maps [TIMECONSUMING]
-- reset crosshair if window size changes [NEW I THINK]
 
 # menu items needed
 - measure btn
