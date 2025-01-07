@@ -25,6 +25,7 @@ export default async function mapLobby({ params }) {
 }
 
 export async function generateStaticParams() {
+  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
   const folders = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
   return folders.map(folder => ({ slug: folder }))
 }
