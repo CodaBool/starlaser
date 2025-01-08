@@ -31,3 +31,9 @@ export default async function mapLobby({ params }) {
 //   const folders = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
 //   return folders.map(folder => ({ slug: folder }))
 // }
+
+
+// follow this https://vercel.com/guides/loading-static-file-nextjs-api-route
+//
+// but there is this issue when trying static content
+// google "nextjs static build process.cwd Error: ENOENT: no such file or directory, open /var/task"

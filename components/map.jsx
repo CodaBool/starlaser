@@ -2,23 +2,23 @@
 import * as d3 from 'd3'
 import { geoPath, geoMercator } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip, DRAWER_OFFSET_PX, MENU_HEIGHT_PX } from "@/lib/utils.js"
+import { color, important, positionTooltip, MENU_HEIGHT_PX } from "@/lib/utils.js"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
 import AutoResize from './autoresize'
 import Hamburger from './hamburger'
 import Toolbox from './toolbox'
 
-let projection, svg, zoom, path, g, holdTimer, mode = new Set([])
+let projection, svg, zoom, path, g, mode = new Set([])
 
-export function panTo(d, width, height) {
+export function panTo(d, width, height, e) {
   const [x, y] = path.centroid(d)
-  const scale = d.geometry.type === "Point" ? 18 : 3
-  const resizeOffsetX = (window.innerWidth - width) / 2
-  const resizeOffsetY = (window.innerWidth - height) / 2
-  console.log("moving to group", d.properties.name, Math.floor(width / 2 - x * scale + resizeOffsetX), Math.floor(height / 2 - y * scale - DRAWER_OFFSET_PX + resizeOffsetY))
-  const transform = d3.zoomIdentity.translate(width / 2 - x * scale + resizeOffsetX, height / 2 - y * scale - DRAWER_OFFSET_PX + resizeOffsetY).scale(scale)
-  svg.transition().duration(750).call(zoom.transform, transform)
+  const scale = d3.zoomTransform(svg.node()).k
+  const offsetX = (window.innerWidth - width) / 2
+  const offsetY = (window.innerHeight - height) / 2
+  const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
+  const t = d3.zoomIdentity.translate(width / 2 + offsetX, height / 2 + offsetY - drawerOffset).scale(scale).translate(-x, -y)
+  svg.transition().duration(750).call(zoom.transform, t)
   return [x, y]
 }
 
@@ -60,7 +60,6 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
   }
 
   useEffect(() => {
-    window.holdTimer
     svg = d3.select('.map')
     g = d3.select('g')
     projection = geoMercator().scale(SCALE).center(CENTER).translate([width / 2, height / 2])
@@ -72,15 +71,16 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .selectAll('path')
       .data(data.territory)
       .enter().append('path')
-      .attr('class', d => d.properties.unofficial ? 'unofficial territory' : 'territory')
+      .attr('class', d => `${d.properties.unofficial ? 'unofficial territory' : 'territory'} ${(d.properties.type === "faction" || d.properties.type === "region") ? 'raise' : ''}`)
       .attr('d', path)
       .attr('stroke-width', .5)
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => color(map, d.properties, "stroke", d.geometry.type))
+      .attr('opacity', d => (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1)
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-        const [x, y] = panTo(d, width, height)
+        const [x, y] = panTo(d, width, height, e)
         setDrawerContent({ locations: [d.properties], coordinates: projection.invert([x, y]) })
         setDrawerOpen(true)
       })
@@ -142,7 +142,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .enter().append('text')
       .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')
       .attr('x', d => projection(d.geometry.coordinates)[0])
-      .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 10 : 5))
+      .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 8))
       .text(d => !d.properties.crowded ? d.properties.name : '')
       .style('font-size', d => important(map, d.properties) ? '4px' : '2px')
       .style('font-weight', d => important(map, d.properties) && 600)
@@ -192,14 +192,21 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
 
         d3.selectAll('.crosshair').style("visibility", "hidden")
 
-        // TODO: prevents measure dot from being moved on pan for both mobile and desktop
-        // if (holdTimer) clearTimeout(holdTimer)
         g.selectAll('.location').style('r', d => {
           if (important(map, d.properties)) return
-          if (e.transform.k < 1) return 3
-          if (e.transform.k < 3) return 1.5
-          if (e.transform.k < 15) return 1
+          if (e.transform.k < 1) return 4
+          if (e.transform.k < 3) return 3
+          if (e.transform.k < 8) return 2.5
+          if (e.transform.k < 15) return 2
           return .6
+        })
+        g.selectAll('.location').style('width', d => {
+          if (!important(map, d.properties)) return
+          return e.transform.k > 15 ? 1.5 : 5
+        })
+        g.selectAll('.location').style('height', d => {
+          if (!important(map, d.properties)) return
+          return e.transform.k > 15 ? 1.5 : 5
         })
         g.selectAll('.location-label').style('opacity', d => {
           if (e.transform.k < 1) return important(map, d.properties) ? 1 : 0
@@ -226,6 +233,8 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
 
     svg.call(zoom)
     setMount(true)
+    // bring some territories to the front
+    d3.selectAll(".raise").raise()
   }, [])
 
   return (
