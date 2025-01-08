@@ -14,7 +14,7 @@ import Provider from '@/components/provider'
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{touchAction: "none"}}>
       <body>
         <Provider>
           {children}

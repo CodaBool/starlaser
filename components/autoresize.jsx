@@ -21,7 +21,7 @@ export default function AutoResize({ svg, zoom, projection, mobile, width, heigh
     positionTooltip({ pageX: 0, pageY: 0 })
 
     if (mobile) {
-      console.log("you opened a keyboard probably, ignoring")
+      console.log("you opened a keyboard probably, ignoring window resize")
       return
     }
 
@@ -33,16 +33,11 @@ export default function AutoResize({ svg, zoom, projection, mobile, width, heigh
     clearTimeout(resizeTimeout)
     resizeTimeout = setTimeout(() => {
       const resizeOffsetX = (window.innerWidth - width) / 2
-      const resizeOffsetY = (window.innerWidth - height) / 2
+      const resizeOffsetY = (window.innerHeight - height) / 2
       if (Math.abs(width / 2 - x + resizeOffsetX) < 2 && Math.abs(height / 2 - y - 200 + resizeOffsetY) < 2) return
       console.log("window resized, recentering by", Math.floor(width / 2 - x + resizeOffsetX), Math.floor(height / 2 - y - 200 + resizeOffsetY))
-      const transform = zoomIdentity.translate(width / 2 - x + resizeOffsetX, height / 2 - y - 200 + resizeOffsetY).scale(1)
+      const transform = zoomIdentity.translate(width / 2 - x + resizeOffsetX, height / 2 - y + resizeOffsetY)
       svg.transition().duration(500).call(zoom.transform, transform)
-
-
-
-      // document.querySelector(".searchbar")
-      // document.querySelector(".searchbar").style.width = '100%';
     }, 250)
   }, [width, height])
 

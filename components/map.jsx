@@ -13,9 +13,19 @@ let projection, svg, zoom, path, g, mode = new Set([])
 
 export function panTo(d, width, height, e) {
   const [x, y] = path.centroid(d)
-  const scale = d3.zoomTransform(svg.node()).k
+  // const scale = d3.zoomTransform(svg.node()).k
   const offsetX = (window.innerWidth - width) / 2
   const offsetY = (window.innerHeight - height) / 2
+  const bounds = path.bounds(d);
+  const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
+  const bottomMostPoint = bounds[0][1] > bounds[1][1] ? bounds[0] : bounds[1];
+
+  // Calculate the height of the object
+  const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
+
+  // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
+  const scale = Math.min(Math.max(500 / yDifference, 1), 14)
+
   const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
   const t = d3.zoomIdentity.translate(width / 2 + offsetX, height / 2 + offsetY - drawerOffset).scale(scale).translate(-x, -y)
   svg.transition().duration(750).call(zoom.transform, t)
@@ -66,8 +76,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     path = geoPath().projection(projection)
     svg.attr("style", "background: radial-gradient(#06402B 0%, #000000 100%)")
 
-    // territory
-    g.append('g')
+    const territory = g.append('g')
       .selectAll('path')
       .data(data.territory)
       .enter().append('path')
@@ -87,8 +96,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("mouseout", hover)
       .on("mousemove", e => positionTooltip(e))
 
-    // guide
-    g.append('g')
+    const guide = g.append('g')
       .selectAll('.lines')
       .data(data.guide)
       .enter().append('path')
@@ -100,8 +108,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("mouseover", hover)
       .on("mouseout", hover)
 
-    // location
-    g.append('g')
+    const location = g.append('g')
       .selectAll('.point')
       .data(data.location)
       .enter()
@@ -135,8 +142,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     //   .style('text-anchor', 'middle')
     // .style('pointer-events', 'none')
 
-    // location label
-    g.append('g')
+    const locationLabel = g.append('g')
       .selectAll('.point-label')
       .data(data.location)
       .enter().append('text')
@@ -175,51 +181,46 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     //   .style('fill', 'white')
     //   .style('pointer-events', 'none')
 
+    const radiusScale = d3.scalePow()
+      .exponent(.01) // Adjust the exponent to control the rate of change
+      .domain([.8, 50]) // Input domain: zoom levels
+      .range([3.5, 0.5]); // Output range: radius values
 
-
-
-
+    const cross = d3.selectAll('.crosshair')
     zoom = d3.zoom()
-      // .scaleExtent([1, 8])
+      .scaleExtent([.8, 50])
       // .translateExtent([[-2800, 2000], [2000, 2000]])
       .on('zoom', e => {
         g.attr('transform', e.transform)
 
         // prevents measure dot from being moved on pan for both mobile and desktop
-        if (mode.add("measureStart")) {
+        if (mode.has("measureStart")) {
           mode.delete("measureStart")
         }
 
-        d3.selectAll('.crosshair').style("visibility", "hidden")
-
-        g.selectAll('.location').style('r', d => {
+        const s = radiusScale(e.transform.k)
+        cross.style("visibility", "hidden")
+        location.style('r', d => {
           if (important(map, d.properties)) return
-          if (e.transform.k < 1) return 4
-          if (e.transform.k < 3) return 3
-          if (e.transform.k < 8) return 2.5
-          if (e.transform.k < 15) return 2
-          return .6
+          return s
         })
-        g.selectAll('.location').style('width', d => {
+
+        location.style('width', d => {
           if (!important(map, d.properties)) return
-          return e.transform.k > 15 ? 1.5 : 5
+          return s + 1
         })
-        g.selectAll('.location').style('height', d => {
+        location.style('height', d => {
           if (!important(map, d.properties)) return
-          return e.transform.k > 15 ? 1.5 : 5
+          return s + 1
         })
-        g.selectAll('.location-label').style('opacity', d => {
+        locationLabel.style('opacity', d => {
           if (e.transform.k < 1) return important(map, d.properties) ? 1 : 0
           return 1
         })
-        g.selectAll('.territory').style('stroke-width', () => e.transform.k < 4 ? .5 : .1)
-        g.selectAll('.guide').style('stroke-width', () => e.transform.k < 4 ? 1 : .3)
-        g.selectAll('.point').style('r', () => e.transform.k < 4 ? 5 : 1)
-        g.selectAll('.location-label').style('font-size', d => {
-          if (e.transform.k < 1) return important(map, d.properties) ? '10px' : '8px'
-          if (e.transform.k < 3) return important(map, d.properties) ? '8px' : '6px'
-          if (e.transform.k < 15) return important(map, d.properties) ? '6px' : '4px'
-          return important(map, d.properties) ? '4px' : '2px'
+        // territory.style('stroke-width', () => s / 5)
+        // guide.style('stroke-width', () => s / 3)
+        locationLabel.style('font-size', d => {
+          return `${s * 2.5 + (important(map, d.properties) ? 2.5 : 0)}px`
         })
 
       })
