@@ -2,7 +2,6 @@
 import { useEffect } from "react"
 import { pointer, zoomTransform, geoDistance, select, selectAll } from 'd3'
 
-const MENU_HEIGHT_PX = 0
 const timer = new Set([])
 
 export default function Toolbox({ mode, svg, g, width, height, projection, mobile, svgRef, map }) {
@@ -169,9 +168,6 @@ export default function Toolbox({ mode, svg, g, width, height, projection, mobil
         }
       }
     })
-
-
-
   }, [])
 
   return (

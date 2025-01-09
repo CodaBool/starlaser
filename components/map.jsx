@@ -2,7 +2,7 @@
 import * as d3 from 'd3'
 import { geoPath, geoMercator } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip, MENU_HEIGHT_PX } from "@/lib/utils.js"
+import { color, important, positionTooltip } from "@/lib/utils.js"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
 import AutoResize from './autoresize'
@@ -47,7 +47,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
         Math.pow(p.geometry.coordinates[0] - d.geometry.coordinates[0], 2) +
         Math.pow(p.geometry.coordinates[1] - d.geometry.coordinates[1], 2)
       ) <= 1
-    }).map(p => p.properties)
+    })
     setDrawerContent({ locations, coordinates: d.geometry.coordinates })
     setDrawerOpen(true)
     panTo(d, width, height)
@@ -76,6 +76,11 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     path = geoPath().projection(projection)
     svg.attr("style", "background: radial-gradient(#06402B 0%, #000000 100%)")
 
+    const radiusScale = d3.scalePow()
+      .exponent(.01) // Adjust the exponent to control the rate of change
+      .domain([.8, 50]) // Input domain: zoom levels
+      .range([3.5, 0.5]); // Output range: radius values
+
     const territory = g.append('g')
       .selectAll('path')
       .data(data.territory)
@@ -90,7 +95,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
         const [x, y] = panTo(d, width, height, e)
-        setDrawerContent({ locations: [d.properties], coordinates: projection.invert([x, y]) })
+        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]) })
         setDrawerOpen(true)
       })
       .on("mouseout", hover)
@@ -106,6 +111,12 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .attr('fill', "none")
       .attr('stroke', d => color(map, d.properties, "stroke", d.geometry.type))
       .on("mouseover", hover)
+      .on("click", (e, d) => {
+        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        const [x, y] = panTo(d, width, height, e)
+        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]) })
+        setDrawerOpen(true)
+      })
       .on("mouseout", hover)
 
     const location = g.append('g')
@@ -114,13 +125,13 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .enter()
       .append(d => important(map, d.properties) ? document.createElementNS(d3.namespaces.svg, 'rect') : document.createElementNS(d3.namespaces.svg, 'circle'))
       .attr('class', d => d.properties.unofficial ? 'unofficial location' : 'location')
-      .attr('r', d => important(map, d.properties) ? null : .5)
+      .attr('r', d => important(map, d.properties) ? null : 3.3)
       .attr('cx', d => important(map, d.properties) ? null : projection(d.geometry.coordinates)[0])
       .attr('cy', d => important(map, d.properties) ? null : projection(d.geometry.coordinates)[1])
       .attr('x', d => important(map, d.properties) ? projection(d.geometry.coordinates)[0] : null)
       .attr('y', d => important(map, d.properties) ? projection(d.geometry.coordinates)[1] : null)
-      .attr('width', d => important(map, d.properties) ? 5 : null)
-      .attr('height', d => important(map, d.properties) ? 5 : null)
+      .attr('width', d => important(map, d.properties) ? 4.3 : null)
+      .attr('height', d => important(map, d.properties) ? 4.3 : null)
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
       // .attr('stroke', d => color(map, d.properties, "stroke"))
       .on("click", (e, d) => handlePointClick(e, d))
@@ -148,10 +159,11 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .enter().append('text')
       .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')
       .attr('x', d => projection(d.geometry.coordinates)[0])
-      .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 8))
+      .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 9))
       .text(d => !d.properties.crowded ? d.properties.name : '')
-      .style('font-size', d => important(map, d.properties) ? '4px' : '2px')
+      .style('font-size', d => important(map, d.properties) ? '10.85px' : '8.35px')
       .style('font-weight', d => important(map, d.properties) && 600)
+      .style('opacity', d => important(map, d.properties) ? 1 : 0)
       .style('text-anchor', 'middle')
       .style('fill', 'white')
       .style('pointer-events', 'none')
@@ -181,11 +193,6 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     //   .style('fill', 'white')
     //   .style('pointer-events', 'none')
 
-    const radiusScale = d3.scalePow()
-      .exponent(.01) // Adjust the exponent to control the rate of change
-      .domain([.8, 50]) // Input domain: zoom levels
-      .range([3.5, 0.5]); // Output range: radius values
-
     const cross = d3.selectAll('.crosshair')
     zoom = d3.zoom()
       .scaleExtent([.8, 50])
@@ -214,13 +221,13 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
           return s + 1
         })
         locationLabel.style('opacity', d => {
-          if (e.transform.k < 1) return important(map, d.properties) ? 1 : 0
+          if (e.transform.k < 1.6) return important(map, d.properties) ? 1 : 0
           return 1
         })
         // territory.style('stroke-width', () => s / 5)
         // guide.style('stroke-width', () => s / 3)
         locationLabel.style('font-size', d => {
-          return `${s * 2.5 + (important(map, d.properties) ? 2.5 : 0)}px`
+          return `${s * 1.5 + (important(map, d.properties) ? 2.5 : 0)}px`
         })
 
       })

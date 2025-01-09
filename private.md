@@ -33,7 +33,6 @@
 # todo:
 - elevation [NEW]
 - need to press and hold on mobile to see which location is which [NEW]
-- mobile doesn't see mode toggle checks correctly
 
 # menu items needed
 - measure btn

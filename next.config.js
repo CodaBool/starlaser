@@ -3,6 +3,7 @@
 
 
 // const nextConfig = {
+//   reactStrictMode: false,
 //   experimental: {
 //     // outputFileTracingRoot: path.join(__dirname),
 //     outputFileTracingIncludes: {

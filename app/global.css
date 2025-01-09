@@ -74,14 +74,14 @@ body {
 /* map hover card from sheet */
 @keyframes pulse {
   0% {
-    r: 0.6;
-    width: 1.5;
-    height: 1.5;
+    r: 1.5;
+    width: 2.5;
+    height: 2.5;
   }
   100% {
-    r: 0.7;
-    width: 1.6;
-    height: 1.6;
+    r: 1.7;
+    width: 2.6;
+    height: 2.6;
   }
 }
 
