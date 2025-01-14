@@ -2,8 +2,6 @@
 import { useEffect } from "react"
 import { pointer, zoomTransform, geoDistance, select, selectAll } from 'd3'
 
-const timer = new Set([])
-
 export default function Toolbox({ mode, svg, g, width, height, projection, mobile, svgRef, map }) {
   useEffect(() => {
     const pointRef = document.querySelector(".point")
@@ -51,14 +49,15 @@ export default function Toolbox({ mode, svg, g, width, height, projection, mobil
       const transformedY = (mouseY - transform.y) / transform.k
       const point = projection.invert([transformedX, transformedY])
       if (mode.has("crosshair")) {
-        crosshairX.attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
-        crosshairY.attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-        text.text(`X: ${point[0].toFixed(1)}, Y: ${point[1].toFixed(1)}`).style('visibility', 'visible')
-        // BUG: not sure why this is needed
+        mode.add("crosshairZoom")
         setTimeout(() => {
-          crosshairX.style('visibility', 'visible')
-          crosshairY.style('visibility', 'visible')
-        }, 100)
+          if (!mode.has("crosshairZoom")) return
+          crosshairX.attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
+          crosshairY.attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
+          text.text(`X: ${point[0].toFixed(1)}, Y: ${point[1].toFixed(1)}`).style('visibility', 'visible')
+          // crosshairX.style('visibility', 'visible')
+          // crosshairY.style('visibility', 'visible')
+        }, 200)
       } else if (mode.has("measure")) {
         const coord = projection(point)
         mode.add("measureStart")
@@ -173,7 +172,7 @@ export default function Toolbox({ mode, svg, g, width, height, projection, mobil
   return (
     <>
       <circle
-        r={5}
+        r={2.4}
         className="point"
         fill="orange"
         style={{ visibility: 'hidden', pointerEvents: "none" }}

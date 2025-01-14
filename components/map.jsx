@@ -12,6 +12,7 @@ import Toolbox from './toolbox'
 let projection, svg, zoom, path, g, mode = new Set([])
 
 export function panTo(d, width, height, e) {
+  mode.add("zooming")
   const [x, y] = path.centroid(d)
   // const scale = d3.zoomTransform(svg.node()).k
   const offsetX = (window.innerWidth - width) / 2
@@ -29,6 +30,7 @@ export function panTo(d, width, height, e) {
   const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
   const t = d3.zoomIdentity.translate(width / 2 + offsetX, height / 2 + offsetY - drawerOffset).scale(scale).translate(-x, -y)
   svg.transition().duration(750).call(zoom.transform, t)
+  setTimeout(() => mode.delete("zooming"), 751)
   return [x, y]
 }
 
@@ -57,8 +59,11 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     const fill = geometry.type !== "LineString"
     const stroke = geometry.type !== "Point"
     if (e.type === "mouseover") {
-      if (fill) d3.select(e.currentTarget).attr('fill', 'rgba(61, 150, 98, 0.5)')
+      if (fill && (properties.type === "region" || properties.type === "faction")) d3.select(e.currentTarget).attr('fill', 'rgba(61, 150, 98, 1)')
       if (stroke) d3.select(e.currentTarget).attr('stroke', 'rgba(61, 150, 98, .7)')
+      if (!stroke || geometry.type === "LineString") {
+        d3.select(e.currentTarget).style('cursor', 'crosshair')
+      }
       setTooltip(properties)
       positionTooltip(e)
     } else if (e.type === "mouseout") {
@@ -93,7 +98,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .attr('opacity', d => (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1)
       .on("mouseover", hover)
       .on("click", (e, d) => {
-        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
         const [x, y] = panTo(d, width, height, e)
         setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]) })
         setDrawerOpen(true)
@@ -193,7 +198,6 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     //   .style('fill', 'white')
     //   .style('pointer-events', 'none')
 
-    const cross = d3.selectAll('.crosshair')
     zoom = d3.zoom()
       .scaleExtent([.8, 50])
       // .translateExtent([[-2800, 2000], [2000, 2000]])
@@ -203,10 +207,11 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
         // prevents measure dot from being moved on pan for both mobile and desktop
         if (mode.has("measureStart")) {
           mode.delete("measureStart")
+        } else if (mode.has("crosshairZoom")) {
+          mode.delete("crosshairZoom")
         }
 
         const s = radiusScale(e.transform.k)
-        cross.style("visibility", "hidden")
         location.style('r', d => {
           if (important(map, d.properties)) return
           return s
@@ -234,7 +239,11 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("start", () => {
         svg.style("cursor", "grabbing")
         document.querySelector(".map-tooltip").style.visibility = "hidden"
+        // if (d3.selectAll('.crosshair').style("visibility") === "visible") {
+        //   console.log("setting hidden")
+        // }
         d3.selectAll('.crosshair').style("visibility", "hidden")
+        if (!mode.has("zooming")) setDrawerOpen(false)
       })
       .on("end", () => svg.style("cursor", "grab"))
 

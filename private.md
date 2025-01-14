@@ -33,6 +33,7 @@
 # todo:
 - elevation [NEW]
 - need to press and hold on mobile to see which location is which [NEW]
+- make sheet alphabetical [NEW]
 
 # menu items needed
 - measure btn

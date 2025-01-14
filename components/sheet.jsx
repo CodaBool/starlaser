@@ -52,9 +52,14 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
 
   }
 
+  function handle(e) {
+    // console.log("click outside")
+    e.preventDefault()
+  }
+
   return (
-    <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }} >
-      <SheetContent side="bottom" style={{ maxHeight: '50vh', overflowY: 'auto' }} className="map-sheet">
+    <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
+      <SheetContent side="bottom" style={{ maxHeight: '50vh', overflowY: 'auto' }} className="map-sheet" onPointerDownOutside={handle}>
         <SheetHeader >
           <SheetTitle className="text-center">{coordinates ? `x: ${Math.floor(coordinates[0])}, y: ${Math.floor(coordinates[1])}` : 'unknown'}</SheetTitle>
           <SheetDescription />
