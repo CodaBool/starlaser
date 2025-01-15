@@ -25,7 +25,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     }
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
-      .classed('pulse', true)
+      .classed('animate-pulse', true)
       .attr('fill', () => className === ".guide" ? "none" : 'orange')
       .attr('stroke', () => className === ".location" ? null : 'orange')
       .attr('opacity', () => className === ".territory" ? .4 : 1)
@@ -34,7 +34,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
   function handleMouseOut(properties, geometry) {
     selectAll('.location')
       .filter(d => d.properties.name === properties.name)
-      .classed('pulse', false)
+      .classed('animate-pulse', false)
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
 
     let className = ".territory"

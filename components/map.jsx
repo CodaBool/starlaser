@@ -14,7 +14,7 @@ let projection, svg, zoom, path, g, mode = new Set([])
 export function panTo(d, width, height, e) {
   mode.add("zooming")
   const [x, y] = path.centroid(d)
-  // const scale = d3.zoomTransform(svg.node()).k
+  const current = d3.zoomTransform(svg.node()).k
   const offsetX = (window.innerWidth - width) / 2
   const offsetY = (window.innerHeight - height) / 2
   const bounds = path.bounds(d);
@@ -25,7 +25,7 @@ export function panTo(d, width, height, e) {
   const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
 
   // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
-  const scale = Math.min(Math.max(500 / yDifference, 1), 14)
+  const scale = Math.min(Math.max(500 / yDifference, 1), current)
 
   const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
   const t = d3.zoomIdentity.translate(width / 2 + offsetX, height / 2 + offsetY - drawerOffset).scale(scale).translate(-x, -y)
@@ -56,19 +56,19 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
   }
 
   function hover(e, { properties, geometry }) {
-    const fill = geometry.type !== "LineString"
-    const stroke = geometry.type !== "Point"
+    const guide = geometry.type === "LineString"
+    const location = geometry.type === "Point"
+    const territory = geometry.type.includes("Poly")
+    const faction = territory && (properties.type === "region" || properties.type === "faction")
     if (e.type === "mouseover") {
-      if (fill && (properties.type === "region" || properties.type === "faction")) d3.select(e.currentTarget).attr('fill', 'rgba(61, 150, 98, 1)')
-      if (stroke) d3.select(e.currentTarget).attr('stroke', 'rgba(61, 150, 98, .7)')
-      if (!stroke || geometry.type === "LineString") {
-        d3.select(e.currentTarget).style('cursor', 'crosshair')
-      }
+      if (faction || location) d3.select(e.currentTarget).attr('fill', 'orange')
+      if (guide) d3.select(e.currentTarget).attr('stroke', 'orange')
+      if (location || guide) d3.select(e.currentTarget).style('cursor', 'crosshair')
       setTooltip(properties)
       positionTooltip(e)
     } else if (e.type === "mouseout") {
-      if (fill) d3.select(e.currentTarget).attr('fill', color(map, properties, "fill", geometry.type))
-      if (stroke) d3.select(e.currentTarget).attr('stroke', color(map, properties, "stroke", geometry.type))
+      if (!guide) d3.select(e.currentTarget).attr('fill', color(map, properties, "fill", geometry.type))
+      if (!location) d3.select(e.currentTarget).attr('stroke', color(map, properties, "stroke", geometry.type))
       setTooltip()
       document.querySelector(".map-tooltip").style.visibility = "hidden"
     }
@@ -81,18 +81,13 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     path = geoPath().projection(projection)
     svg.attr("style", "background: radial-gradient(#06402B 0%, #000000 100%)")
 
-    const radiusScale = d3.scalePow()
-      .exponent(.01) // Adjust the exponent to control the rate of change
-      .domain([.8, 50]) // Input domain: zoom levels
-      .range([3.5, 0.5]); // Output range: radius values
-
     const territory = g.append('g')
       .selectAll('path')
       .data(data.territory)
       .enter().append('path')
       .attr('class', d => `${d.properties.unofficial ? 'unofficial territory' : 'territory'} ${(d.properties.type === "faction" || d.properties.type === "region") ? 'raise' : ''}`)
       .attr('d', path)
-      .attr('stroke-width', .5)
+      .attr('stroke-width', .836)
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => color(map, d.properties, "stroke", d.geometry.type))
       .attr('opacity', d => (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1)
@@ -112,7 +107,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .enter().append('path')
       .attr('class', 'guide')
       .attr('d', path)
-      .attr('stroke-width', .8)
+      .attr('stroke-width', 1.67)
       .attr('fill', "none")
       .attr('stroke', d => color(map, d.properties, "stroke", d.geometry.type))
       .on("mouseover", hover)
@@ -164,11 +159,12 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .enter().append('text')
       .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')
       .attr('x', d => projection(d.geometry.coordinates)[0])
-      .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 9))
-      .text(d => !d.properties.crowded ? d.properties.name : '')
+      .attr('y', d => projection(d.geometry.coordinates)[1] + 13.375)
+      // .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 9))
+      .text(d => d.properties.name)
       .style('font-size', d => important(map, d.properties) ? '10.85px' : '8.35px')
       .style('font-weight', d => important(map, d.properties) && 600)
-      .style('opacity', d => important(map, d.properties) ? 1 : 0)
+      .style('opacity', d => (important(map, d.properties) && !d.properties.crowded) ? 1 : 0)
       .style('text-anchor', 'middle')
       .style('fill', 'white')
       .style('pointer-events', 'none')
@@ -198,8 +194,13 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     //   .style('fill', 'white')
     //   .style('pointer-events', 'none')
 
+    const radiusScale = d3.scalePow()
+      .exponent(.01) // Adjust the exponent to control the rate of change
+      .domain([.8, 80]) // Input domain: zoom levels
+      .range([3.5, 0.2]); // Output range: radius values
+
     zoom = d3.zoom()
-      .scaleExtent([.8, 50])
+      .scaleExtent([.8, 80])
       // .translateExtent([[-2800, 2000], [2000, 2000]])
       .on('zoom', e => {
         g.attr('transform', e.transform)
@@ -216,32 +217,43 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
           if (important(map, d.properties)) return
           return s
         })
-
+        guide.style('stroke-width', () => {
+          return s / 2
+        })
+        territory.style('stroke-width', () => {
+          return s / 4
+        })
         location.style('width', d => {
           if (!important(map, d.properties)) return
-          return s + 1
+          return s + .3
         })
         location.style('height', d => {
           if (!important(map, d.properties)) return
-          return s + 1
+          return s + .3
         })
         locationLabel.style('opacity', d => {
+          if (e.transform.k > 50) {
+            return 1
+          } else {
+            if (d.properties.crowded) return 0
+          }
           if (e.transform.k < 1.6) return important(map, d.properties) ? 1 : 0
           return 1
         })
         // territory.style('stroke-width', () => s / 5)
         // guide.style('stroke-width', () => s / 3)
         locationLabel.style('font-size', d => {
-          return `${s * 1.5 + (important(map, d.properties) ? 2.5 : 0)}px`
+          if (e.transform.k > 50) {
+            return `${s * 1.5}px`
+          } else {
+            return `${s * 1.5 + (important(map, d.properties) ? 2.5 : 0)}px`
+          }
         })
-
+        locationLabel.attr('y', d => projection(d.geometry.coordinates)[1] + (s * 4))
       })
       .on("start", () => {
         svg.style("cursor", "grabbing")
         document.querySelector(".map-tooltip").style.visibility = "hidden"
-        // if (d3.selectAll('.crosshair').style("visibility") === "visible") {
-        //   console.log("setting hidden")
-        // }
         d3.selectAll('.crosshair').style("visibility", "hidden")
         if (!mode.has("zooming")) setDrawerOpen(false)
       })
