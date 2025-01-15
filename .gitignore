@@ -6,3 +6,7 @@ build/
 .vercel
 junk.*
 junk/
+
+
+# temp while I develop on a laptop
+deno.*

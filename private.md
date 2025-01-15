@@ -34,6 +34,8 @@
 - elevation [NEW]
 - need to press and hold on mobile to see which location is which [NEW]
 - make sheet alphabetical [NEW]
+- add a zoom in and out button
+- water keeps static text bug
 
 # menu items needed
 - measure btn
