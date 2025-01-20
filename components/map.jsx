@@ -2,7 +2,7 @@
 import * as d3 from 'd3'
 import { geoPath, geoMercator } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip } from "@/lib/utils.js"
+import { color, important, positionTooltip, bg, accent, ignoreList } from "@/lib/utils.js"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
 import AutoResize from './autoresize'
@@ -100,13 +100,13 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     const guide = geometry.type === "LineString"
     const location = geometry.type === "Point"
     const territory = geometry.type.includes("Poly")
-    const faction = territory && (properties.type === "region" || properties.type === "faction")
     if (e.type === "mouseover") {
-      if (faction || location) d3.select(e.currentTarget).attr('fill', 'orange')
-      if (guide) d3.select(e.currentTarget).attr('stroke', 'orange')
-      if (location || guide) d3.select(e.currentTarget).style('cursor', 'crosshair')
       setTooltip(properties)
       positionTooltip(e)
+      if (ignoreList[map].includes(properties.type)) return
+      if (territory || location) d3.select(e.currentTarget).attr('fill', accent[map])
+      if (guide || territory) d3.select(e.currentTarget).attr('stroke', accent[map])
+      if (location || guide) d3.select(e.currentTarget).style('cursor', 'crosshair')
     } else if (e.type === "mouseout") {
       if (!guide) d3.select(e.currentTarget).attr('fill', color(map, properties, "fill", geometry.type))
       if (!location) d3.select(e.currentTarget).attr('stroke', color(map, properties, "stroke", geometry.type))
@@ -120,7 +120,19 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     g = d3.select('g')
     projection = geoMercator().scale(SCALE).center(CENTER).translate([width / 2, height / 2])
     path = geoPath().projection(projection)
-    svg.attr("style", "background: radial-gradient(#06402B 0%, #000000 100%)")
+
+    svg.attr("style", `background: radial-gradient(${bg[map]})`)
+
+    if (map === "lancer") {
+      for (let i = 0; i < height * width / 10000; i++) {
+        svg.append('circle')
+          .attr('class', 'background')
+          .attr('cx', Math.random() * width)
+          .attr('cy', Math.random() * height)
+          .attr('r', Math.random() * 2)
+          .style('fill', `rgba(255, 255, 255, ${Math.random() / 3})`)
+      }
+    }
 
     const territory = g.append('g')
       .selectAll('path')
@@ -131,7 +143,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .attr('stroke-width', .836)
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => color(map, d.properties, "stroke", d.geometry.type))
-      .attr('opacity', d => (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1)
+      // .attr('opacity', d => (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1)
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
@@ -142,9 +154,26 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("mouseout", hover)
       .on("mousemove", e => positionTooltip(e))
 
+
+    // territory labels
+    // g.append('g')
+    //   .selectAll('.territory-label')
+    //   .data(data.territory)
+    //   .enter().append('text')
+    //   .attr('class', d => d.properties.unofficial ? 'unofficial territory-label' : 'territory-label')
+    //   .attr('x', d => path.centroid(d)[0])
+    //   .attr('y', d => path.centroid(d)[1])
+    //   .attr('dy', '.35em')
+    //   .text(d => d.properties.name)
+    //   .style('font-size', '5px')
+    //   .style('fill', 'white')
+    //   .style('text-anchor', 'middle')
+    //   .style('pointer-events', 'none')
+
+
     const guide = g.append('g')
       .selectAll('.lines')
-      .data(data.guide)
+      .data(data.guide || [])
       .enter().append('path')
       .attr('class', 'guide')
       .attr('d', path)
@@ -160,8 +189,34 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       })
       .on("mouseout", hover)
 
+    // guide labels
+    // g.selectAll('.guide-label')
+    //   .data(data.guide)
+    //   .enter().append('text')
+    //   .attr('class', 'guide-label guide')
+    //   .attr('x', d => {
+    //     const centroid = path.centroid(d);
+    //     const bounds = path.bounds(d);
+    //     const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
+    //     const radius = Math.sqrt(
+    //       Math.pow(topMostPoint[0] - centroid[0], 2) +
+    //       Math.pow(topMostPoint[1] - centroid[1], 2)
+    //     )
+    //     const offsetX = 20
+    //     return centroid[0] + offsetX + (radius / 5);
+    //   })
+    //   .attr('y', d => {
+    //     const bounds = path.bounds(d);
+    //     const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1]
+    //     return topMostPoint[1] + 35;
+    //   })
+    //   .text(d => d.properties.name)
+    //   .style('font-size', '.7em')
+    //   .style('fill', 'white')
+    //   .style('pointer-events', 'none')
+
     const location = g.append('g')
-      .selectAll('.point')
+      .selectAll('.location')
       .data(data.location)
       .enter().append(d => getIcon(d, true))
       .attr('r', 3.3)
@@ -181,23 +236,8 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on('mouseover', hover)
       .on('mouseout', hover);
 
-    // territory labels
-    // g.append('g')
-    //   .selectAll('.group-label')
-    //   .data(data.territory)
-    //   .enter().append('text')
-    //   .attr('class', d => d.properties.unofficial ? 'unofficial territory-label' : 'territory-label')
-    //   .attr('x', d => path.centroid(d)[0])
-    //   .attr('y', d => path.centroid(d)[1])
-    //   .attr('dy', '.35em')
-    //   .text(d => d.properties.name)
-    //   .style('font-size', '5px')
-    //   .style('fill', 'white')
-    //   .style('text-anchor', 'middle')
-    // .style('pointer-events', 'none')
-
     const locationLabel = g.append('g')
-      .selectAll('.point-label')
+      .selectAll('.location-label')
       .data(data.location)
       .enter().append('text')
       .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')

@@ -10,7 +10,7 @@ export default function page() {
     <>
       <h1 className="text-5xl my-4 text-center">Maps</h1 >
       <div className="container mx-auto flex flex-wrap justify-center">
-        {/* <Link href="/lancer">
+        <Link href="/lancer">
           <Card className="m-4 max-w-[400px] cursor-pointer">
             <CardHeader>
               <CardTitle className="text-center">LANCER</CardTitle >
@@ -23,7 +23,7 @@ export default function page() {
               />
             </CardContent>
           </Card >
-        </Link > */}
+        </Link >
         <Link href="/fallout">
           <Card className="m-4 max-w-[400px] cursor-pointer">
             <CardHeader>

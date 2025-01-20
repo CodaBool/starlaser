@@ -33,9 +33,11 @@
 - region
 - compound
 
+# Region change
+- all factions, regions, clusters will now be type "region". Neutral states, countries, and Lancer guide. Will now be "null" type. Regions will now use a faction prop which will determine further detail
+
 # todo:
 - elevation [NEW]
-- need to press and hold on mobile to see which location is which [NEW]
 - add a zoom in and out button
 
 # menu items needed

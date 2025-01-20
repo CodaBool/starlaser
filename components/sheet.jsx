@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { selectAll } from 'd3'
-import { color } from "@/lib/utils.js"
+import { color, accent } from "@/lib/utils.js"
 import { panTo } from "@/components/map"
 
 export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, map, selected, width, height }) {
@@ -28,9 +28,9 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
       .classed('animate-pulse', true)
-      .attr('fill', () => className === ".guide" ? "none" : 'orange')
-      .attr('stroke', () => className === ".location" ? null : 'orange')
-      .attr('opacity', () => className === ".territory" ? .4 : 1)
+      .attr('fill', () => className === ".guide" ? "none" : accent[map])
+      .attr('stroke', () => className === ".location" ? null : accent[map])
+    // .attr('opacity', () => className === ".territory" ? .4 : 1)
   }
 
   function handleMouseOut(properties, geometry) {
@@ -45,7 +45,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
       .classed('animate-pulse', false)
       .attr('fill', d => className === ".guide" ? "none" : color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => className === ".location" ? null : color(map, d.properties, "stroke", d.geometry.type))
-      .attr('opacity', d => className === ".territory" ? (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1 : 1)
+    // .attr('opacity', d => className === ".territory" ? (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1 : 1)
 
   }
 
