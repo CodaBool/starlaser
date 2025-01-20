@@ -4,16 +4,17 @@ import path from "path"
 import { feature } from 'topojson-client'
 import Cartographer from "@/components/cartographer"
 
-const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
 
 export default async function mapLobby({ params }) {
+  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
+
   // const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
   const { map } = await params
   const filePath = path.join(dataDir, `${map}.json`)
   if (map === "favicon.ico") return
   // if (map === "lancer") return
   const content = await fs.promises.readFile(filePath, 'utf8')
-  // console.log("path", path.resolve(`app/[map]/topojson/fallout.json`))
+  console.log("path", path.resolve(`app/[map]/topojson/fallout.json`))
   // const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}.json`), 'utf8')
   // const content = await fs.promises.readFile(process.cwd() + '/app/fallout/fallout.json', 'utf8')
   // const content = fs.readFileSync(filePath, 'utf-8')
@@ -29,8 +30,10 @@ export default async function mapLobby({ params }) {
 }
 
 export async function generateStaticParams() {
+  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
+
   const files = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
-  // console.log("maps", files)
+  console.log("maps", files)
   return files.map(file => ({ slug: file }))
 }
 
