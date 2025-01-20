@@ -13,11 +13,13 @@ import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { selectAll } from 'd3'
 import { color } from "@/lib/utils.js"
+import { panTo } from "@/components/map"
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, map }) {
+export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, map, selected, width, height }) {
 
   function handleMouseOver(properties, geometry) {
     let className = ".territory"
+
     if (geometry.type === "LineString") {
       className = ".guide"
     } else if (geometry.type === "Point") {
@@ -32,11 +34,6 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
   }
 
   function handleMouseOut(properties, geometry) {
-    selectAll('.location')
-      .filter(d => d.properties.name === properties.name)
-      .classed('animate-pulse', false)
-      .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
-
     let className = ".territory"
     if (geometry.type === "LineString") {
       className = ".guide"
@@ -45,7 +42,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     }
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
-      .classed('pulse', false)
+      .classed('animate-pulse', false)
       .attr('fill', d => className === ".guide" ? "none" : color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => className === ".location" ? null : color(map, d.properties, "stroke", d.geometry.type))
       .attr('opacity', d => className === ".territory" ? (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1 : 1)
@@ -53,7 +50,6 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
   }
 
   function handle(e) {
-    // console.log("click outside")
     e.preventDefault()
   }
 
@@ -65,30 +61,38 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
           <SheetDescription />
         </SheetHeader >
         <div className="flex flex-wrap justify-center">
-          {locations?.map(({ properties, geometry }) => {
+          {locations?.map(d => {
+            const { properties, geometry } = d
             const params = new URLSearchParams({
               description: properties.description || "",
               name: properties.name,
               map,
             }).toString()
-            return (
-              <Link href={`/contribute/redirect?${params}`} key={properties.name}>
-                <Card
-                  className="min-h-[80px] m-2 min-w-[150px]"
-                  onMouseOver={() => handleMouseOver(properties, geometry)}
-                  onMouseOut={() => handleMouseOut(properties, geometry)}
-                >
-                  <CardContent className="p-2 text-center">
-                    {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-                    <p className="font-bold text-xl text-center">{properties.name}</p>
-                    <p className="text-center text-gray-400">{properties.type}</p>
-                    {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
-                    {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
-                    {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
-                  </CardContent>
-                </Card >
-              </Link>
+            const card = (
+              <Card
+                className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
+                onMouseOver={() => handleMouseOver(properties, geometry)}
+                onMouseOut={() => handleMouseOut(properties, geometry)}
+              >
+                <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
+                  {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
+                  <p className="font-bold text-xl text-center">{properties.name}</p>
+                  <p className="text-center text-gray-400">{properties.type}</p>
+                  {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
+                  {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
+                  {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
+                </CardContent>
+              </Card >
             )
+            return properties.name === selected ? (
+              <Link
+                href={`https://fallout.fandom.com/wiki/Special:Search?query=${encodeURIComponent(properties.name)}`}
+                target="_blank"
+                key={properties.name}
+              >
+                {card}
+              </Link>
+            ) : <div key={properties.name} onClick={() => panTo(d, width, height, null, 80)}>{card}</div>
           })}
         </div>
       </SheetContent >

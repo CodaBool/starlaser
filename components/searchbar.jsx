@@ -22,7 +22,8 @@ export default function MenuComponent({ map, data, width, height, mobile }) {
     // close search menu
     setActive(false)
     input.current.blur()
-    panTo(d, width, height)
+    const zoom = d.geometry.type === "Point" ? 50.5 : null
+    panTo(d, width, height, null, zoom)
   }
 
   useEffect(() => {
@@ -31,13 +32,11 @@ export default function MenuComponent({ map, data, width, height, mobile }) {
     }
     function down(e) {
       if (e.code === 'Space') {
+        if (input.current !== document.activeElement) {
+          e.preventDefault()
+        }
         input.current.focus()
         setActive(true)
-
-        // TODO: there is a bug with Lancer the location list has missing items if a timeout is not used
-        // setTimeout(() => {
-        // setOpen(true)
-        // }, 0)
       } else if (e.code === "Escape") {
         setActive(false)
       }

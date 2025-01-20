@@ -7,6 +7,9 @@
 - icon https://lucide.dev/icons
 - merge 2 geojson when data rows are different https://findthatpostcode.uk/tools/merge-geojson
 
+# icons
+- https://game-icons.net
+
 # inspo
 - https://www.google.com/maps/d/u/0/viewer?hl=en_US&mid=1puuQVpbfh4ofYflJxJPB6iul6JQ&ll=40.00675267193506%2C-74.04422471111134&z=7
 - https://github.com/MeepChangeling/FalloutTTRPGWorldMap
@@ -33,9 +36,7 @@
 # todo:
 - elevation [NEW]
 - need to press and hold on mobile to see which location is which [NEW]
-- make sheet alphabetical [NEW]
 - add a zoom in and out button
-- water keeps static text bug
 
 # menu items needed
 - measure btn

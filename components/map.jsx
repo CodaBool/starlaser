@@ -8,13 +8,31 @@ import Sheet from './sheet'
 import AutoResize from './autoresize'
 import Hamburger from './hamburger'
 import Toolbox from './toolbox'
+import * as SVG from './svg.js'
 
 let projection, svg, zoom, path, g, mode = new Set([])
 
-export function panTo(d, width, height, e) {
+function getIcon(d, create, simple) {
+  const icon = SVG[d.properties.icon] || SVG[d.properties.type]
+  if (simple) return typeof icon
+  if (create) {
+    if (icon) {
+      return document.createElementNS(d3.namespaces.svg, 'g')
+    } else {
+      return document.createElementNS(d3.namespaces.svg, 'circle')
+    }
+  }
+  return icon ? icon : null
+}
+
+export function panTo(d, width, height, e, customZoom) {
   mode.add("zooming")
   const [x, y] = path.centroid(d)
   const current = d3.zoomTransform(svg.node()).k
+  if (current > 50 && d.geometry.type.includes("Poly")) {
+    // clicked on faction when at max zooom, this likely was a mistake
+    return [x, y]
+  }
   const offsetX = (window.innerWidth - width) / 2
   const offsetY = (window.innerHeight - height) / 2
   const bounds = path.bounds(d);
@@ -25,11 +43,12 @@ export function panTo(d, width, height, e) {
   const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
 
   // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
-  const scale = Math.min(Math.max(500 / yDifference, 1), current)
+  let scale = Math.min(Math.max(500 / yDifference, 1), current)
+  if (customZoom) scale = customZoom
 
   const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
   const t = d3.zoomIdentity.translate(width / 2 + offsetX, height / 2 + offsetY - drawerOffset).scale(scale).translate(-x, -y)
-  svg.transition().duration(750).call(zoom.transform, t)
+  svg.transition().duration(400).call(zoom.transform, t)
   setTimeout(() => mode.delete("zooming"), 751)
   return [x, y]
 }
@@ -44,13 +63,35 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
   function handlePointClick(e, d) {
     if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
     // add nearby locations to drawer
-    const locations = data.location.filter(p => {
+    if (document.querySelector(".click-circle")) {
+      document.querySelector(".click-circle").remove()
+    }
+    const zoomLevel = d3.zoomTransform(svg.node()).k
+    let selectionRadius = 31
+    if (zoomLevel > 30) {
+      selectionRadius = 4
+    }
+
+    const locationsUnsorted = data.location.filter(p => {
+      let cutoff = 1.17
+      if (zoomLevel > 30) cutoff = 0.15
       return Math.sqrt(
         Math.pow(p.geometry.coordinates[0] - d.geometry.coordinates[0], 2) +
         Math.pow(p.geometry.coordinates[1] - d.geometry.coordinates[1], 2)
-      ) <= 1
+      ) <= cutoff
     })
-    setDrawerContent({ locations, coordinates: d.geometry.coordinates })
+    g.append('circle')
+      .attr('cx', projection(d.geometry.coordinates)[0])
+      .attr('cy', projection(d.geometry.coordinates)[1])
+      .attr('r', selectionRadius)
+      .attr("class", "click-circle")
+      .attr('stroke', 'rgba(255, 165, 0, .3)')
+      .attr('stroke-width', .2)
+      .attr('fill', 'rgba(255, 165, 0, .1)')
+      .style('pointer-events', 'none')
+
+    const locations = locationsUnsorted.sort((a, b) => a.properties.name.localeCompare(b.properties.name))
+    setDrawerContent({ locations, coordinates: d.geometry.coordinates, selected: d.properties.name })
     setDrawerOpen(true)
     panTo(d, width, height)
   }
@@ -95,7 +136,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
         const [x, y] = panTo(d, width, height, e)
-        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]) })
+        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]), selected: d.properties.name })
         setDrawerOpen(true)
       })
       .on("mouseout", hover)
@@ -114,7 +155,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
         const [x, y] = panTo(d, width, height, e)
-        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]) })
+        setDrawerContent({ locations: [d], coordinates: projection.invert([x, y]), selected: d.properties.name })
         setDrawerOpen(true)
       })
       .on("mouseout", hover)
@@ -122,21 +163,23 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
     const location = g.append('g')
       .selectAll('.point')
       .data(data.location)
-      .enter()
-      .append(d => important(map, d.properties) ? document.createElementNS(d3.namespaces.svg, 'rect') : document.createElementNS(d3.namespaces.svg, 'circle'))
-      .attr('class', d => d.properties.unofficial ? 'unofficial location' : 'location')
-      .attr('r', d => important(map, d.properties) ? null : 3.3)
-      .attr('cx', d => important(map, d.properties) ? null : projection(d.geometry.coordinates)[0])
-      .attr('cy', d => important(map, d.properties) ? null : projection(d.geometry.coordinates)[1])
-      .attr('x', d => important(map, d.properties) ? projection(d.geometry.coordinates)[0] : null)
-      .attr('y', d => important(map, d.properties) ? projection(d.geometry.coordinates)[1] : null)
-      .attr('width', d => important(map, d.properties) ? 4.3 : null)
-      .attr('height', d => important(map, d.properties) ? 4.3 : null)
+      .enter().append(d => getIcon(d, true))
+      .attr('r', 3.3)
+      .attr('cx', d => projection(d.geometry.coordinates)[0])
+      .attr('cy', d => projection(d.geometry.coordinates)[1])
+      .attr('transform', d => {
+        if (getIcon(d, null, true) === "undefined") return
+        return `translate(${projection(d.geometry.coordinates)[0]}, ${projection(d.geometry.coordinates)[1]}) scale(0.3)`
+      })
       .attr('fill', d => color(map, d.properties, "fill", d.geometry.type))
-      // .attr('stroke', d => color(map, d.properties, "stroke"))
-      .on("click", (e, d) => handlePointClick(e, d))
-      .on("mouseover", hover)
-      .on("mouseout", hover)
+      .attr('class', d => d.properties.unofficial === "unofficial" ? 'unofficial location' : 'location')
+      .html(d => {
+        if (getIcon(d, null, true) === "undefined") return
+        return getIcon(d)
+      })
+      .on('click', (event, d) => handlePointClick(event, d))
+      .on('mouseover', hover)
+      .on('mouseout', hover);
 
     // territory labels
     // g.append('g')
@@ -204,7 +247,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       // .translateExtent([[-2800, 2000], [2000, 2000]])
       .on('zoom', e => {
         g.attr('transform', e.transform)
-
+        // svg.interrupt()
         // prevents measure dot from being moved on pan for both mobile and desktop
         if (mode.has("measureStart")) {
           mode.delete("measureStart")
@@ -213,23 +256,27 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
         }
 
         const s = radiusScale(e.transform.k)
-        location.style('r', d => {
+        guide.attr('stroke-width', () => s / 2)
+        territory.attr('stroke-width', () => s / 4)
+        location.attr('r', d => {
           if (important(map, d.properties)) return
           return s
         })
-        guide.style('stroke-width', () => {
-          return s / 2
-        })
-        territory.style('stroke-width', () => {
-          return s / 4
-        })
-        location.style('width', d => {
+        location.attr('width', d => {
           if (!important(map, d.properties)) return
           return s + .3
         })
-        location.style('height', d => {
+        location.attr('height', d => {
           if (!important(map, d.properties)) return
           return s + .3
+        })
+        location.attr('transform', d => {
+          if (getIcon(d, null, true) === "undefined") return
+          return `
+            translate(${projection(d.geometry.coordinates)[0]}, ${projection(d.geometry.coordinates)[1]})
+            scale(${s / 10})
+            translate(-8, -8)
+          `
         })
         locationLabel.style('opacity', d => {
           if (e.transform.k > 50) {
@@ -246,10 +293,12 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
           if (e.transform.k > 50) {
             return `${s * 1.5}px`
           } else {
-            return `${s * 1.5 + (important(map, d.properties) ? 2.5 : 0)}px`
+            return `${s + (important(map, d.properties) ? 2 : 0)}px`
           }
         })
-        locationLabel.attr('y', d => projection(d.geometry.coordinates)[1] + (s * 4))
+        locationLabel.attr('y', d => (
+          projection(d.geometry.coordinates)[1] + (s * (important(map, d.properties) ? 4 : 2.5))
+        ))
       })
       .on("start", () => {
         svg.style("cursor", "grabbing")
@@ -271,7 +320,7 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       <Hamburger mode={mode} />
       <Tooltip {...tooltip} />
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
-      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} map={map} />
+      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} map={map} width={width} height={height} />
       <svg width={width} height={height} className='map select-none' ref={svgRef}>
         <g>
           {mount && <Toolbox mode={mode} svg={svg} svgRef={svgRef} width={width} height={height} projection={projection} mobile={mobile} map={map} />}

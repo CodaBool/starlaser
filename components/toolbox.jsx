@@ -172,7 +172,7 @@ export default function Toolbox({ mode, svg, g, width, height, projection, mobil
   return (
     <>
       <circle
-        r={2.4}
+        r={1.5}
         className="point"
         fill="orange"
         style={{ visibility: 'hidden', pointerEvents: "none" }}
