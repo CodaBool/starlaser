@@ -14,8 +14,14 @@ export default async function mapLobby({ params }) {
   if (map === "favicon.ico") return
   // if (map === "lancer") return
   const content = await fs.promises.readFile(filePath, 'utf8')
-  console.log("path", path.resolve(`app/[map]/topojson/fallout.json`))
-  console.log("path", path.resolve(`app/[map]/topojson/lancer.json`))
+
+
+  // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
+  // even if its just in a console log
+  path.resolve(`app/[map]/topojson/fallout.json`)
+  path.resolve(`app/[map]/topojson/lancer.json`)
+  // console.log("path", path.resolve(`app/[map]/topojson/fallout.json`))
+  // console.log("path", path.resolve(`app/[map]/topojson/lancer.json`))
   // const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}.json`), 'utf8')
   // const content = await fs.promises.readFile(process.cwd() + '/app/fallout/fallout.json', 'utf8')
   // const content = fs.readFileSync(filePath, 'utf-8')
@@ -34,7 +40,7 @@ export async function generateStaticParams() {
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
 
   const files = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
-  console.log("maps", files)
+  // console.log("maps", files)
   return files.map(file => ({ slug: file }))
 }
 

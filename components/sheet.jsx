@@ -12,8 +12,9 @@ import {
 import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { selectAll } from 'd3'
-import { color, accent } from "@/lib/utils.js"
+import { color, accent, genLink } from "@/lib/utils.js"
 import { panTo } from "@/components/map"
+import * as SVG from './svg.js'
 
 export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, map, selected, width, height }) {
 
@@ -28,9 +29,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
       .classed('animate-pulse', true)
-      .attr('fill', () => className === ".guide" ? "none" : accent[map])
-      .attr('stroke', () => className === ".location" ? null : accent[map])
-    // .attr('opacity', () => className === ".territory" ? .4 : 1)
+      .attr('fill', () => className === ".guide" ? "none" : accent(map, 1))
+      .attr('stroke', () => className === ".location" ? null : accent(map, 1))
   }
 
   function handleMouseOut(properties, geometry) {
@@ -45,7 +45,6 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
       .classed('animate-pulse', false)
       .attr('fill', d => className === ".guide" ? "none" : color(map, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => className === ".location" ? null : color(map, d.properties, "stroke", d.geometry.type))
-    // .attr('opacity', d => className === ".territory" ? (d.properties.type === "faction" || d.properties.type === "region") ? .1 : 1 : 1)
 
   }
 
@@ -68,6 +67,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               name: properties.name,
               map,
             }).toString()
+            const icon = SVG[d.properties.type]
             const card = (
               <Card
                 className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
@@ -76,8 +76,9 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               >
                 <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
                   {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
+
                   <p className="font-bold text-xl text-center">{properties.name}</p>
-                  <p className="text-center text-gray-400">{properties.type}</p>
+                  <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
                   {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
                   {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
                   {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
@@ -86,7 +87,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
             )
             return properties.name === selected ? (
               <Link
-                href={`https://fallout.fandom.com/wiki/Special:Search?query=${encodeURIComponent(properties.name)}`}
+                href={genLink(d, map)}
                 target="_blank"
                 key={properties.name}
               >

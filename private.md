@@ -6,6 +6,8 @@
 - https://nerdcave.com/tailwind-cheat-sheet
 - icon https://lucide.dev/icons
 - merge 2 geojson when data rows are different https://findthatpostcode.uk/tools/merge-geojson
+- svg to code https://nikitahl.github.io/svg-2-code
+- svg minimize https://svgomg.net/
 
 # icons
 - https://game-icons.net
@@ -38,6 +40,9 @@
 
 # todo:
 - elevation [NEW]
+- solve text issue for Lancer
+- hard to click on transparent icons
+- solve icons are too close
 - add a zoom in and out button
 
 # menu items needed

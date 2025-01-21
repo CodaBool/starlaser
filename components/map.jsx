@@ -12,7 +12,7 @@ import * as SVG from './svg.js'
 
 let projection, svg, zoom, path, g, mode = new Set([])
 
-function getIcon(d, create, simple) {
+export function getIcon(d, create, simple) {
   const icon = SVG[d.properties.icon] || SVG[d.properties.type]
   if (simple) return typeof icon
   if (create) {
@@ -85,9 +85,9 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       .attr('cy', projection(d.geometry.coordinates)[1])
       .attr('r', selectionRadius)
       .attr("class", "click-circle")
-      .attr('stroke', 'rgba(255, 165, 0, .3)')
-      .attr('stroke-width', .2)
-      .attr('fill', 'rgba(255, 165, 0, .1)')
+      .attr('stroke', accent(map, 0.15))
+      .attr('stroke-width', 0.2)
+      .attr('fill', accent(map, 0.1))
       .style('pointer-events', 'none')
 
     const locations = locationsUnsorted.sort((a, b) => a.properties.name.localeCompare(b.properties.name))
@@ -104,8 +104,9 @@ export default function Map({ width, height, data, map, mobile, CENTER, SCALE })
       setTooltip(properties)
       positionTooltip(e)
       if (ignoreList[map].includes(properties.type)) return
-      if (territory || location) d3.select(e.currentTarget).attr('fill', accent[map])
-      if (guide || territory) d3.select(e.currentTarget).attr('stroke', accent[map])
+      if (territory) d3.select(e.currentTarget).attr('fill', accent(map, 0.1))
+      if (location) d3.select(e.currentTarget).attr('fill', accent(map, 1))
+      if (guide || territory) d3.select(e.currentTarget).attr('stroke', accent(map, 0.2))
       if (location || guide) d3.select(e.currentTarget).style('cursor', 'crosshair')
     } else if (e.type === "mouseout") {
       if (!guide) d3.select(e.currentTarget).attr('fill', color(map, properties, "fill", geometry.type))
