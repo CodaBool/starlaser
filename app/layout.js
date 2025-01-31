@@ -10,15 +10,14 @@ export const viewport = {
 }
 
 import './global.css'
-import Provider from '@/components/provider'
+import 'leaflet/dist/leaflet.css';
+import "maplibre-gl/dist/maplibre-gl.css";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark" style={{touchAction: "none"}}>
       <body>
-        <Provider>
-          {children}
-        </Provider>
+        {children}
       </body>
     </html>
   )

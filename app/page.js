@@ -1,68 +1,41 @@
-import Image from "next/image"
-// import lancer from '@/public/lancer_landing.webp'
-import placeholder1 from '@/public/placeholder_1_landing.webp'
-import placeholder2 from '@/public/placeholder_2_landing.webp'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+'use client'
+import { useEffect, useState } from 'react'
+import Map from './map'
+import { getConsts, isMobile } from './utils.js'
+import { feature } from 'topojson-client'
+import topojson from './fallout.json'
 
-export default function page() {
-  return (
-    <>
-      <h1 className="text-5xl my-4 text-center">Maps</h1 >
-      <div className="container mx-auto flex flex-wrap justify-center">
-        <Link href="/lancer">
-          <Card className="m-4 max-w-[400px] cursor-pointer">
-            <CardHeader>
-              <CardTitle className="text-center">LANCER</CardTitle >
-            </CardHeader>
-            <CardContent>
-              <Image
-                src={placeholder2}
-                alt="Lancer Map"
-                className="hover-grow"
-              />
-            </CardContent>
-          </Card >
-        </Link >
-        <Link href="/fallout">
-          <Card className="m-4 max-w-[400px] cursor-pointer">
-            <CardHeader>
-              <CardTitle className="text-center">FALLOUT</CardTitle >
-            </CardHeader>
-            <CardContent>
-              <Image
-                src={placeholder1}
-                alt="Fallout Map"
-                className="hover-grow"
-              />
-            </CardContent>
-          </Card >
-        </Link>
-        {/* <Card className="m-4 max-w-[600px] cursor-pointer">
-          <CardHeader>
-            <CardTitle className="text-center">ALIEN</CardTitle >
-          </CardHeader>
-          <CardContent>
-            <Image
-              src={placeholder}
-              alt="Alien Map"
-              className="hover-grow"
-            />
-          </CardContent>
-        </Card >
-        <Card className="m-4 max-w-[600px] cursor-pointer">
-          <CardHeader>
-            <CardTitle className="text-center">FALLOUT</CardTitle >
-          </CardHeader>
-          <CardContent>
-            <Image
-              src={placeholder}
-              alt="Fallout Map"
-              className="hover-grow"
-            />
-          </CardContent>
-        </Card > */}
+export default function Cartographer() {
+  const map = "fallout"
+  const layers = Object.keys(topojson.objects)
+  const data = layers.reduce((acc, layer) => {
+    acc[layer] = feature(topojson, topojson.objects[layer]).features
+    return acc
+  }, {})
+
+
+  const { SCALE, CENTER } = getConsts(map)
+  const [size, setSize] = useState()
+  const mobile = isMobile()
+
+  useEffect(() => {
+    const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
+    window.addEventListener('resize', handleResize)
+    setSize({ width: window.innerWidth, height: window.innerHeight })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // wait until I know how large the window is
+  // this only takes miliseconds it seems, so its fine to wait
+  if (!size) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
       </div>
-    </>
+    )
+  }
+
+  return (
+    <Map width={size.width} height={size.height} map={map} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
   )
 }
