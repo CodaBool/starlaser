@@ -1,5 +1,12 @@
 node_modules/
+out/
+build/
 .next/
-junk.*
-style.json
 .env
+.vercel
+junk.*
+junk/
+
+
+# temp while I develop on a laptop
+deno.*
