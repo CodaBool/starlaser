@@ -10,6 +10,7 @@ export const viewport = {
 }
 
 import './global.css'
+import "maplibre-gl/dist/maplibre-gl.css"
 import Provider from '@/components/provider'
 
 export default function RootLayout({ children }) {

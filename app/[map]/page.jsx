@@ -4,7 +4,6 @@ import path from "path"
 import { feature } from 'topojson-client'
 import Cartographer from "@/components/cartographer"
 
-
 export default async function mapLobby({ params }) {
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
 
@@ -33,7 +32,7 @@ export default async function mapLobby({ params }) {
     acc[layer] = feature(topojson, topojson.objects[layer]).features
     return acc
   }, {})
-  return <Cartographer data={layerObjects} map={map} />
+  return <Cartographer data={layerObjects} name={map} />
 }
 
 export async function generateStaticParams() {

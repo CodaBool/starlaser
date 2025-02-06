@@ -15,8 +15,10 @@ import { selectAll } from 'd3'
 import { color, accent, genLink } from "@/lib/utils.js"
 import { panTo } from "@/components/map"
 import * as SVG from './svg.js'
+import { useMap } from 'react-map-gl/maplibre'
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, map, selected, width, height }) {
+export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width, height }) {
+  const { map } = useMap()
 
   function handleMouseOver(properties, geometry) {
     let className = ".territory"
@@ -29,8 +31,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
       .classed('animate-pulse', true)
-      .attr('fill', () => className === ".guide" ? "none" : accent(map, 1))
-      .attr('stroke', () => className === ".location" ? null : accent(map, 1))
+      .attr('fill', () => className === ".guide" ? "none" : accent(name, 1))
+      .attr('stroke', () => className === ".location" ? null : accent(name, 1))
   }
 
   function handleMouseOut(properties, geometry) {
@@ -43,8 +45,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     selectAll(className)
       .filter(d => d.properties.name === properties.name)
       .classed('animate-pulse', false)
-      .attr('fill', d => className === ".guide" ? "none" : color(map, d.properties, "fill", d.geometry.type))
-      .attr('stroke', d => className === ".location" ? null : color(map, d.properties, "stroke", d.geometry.type))
+      .attr('fill', d => className === ".guide" ? "none" : color(name, d.properties, "fill", d.geometry.type))
+      .attr('stroke', d => className === ".location" ? null : color(name, d.properties, "stroke", d.geometry.type))
 
   }
 
@@ -65,7 +67,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
             const params = new URLSearchParams({
               description: properties.description || "",
               name: properties.name,
-              map,
+              map: name,
             }).toString()
             const icon = SVG[d.properties.type]
             const card = (
@@ -87,13 +89,13 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
             )
             return properties.name === selected ? (
               <Link
-                href={genLink(d, map)}
+                href={genLink(d, name)}
                 target="_blank"
                 key={properties.name}
               >
                 {card}
               </Link>
-            ) : <div key={properties.name} onClick={() => panTo(d, width, height, null, 80)}>{card}</div>
+            ) : <div key={properties.name} onClick={() => panTo(d, width, height, null, 80, map)}>{card}</div>
           })}
         </div>
       </SheetContent >

@@ -1,11 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Map from './map'
+import MapComponent from './map'
 import { getConsts, isMobile } from '@/lib/utils'
 import SearchBar from './searchbar'
+import Map from 'react-map-gl/maplibre'
+import mapStyle from '@/lib/style.json'
 
-export default function Cartographer({ map, data }) {
-  const { SCALE, CENTER } = getConsts(map)
+export default function Cartographer({ name, data }) {
+  const { SCALE, CENTER } = getConsts(name)
   const [size, setSize] = useState()
   const mobile = isMobile()
 
@@ -28,8 +30,19 @@ export default function Cartographer({ map, data }) {
 
   return (
     <>
-      <SearchBar map={map} data={data} width={size.width} height={size.height} mobile={mobile} />
-      <Map width={size.width} height={size.height} map={map} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
+      <SearchBar map={name} data={data} width={size.width} height={size.height} mobile={mobile} />
+      <Map
+        id="map"
+        initialViewState={{
+          longitude: -100,
+          latitude: 40,
+          zoom: 3.5
+        }}
+        style={{ width: size.width, height: size.height }}
+        mapStyle={mapStyle}
+      >
+        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
+      </Map>
     </>
   )
 }

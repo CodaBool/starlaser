@@ -7,8 +7,11 @@
 - icon https://lucide.dev/icons
 - merge 2 geojson when data rows are different https://findthatpostcode.uk/tools/merge-geojson
 - svg to code https://nikitahl.github.io/svg-2-code
-- svg minimize https://svgomg.net/
-
+- svg minimize https://svgomg.net
+- mapbox pricing https://console.mapbox.com
+- turf https://turfjs.org/docs/api/centroid
+- maplibre gl https://maplibre.org/maplibre-gl-js/docs/API
+- react map gl https://visgl.github.io/react-map-gl/docs/api-reference/maplibre/map
 # icons
 - https://game-icons.net
 
@@ -39,11 +42,8 @@
 - all factions, regions, clusters will now be type "region". Neutral states, countries, and Lancer guide. Will now be "null" type. Regions will now use a faction prop which will determine further detail
 
 # todo:
-- elevation [NEW]
 - solve text issue for Lancer
-- hard to click on transparent icons
 - solve icons are too close
-- add a zoom in and out button
 
 # menu items needed
 - measure btn
