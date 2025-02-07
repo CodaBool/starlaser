@@ -44,7 +44,9 @@
 # todo:
 - solve text issue for Lancer
 - solve icons are too close
-
+- circlle on click
+- measure
+- coordinate
 # menu items needed
 - measure btn
 - coordinate

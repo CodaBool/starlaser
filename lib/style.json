@@ -730,7 +730,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "rgba(80, 78, 78, 1)",
+        "text-color": "rgba(183, 182, 182, 1)",
         "text-halo-blur": 0,
         "text-halo-color": "rgba(0, 0, 0, 1)",
         "text-halo-width": 1,
@@ -743,7 +743,7 @@
       "metadata": { "mapbox:group": "b6371a3f2f5a9932464fa3867530a2e5" },
       "source": "openmaptiles",
       "source-layer": "transportation_name",
-      "minzoom": 12,
+      "minzoom": 10,
       "filter": [
         "all",
         ["==", "$type", "LineString"],
@@ -759,7 +759,10 @@
         "text-size": 10,
         "visibility": "visible"
       },
-      "paint": { "text-color": "hsl(0, 0%, 37%)", "text-translate": [0, 2] }
+      "paint": {
+        "text-color": "rgba(191, 191, 191, 1)",
+        "text-translate": [0, 2]
+      }
     },
     {
       "id": "boundary_state",
@@ -964,7 +967,7 @@
       },
       "paint": {
         "icon-opacity": 0.7,
-        "text-color": "rgb(101,101,101)",
+        "text-color": "rgba(255, 50, 50, 1)",
         "text-halo-blur": 1,
         "text-halo-color": "rgba(0,0,0,0.7)",
         "text-halo-width": 1

@@ -99,7 +99,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
     })
 
     let point = map.project(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1]))
-    
+
     tooling = svg.append("circle")
       .attr("cx", point.x)
       .attr("cy", point.y)
@@ -138,7 +138,9 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   useEffect(() => {
     if (!map) return
+    if (svg) svg.remove()
 
+    // using replace
     projection = geoMercator()
     function projectPoint(lon, lat) {
       let point = map.project(new maplibregl.LngLat(lon, lat))
@@ -146,6 +148,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
     }
     let transform = geoTransform({ point: projectPoint })
     path = geoPath().projection(transform)
+    console.log("setting path", path)
 
     // svg.attr("style", `background: radial-gradient(${bg[map]})`)
 
@@ -207,7 +210,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .data(data.guide || [])
       .enter().append('path')
       .attr('class', 'guide')
-      .attr('stroke-width', 1.67)
+      .attr('stroke-width', 3)
       .attr('fill', "none")
       .attr('stroke', d => color(name, d.properties, "stroke", d.geometry.type))
       .on("mouseover", hover)
@@ -308,27 +311,27 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .range([3.5, 0.2]) // Output range: radius values
 
     function render() {
-        guide.attr("d", path)
-        territory.attr("d", path)
-        location
-          .attr("x", d => path.centroid(d)[0])
-          .attr("y", d => path.centroid(d)[1])
-        if (svg.select(".click-circle").node()) {
-            const cir = svg.select(".click-circle")
-            let {x, y} = map.project(new maplibregl.LngLat(cir.attr("lng"), cir.attr("lat")))
-            svg.select(".click-circle").attr("cx", x).attr("cy", y)
-        }
+      guide.attr("d", path)
+      territory.attr("d", path)
+      location
+        .attr("x", d => path.centroid(d)[0])
+        .attr("y", d => path.centroid(d)[1])
+      if (svg.select(".click-circle").node()) {
+        const cir = svg.select(".click-circle")
+        let { x, y } = map.project(new maplibregl.LngLat(cir.attr("lng"), cir.attr("lat")))
+        svg.select(".click-circle").attr("cx", x).attr("cy", y)
       }
-  
-      map.on("viewreset", render)
-      map.on("move", render)
-      map.on("moveend", render)
-      render()
-      return () => {
-        map.off("viewreset", render)
-        map.off("move", render)
-        map.off("moveend", render)
-      }
+    }
+
+    map.on("viewreset", render)
+    map.on("move", render)
+    map.on("moveend", render)
+    render()
+    return () => {
+      map.off("viewreset", render)
+      map.off("move", render)
+      map.off("moveend", render)
+    }
 
     // const zoom = d3.zoom()
     //   .on("zoom", ({ transform }) => {
