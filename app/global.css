@@ -71,6 +71,10 @@ body {
   transform: scale(1.05);
 }
 
+.maplibregl-ctrl-bottom-right {
+  display: none;
+}
+
 @media (width < 1200px) {
   .searchbar,
   .searchbar input {

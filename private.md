@@ -12,6 +12,8 @@
 - turf https://turfjs.org/docs/api/centroid
 - maplibre gl https://maplibre.org/maplibre-gl-js/docs/API
 - react map gl https://visgl.github.io/react-map-gl/docs/api-reference/maplibre/map
+- maplibre style editor https://maplibre.org/maputnik
+
 # icons
 - https://game-icons.net
 

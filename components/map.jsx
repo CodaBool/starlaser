@@ -124,7 +124,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       setTooltip(properties)
       positionTooltip(e)
       if (ignoreList[name].includes(properties.type)) return
-      if (territory) d3.select(e.currentTarget).attr('fill', accent(name, 0.1))
+      // if (territory) d3.select(e.currentTarget).attr('fill', accent(name, 0.01))
       if (location) d3.select(e.currentTarget).attr('fill', accent(name, 1))
       if (guide || territory) d3.select(e.currentTarget).attr('stroke', accent(name, 0.2))
       if (location || guide) d3.select(e.currentTarget).style('cursor', 'crosshair')
@@ -148,8 +148,6 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
     }
     let transform = geoTransform({ point: projectPoint })
     path = geoPath().projection(transform)
-    console.log("setting path", path)
-
     // svg.attr("style", `background: radial-gradient(${bg[map]})`)
 
     if (name === "lancer") {
@@ -176,7 +174,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .data(data.territory)
       .enter().append('path')
       .attr('class', d => `${d.properties.unofficial ? 'unofficial territory' : 'territory'} ${(d.properties.type === "faction" || d.properties.type === "region") ? 'raise' : ''}`)
-      .attr('stroke-width', .836)
+      .attr('stroke-width', 2.5)
       .attr('fill', d => color(name, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => color(name, d.properties, "stroke", d.geometry.type))
       .on("mouseover", hover)
@@ -311,6 +309,12 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .range([3.5, 0.2]) // Output range: radius values
 
     function render() {
+      // prevents measure dot from being moved on pan for both mobile and desktop
+      if (mode.has("measureStart")) {
+        mode.delete("measureStart")
+      } else if (mode.has("crosshairZoom")) {
+        mode.delete("crosshairZoom")
+      }
       guide.attr("d", path)
       territory.attr("d", path)
       location
@@ -498,14 +502,14 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       <Hamburger mode={mode} />
       <Tooltip {...tooltip} />
       {mobile &&
-        <div className="absolute mt-28 ml-12 cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" style={{}}>
-          <ZoomIn size={34} onClick={() => svg.transition().call(zoom.scaleBy, 1.3)} className='m-2 hover:stroke-blue-200' />
-          <ZoomOut size={34} onClick={() => svg.transition().call(zoom.scaleBy, 0.7)} className='m-2 mt-4 hover:stroke-blue-200' />
+        <div className="absolute mt-28 ml-12 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
+          <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
+          <ZoomOut size={34} onClick={() => map.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
         </div>
       }
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} width={width} height={height} />
-      {/* <Toolbox mode={mode} svg={svg} svgRef={svgRef} width={width} height={height} projection={projection} mobile={mobile} map={map} /> */}
+      <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
     </>
   )
 }
