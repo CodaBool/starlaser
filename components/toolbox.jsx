@@ -3,13 +3,10 @@ import { useEffect } from "react"
 import * as d3 from 'd3'
 import { pointer, zoomTransform, geoDistance, select, selectAll } from 'd3'
 import { useMap } from 'react-map-gl/maplibre'
-import { geoPath, geoMercator, geoTransform } from 'd3-geo'
+// import { geoPath, geoMercator, geoTransform } from 'd3-geo'
 import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
-import maplibregl, {
-  MapMouseEvent,
-  LngLat,
-} from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 
 let point
 
@@ -18,17 +15,6 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
 
   useEffect(() => {
     if (!map) return
-    // console.log(map)
-    const projection = geoMercator()
-    function projectPoint(lon, lat) {
-      let point = map.project(new maplibregl.LngLat(lon, lat))
-      this.stream.point(point.x, point.y)
-    }
-    const transform = geoTransform({ point: projectPoint })
-    const path = geoPath().projection(transform)
-
-    const pointRef = document.querySelector(".point-click")
-    const lineRef = document.querySelector(".line-click")
 
     const svg = d3
       .select(map.getCanvasContainer())
@@ -50,7 +36,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
       .append("line")
       .attr('class', 'line-click')
       .attr('stroke', 'orange')
-      // .attr('stroke-dasharray', "5,5")
+      .attr('stroke-dasharray', "5px,5px")
       .style("visibility", "hidden")
       .attr('pointer-events', 'none')
 
@@ -83,9 +69,12 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
       .attr('text-anchor', 'middle')
       .attr('fill', 'white')
       .attr('opacity', 0.7)
-      .style('font-size', () => mobile ? '1em' : '2.2em')
+      .style('font-size', () => mobile ? '1.5em' : '2.2em')
       .style('pointer-events', 'none')
       .style('visibility', 'hidden')
+
+    const pointRef = document.querySelector(".point-click")
+    const lineRef = document.querySelector(".line-click")
 
     function render() {
       const { x, y } = map.project(new maplibregl.LngLat(point.attr("lng"), point.attr("lat")))
@@ -111,60 +100,60 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
       if (mode.has("crosshair")) {
         mode.add("crosshairZoom")
         setTimeout(() => {
-          if (!mode.has("crosshairZoom")) return
+          if (!mode.has("crosshairZoom") || !mode.has("crosshair")) return
           crosshairX.attr('lng', lng).attr('lat', lat).attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
           crosshairY.attr('lng', lng).attr('lat', lat).attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-          text.text(`X: ${lng.toFixed(1)}, Y: ${lat.toFixed(1)}`).style('visibility', 'visible')
-
-        }, 200)
+          text.text(`Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`).style('visibility', 'visible')
+        }, 120)
       } else if (mode.has("measure")) {
         mode.add("measureStart")
         setTimeout(() => {
-          if (!mode.has("measureStart") || !pointRef) return
-          console.log("start a measure")
+          if (!mode.has("measureStart") || !pointRef || !mode.has("measure")) return
           if (text._groups[0][0].style.visibility === "hidden") {
             select("textbox").style("visibility", "visible")
           }
           pointRef.style.visibility = 'visible'
           select(lineRef.current).raise()
           select(pointRef).raise()
-          if (mobile) {
-            if (lineRef.x2.baseVal.value !== 0) {
-              // reset
-              pointRef.setAttribute('cx', coord[0])
-              pointRef.setAttribute('cy', coord[1])
-              lineRef.style.visibility = 'hidden'
-              lineRef.setAttribute('x1', coord[0]);
-              lineRef.setAttribute('y1', coord[1])
-              lineRef.setAttribute('x2', 0)
-              lineRef.setAttribute('y2', 0)
-            } else if (lineRef.x1.baseVal.value === 0) {
-              // first point
-              pointRef.setAttribute('cx', coord[0])
-              pointRef.setAttribute('cy', coord[1])
-              lineRef.setAttribute('x1', coord[0]);
-              lineRef.setAttribute('y1', coord[1])
-            } else {
-              // second point
-              lineRef.setAttribute('x2', transformedX);
-              lineRef.setAttribute('y2', transformedY)
-              lineRef.style.visibility = 'visible'
-              const point = projection.invert([pointRef.getAttribute('cx'), pointRef.getAttribute('cy')])
-              const point2 = projection.invert([transformedX, transformedY])
 
+          if (mobile) {
+            if (line.attr("x1") === null) {
+
+              // first point
+
+              point.attr('lng', lng).attr('lat', lat).attr('cx', mouseX).attr('cy', mouseY)
+              lineRef.style.visibility = 'hidden'
+              line.attr('x1', lng).attr('y1', lat)
+            } else if (line.attr("x2") === null) {
+
+              // second point, measure
+
+              lineRef.setAttribute('x2', mouseX)
+              lineRef.setAttribute('y2', mouseY)
+              lineRef.setAttribute('x1', point.attr("cx"))
+              lineRef.setAttribute('y1', point.attr("cy"))
+              lineRef.style.visibility = 'visible'
+              const turfPoint1 = turfPoint([point.attr("lng"), point.attr("lat")])
+              const turfPoint2 = turfPoint([lng, lat])
               if (name === "fallout") {
-                const miles = geoDistance(point, point2) * 3959; // Earth's radius in miles
+                const miles = distance(turfPoint1, turfPoint2, { units: 'miles' })
                 const walkingSpeedMph = 3; // average walking speed in miles per hour
                 const walkingTimeHours = miles / walkingSpeedMph;
-                const walkingTimeDays = walkingTimeHours / 24;
-                text.text(`${miles.toFixed(1)} miles | ${walkingTimeDays.toFixed(1)} days on foot (3mph)`).style('visibility', 'visible')
-
+                text.text(`${miles.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`)
+                text.style("visibility", "visible")
               } else if (name === "lancer") {
-                const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
-                const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
-                text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`).style('visibility', 'visible')
+                // const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
+                // const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
+                // text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`)
               }
+            } else {
 
+              // reset
+
+              point.attr('lng', lng).attr('lat', lat).attr('cx', mouseX).attr('cy', mouseY)
+              lineRef.style.visibility = 'hidden'
+              line.attr('x1', lng).attr('y1', lat)
+              line.attr('x2', null).attr('y2', null)
             }
           } else {
             point.attr('lng', lng).attr('lat', lat).attr('cx', mouseX).attr('cy', mouseY).style('visibility', 'visible')
@@ -179,13 +168,10 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
       if (mobile) return
       if (mode.has("crosshair")) {
         const [mouseX, mouseY] = pointer(e)
-        const transform = zoomTransform(svg.node())
-        const transformedX = (mouseX - transform.x) / transform.k;
-        const transformedY = (mouseY - transform.y) / transform.k
-        const [x, y] = projection.invert([transformedX, transformedY])
+        const { lat, lng } = map.unproject([mouseX, mouseY])
         crosshairX.attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
         crosshairY.attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-        text.text(`X: ${x.toFixed(1)}, Y: ${y.toFixed(1)}`).style('visibility', 'visible')
+        text.text(`Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`).style('visibility', 'visible')
       } else if (mode.has("measure")) {
         if (!pointRef) return
         if (!pointRef.getAttribute('cx')) return
@@ -214,9 +200,9 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
           const walkingTimeHours = miles / walkingSpeedMph;
           text.text(`${miles.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`);
         } else if (name === "lancer") {
-          const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
-          const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
-          text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`)
+          // const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
+          // const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
+          // text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`)
         }
       }
     })

@@ -117,6 +117,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
   }
 
   function hover(e, { properties, geometry }) {
+    if (mode.has("crosshair") && mobile) return
     const guide = geometry.type === "LineString"
     const location = geometry.type === "Point"
     const territory = geometry.type?.includes("Poly")
@@ -309,11 +310,24 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .range([3.5, 0.2]) // Output range: radius values
 
     function render() {
+
+      // document.querySelector(".map-tooltip").style.visibility = "hidden"
+      // d3.selectAll('.crosshair').style("visibility", "hidden")
+      // if (!mode.has("zooming")) setDrawerOpen(false)
+
       // prevents measure dot from being moved on pan for both mobile and desktop
       if (mode.has("measureStart")) {
         mode.delete("measureStart")
       } else if (mode.has("crosshairZoom")) {
         mode.delete("crosshairZoom")
+      } else if (mode.has("crosshair")) {
+        d3.selectAll('.crosshair').style("visibility", "hidden")
+        document.querySelector(".map-tooltip").style.visibility = "hidden"
+      }
+      if (mode.has("measure")) {
+        if (document.querySelector(".line-click")) {
+          document.querySelector(".line-click").style.visibility = 'hidden'
+        }
       }
       guide.attr("d", path)
       territory.attr("d", path)
@@ -499,7 +513,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   return (
     <>
-      <Hamburger mode={mode} />
+      <Hamburger mode={mode} name={name} />
       <Tooltip {...tooltip} />
       {mobile &&
         <div className="absolute mt-28 ml-12 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
