@@ -16,6 +16,7 @@ import { color, accent, genLink } from "@/lib/utils.js"
 import { panTo } from "@/components/map"
 import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
+import { useEffect } from "react"
 
 export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width, height }) {
   const { map } = useMap()
@@ -47,18 +48,23 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
       .classed('animate-pulse', false)
       .attr('fill', d => className === ".guide" ? "none" : color(name, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => className === ".location" ? null : color(name, d.properties, "stroke", d.geometry.type))
-
   }
 
   function handle(e) {
     e.preventDefault()
   }
 
+  useEffect(() => {
+    if (document.querySelector(".click-circle") && drawerOpen === false) {
+      document.querySelector(".click-circle").remove()
+    }
+  }, [drawerOpen])
+
   return (
     <Sheet onOpenChange={setDrawerOpen} open={drawerOpen} modal={false} style={{ color: 'white' }}>
       <SheetContent side="bottom" style={{ maxHeight: '38vh', overflowY: 'auto' }} className="map-sheet" onPointerDownOutside={handle}>
         <SheetHeader >
-          <SheetTitle className="text-center">{coordinates ? `x: ${Math.floor(coordinates[0])}, y: ${Math.floor(coordinates[1])}` : 'unknown'}</SheetTitle>
+          <SheetTitle className="text-center">{coordinates ? `lat: ${Math.floor(coordinates[1])}, lng: ${Math.floor(coordinates[0])}` : 'unknown'}</SheetTitle>
           <SheetDescription />
         </SheetHeader >
         <div className="flex flex-wrap justify-center">

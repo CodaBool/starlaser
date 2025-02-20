@@ -45,7 +45,6 @@ export default function Hamburger({ mode, name }) {
       select(".line-click").raise()
     }
   }
-  console.log("name", name)
   return (
     <DropdownMenu >
       <DropdownMenuTrigger className="m-5 ml-12 absolute hamburger cursor-pointer z-10"><Menu width={40} height={40} className="cursor-pointer" /></DropdownMenuTrigger>

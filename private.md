@@ -47,8 +47,10 @@
 - solve text issue for Lancer
 - solve icons are too close
 - circlle on click
-- measure
-- coordinate
+- there are two small island countries territories
+- touchpad controls
+- measure is buggy
+- style fixes, too dark
 # menu items needed
 - measure btn
 - coordinate

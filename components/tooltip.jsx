@@ -1,7 +1,7 @@
 import { Badge } from './ui/badge.jsx'
 
-export default function Tooltip({ name, type, faction, destroyed, unofficial, capital }) {
-  if (!name) return (<div className="map-tooltip"></div>)
+export default function Tooltip({ name, type, faction, destroyed, unofficial, capital, mobile }) {
+  if (!name || mobile) return (<div className="map-tooltip"></div>)
   return (
     <div className="map-tooltip z-10 p-5 rounded-2xl absolute bg-black" style={{ border: '1px dashed gray', visibility: "hidden" }}>
       <p className='font-bold text-center'>{name}</p>

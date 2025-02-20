@@ -19,7 +19,25 @@ import turfCentroid from '@turf/centroid'
 import * as turf from '@turf/turf'
 import * as turfHelper from "@turf/helpers"
 
-let projection, svg, zoom, path, g, tooling, mode = new Set([])
+let projection, svg, zoom, path, g, tooling, clickCir, mode = new Set([])
+
+// Function to generate circle data from center (longitude, latitude) and radius
+function generateCircle(center, radius) {
+  const centerPoint = turf.point(center)
+  const circle = turf.circle(centerPoint, radius, { units: 'kilometers' })
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: circle.geometry.coordinates
+        }
+      }
+    ]
+  }
+}
 
 export function getIcon(d, create, simple) {
   const icon = SVG[d.properties.icon] || SVG[d.properties.type]
@@ -46,7 +64,7 @@ export function panTo(d, width, height, e, customZoom, map) {
   }
   const [x, y] = geometry.coordinates
   const current = map.getZoom()
-  if (current > 50 && d.geometry.type.includes("Poly")) {
+  if (current > 5 && d.geometry.type.includes("Poly")) {
     // clicked on faction when at max zooom, this likely was a mistake
     return [x, y]
   }
@@ -67,7 +85,10 @@ export function panTo(d, width, height, e, customZoom, map) {
 
   const longitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[0] : x
   const latitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[1] : y
-  map.flyTo({ center: [longitude, latitude], duration: 400 })
+  const padding = 0.14 * window.innerHeight; // 14% of the window height
+  const adjustedLatitude = latitude - (padding / map.getCanvas().height) * (map.getBounds().getNorth() - map.getBounds().getSouth());
+
+  map.flyTo({ center: [longitude, adjustedLatitude], duration: 600 })
   setTimeout(() => mode.delete("zooming"), 751)
   return [longitude, latitude]
 }
@@ -80,37 +101,34 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   function handlePointClick(e, d) {
     if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-    // add nearby locations to drawer
     if (document.querySelector(".click-circle")) {
       document.querySelector(".click-circle").remove()
     }
-    let selectionRadius = 31
-    if (map.getZoom() > 30) {
-      selectionRadius = 4
-    }
+    const bounds = map.getBounds()
+    const diagonalDistance = turf.distance(
+      turf.point([bounds.getWest(), bounds.getSouth()]),
+      turf.point([bounds.getEast(), bounds.getNorth()]),
+      { units: 'kilometers' }
+    );
+    const selectionRadius = Math.min(diagonalDistance / 15, 140)
 
-    const locationsUnsorted = data.location.filter(p => {
-      let cutoff = 1.17
-      if (map.getZoom() > 30) cutoff = 0.15
-      return Math.sqrt(
-        Math.pow(p.geometry.coordinates[0] - d.geometry.coordinates[0], 2) +
-        Math.pow(p.geometry.coordinates[1] - d.geometry.coordinates[1], 2)
-      ) <= cutoff
-    })
-
-    let point = map.project(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1]))
-
-    tooling = svg.append("circle")
-      .attr("cx", point.x)
-      .attr("cy", point.y)
-      .attr("r", selectionRadius)
-      .attr("lng", d.geometry.coordinates[0])
-      .attr("lat", d.geometry.coordinates[1])
+    clickCir = svg
+      .selectAll('click-circle')
+      .data(generateCircle(d.geometry.coordinates, selectionRadius).features)
+      .enter()
+      .append('path')
+      .attr('d', d => path(d.geometry))
       .attr('fill', accent(name, 0.1))
       .attr('stroke', accent(name, 0.15))
       .attr("class", "click-circle")
+      .attr("pointer-events", "none")
 
-    const locations = locationsUnsorted.sort((a, b) => a.properties.name.localeCompare(b.properties.name))
+    // Find all locations that are within the clickCir
+    const locations = data.location.filter(location => {
+      const point = turf.point(location.geometry.coordinates);
+      return turf.booleanPointInPolygon(point, clickCir.data()[0]);
+    }) || []
+
     setDrawerContent({ locations, coordinates: d.geometry.coordinates, selected: d.properties.name })
     setDrawerOpen(true)
     panTo(d, width, height, null, null, map)
@@ -331,14 +349,10 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       }
       guide.attr("d", path)
       territory.attr("d", path)
+      clickCir?.attr("d", path)
       location
         .attr("x", d => path.centroid(d)[0])
         .attr("y", d => path.centroid(d)[1])
-      if (svg.select(".click-circle").node()) {
-        const cir = svg.select(".click-circle")
-        let { x, y } = map.project(new maplibregl.LngLat(cir.attr("lng"), cir.attr("lat")))
-        svg.select(".click-circle").attr("cx", x).attr("cy", y)
-      }
     }
 
     map.on("viewreset", render)
@@ -514,7 +528,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
   return (
     <>
       <Hamburger mode={mode} name={name} />
-      <Tooltip {...tooltip} />
+      <Tooltip {...tooltip} mobile={mobile} />
       {mobile &&
         <div className="absolute mt-28 ml-12 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
           <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
