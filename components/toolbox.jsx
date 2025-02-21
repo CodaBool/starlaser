@@ -159,6 +159,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
             point.attr('lng', lng).attr('lat', lat).attr('cx', mouseX).attr('cy', mouseY).style('visibility', 'visible')
             if (!line.attr("x1") || line.attr("x1") === 0) return
             line.attr('x1', lng).attr('y1', lat)
+            line.attr('x2', lng).attr('y2', lat)
           }
         }, 200)
       }

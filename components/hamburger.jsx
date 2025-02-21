@@ -26,11 +26,9 @@ export default function Hamburger({ mode, name }) {
   const [check, setCheck] = useState()
 
   function toggle(newMode, skipnull) {
-    console.log("toggle mode", newMode, skipnull)
     if (mode.has(newMode)) {
       mode.delete(newMode)
       if (skipnull) setCheck(null)
-      console.log("hiding text", select('.textbox'))
       select('.textbox').style("visibility", "hidden")
       select('.point-click').style("visibility", "hidden")
       select('.line-click').style("visibility", "hidden")
@@ -45,10 +43,11 @@ export default function Hamburger({ mode, name }) {
       select(".line-click").raise()
     }
   }
+
   return (
-    <DropdownMenu >
-      <DropdownMenuTrigger className="m-5 ml-12 absolute hamburger cursor-pointer z-10"><Menu width={40} height={40} className="cursor-pointer" /></DropdownMenuTrigger>
-      <DropdownMenuContent>
+    <DropdownMenu>
+      <DropdownMenuTrigger onPointerDown={e => e.stopPropagation()} className="m-5 ml-12 absolute hamburger cursor-pointer z-10"><Menu width={40} height={40} className="cursor-pointer" /></DropdownMenuTrigger>
+      <DropdownMenuContent onPointerDown={e => e.stopPropagation()}>
         <DropdownMenuLabel>Tools</DropdownMenuLabel>
         <DropdownMenuItem className="cursor-pointer" onPointerUp={() => toggle("measure", check === "measure")}>
           <Ruler /> Measure <input type="checkbox" checked={check === "measure"} readOnly />
@@ -63,7 +62,7 @@ export default function Hamburger({ mode, name }) {
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="ghost" className="w-full pl-0">
-              <Heart size={16} className="relative top-[-1px] pe-[2px] inline" /> Credits
+              <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-8px]" /> Credits
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]" style={{ color: 'white' }}>
@@ -75,10 +74,13 @@ export default function Hamburger({ mode, name }) {
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        <DropdownMenuItem className="cursor-pointer"><Plus /> Contribute</DropdownMenuItem>
-        <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
-          <DropdownMenuItem className="cursor-pointer"><Github /> Source Code</DropdownMenuItem>
-        </a>
+        {/* <DropdownMenuItem className="cursor-pointer"><Plus /> Contribute</DropdownMenuItem> */}
+
+        <DropdownMenuItem className="cursor-pointer">
+          <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
+            <DropdownMenuItem className="cursor-pointer"><Github /> Source Code</DropdownMenuItem>
+          </a>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

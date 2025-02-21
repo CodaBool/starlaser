@@ -8,23 +8,29 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
-import { panTo } from "@/components/map"
 import { searchBar } from "@/lib/utils.js"
+import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
 
-export default function MenuComponent({ map, data, width, height, mobile }) {
+export default function MenuComponent({ map, data, mobile, name, panTo }) {
   const [active, setActive] = useState()
   const cmd = useRef(null)
   const input = useRef(null)
 
-  function search(e, d) {
+  async function search(e, d) {
     if (typeof e === "object") e.preventDefault()
 
     // close search menu
     setActive(false)
     input.current.blur()
-    const zoom = d.geometry.type === "Point" ? 50.5 : null
-    panTo(d, width, height, null, zoom)
+    const zoom = d.geometry.type === "Point" ? 8 : null
+    let { coordinates } = d.geometry
+    if (d.geometry.type !== "Point") {
+      const centroid = turf.centroid(d)
+      coordinates = centroid.geometry.coordinates
+    }
+    await map.jumpTo({ center: coordinates, zoom })
+    panTo(d, zoom, true)
   }
 
   useEffect(() => {
@@ -57,9 +63,9 @@ export default function MenuComponent({ map, data, width, height, mobile }) {
   // "#020e03"
 
   return (
-    <div className="flex mt-5 w-full justify-center absolute z-100">
-      <Command className="rounded-lg border shadow-md w-4/5 searchbar" style={{ backgroundColor: searchBar[map].background, borderColor: searchBar[map].border }}>
-        <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: searchBar[map].background }} />
+    <div className="flex mt-5 w-full justify-center absolute z-10">
+      <Command className="rounded-lg border shadow-md w-4/5 searchbar" style={{ backgroundColor: searchBar[name].background, borderColor: searchBar[name].border }}>
+        <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: searchBar[name].background }} />
         {active &&
           <CommandList style={{ height: '351px', zIndex: 100 }}>
             <CommandEmpty>No results found.</CommandEmpty>

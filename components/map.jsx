@@ -18,6 +18,15 @@ import * as SVG from './svg.js'
 import turfCentroid from '@turf/centroid'
 import * as turf from '@turf/turf'
 import * as turfHelper from "@turf/helpers"
+import SearchBar from './searchbar'
+import {
+  Marker,
+  Popup,
+  NavigationControl,
+  FullscreenControl,
+  ScaleControl,
+  GeolocateControl
+} from '@vis.gl/react-maplibre'
 
 let projection, svg, zoom, path, g, tooling, clickCir, mode = new Set([])
 
@@ -52,54 +61,66 @@ export function getIcon(d, create, simple) {
   return icon ? icon : null
 }
 
-export function panTo(d, width, height, e, customZoom, map) {
-  mode.add("zooming")
-  let geometry = d.geometry
-  if (d.geometry.type === "LineString") {
-    const polygon = turfHelper.lineString(d.geometry.coordinates)
-    geometry = turf.center(polygon).geometry
-  } else if (d.geometry.type.includes("Poly")) {
-    const polygon = turfHelper.multiPolygon([d.geometry.coordinates])
-    geometry = turf.center(polygon).geometry
-  }
-  const [x, y] = geometry.coordinates
-  const current = map.getZoom()
-  if (current > 5 && d.geometry.type.includes("Poly")) {
-    // clicked on faction when at max zooom, this likely was a mistake
-    return [x, y]
-  }
-  const offsetX = (window.innerWidth - width) / 2
-  const offsetY = (window.innerHeight - height) / 2
-  const bounds = path.bounds(d);
-  const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
-  const bottomMostPoint = bounds[0][1] > bounds[1][1] ? bounds[0] : bounds[1];
-
-  // Calculate the height of the object
-  const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
-
-  // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
-  let scale = Math.min(Math.max(500 / yDifference, 1), current)
-  if (customZoom) scale = customZoom
-
-  const drawerOffset = window.innerHeight * 0.14 // best guess for drawer height
-
-  const longitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[0] : x
-  const latitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[1] : y
-  const padding = 0.14 * window.innerHeight; // 14% of the window height
-  const adjustedLatitude = latitude - (padding / map.getCanvas().height) * (map.getBounds().getNorth() - map.getBounds().getSouth());
-
-  map.flyTo({ center: [longitude, adjustedLatitude], duration: 600 })
-  setTimeout(() => mode.delete("zooming"), 751)
-  return [longitude, latitude]
-}
-
 export default function Map({ width, height, data, name, mobile, CENTER, SCALE }) {
   const { map } = useMap()
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
 
-  function handlePointClick(e, d) {
+  function panTo(d, customZoom, simulateClick) {
+    mode.add("zooming")
+    let geometry = d.geometry
+    if (d.geometry.type === "LineString") {
+      const polygon = turfHelper.lineString(d.geometry.coordinates)
+      geometry = turf.center(polygon).geometry
+    } else if (d.geometry.type.includes("Poly")) {
+      const polygon = turfHelper.multiPolygon([d.geometry.coordinates])
+      geometry = turf.center(polygon).geometry
+    }
+    const [x, y] = geometry.coordinates
+    const current = map.getZoom()
+    if ((current > 5 && d.geometry.type.includes("Poly")) || (current > 5 && d.geometry.type === "LineString")) {
+      // clicked on faction when at max zooom, this likely was a mistake
+      return [x, y]
+    }
+    const bounds = path.bounds(d);
+    const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
+    const bottomMostPoint = bounds[0][1] > bounds[1][1] ? bounds[0] : bounds[1];
+
+    // Calculate the height of the object
+    const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
+
+    // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
+    // let scale = Math.min(Math.max(500 / yDifference, 1), current)
+    // if (customZoom) scale = customZoom
+
+    // console.log("custom zoom", customZoom, "scale", scale)
+
+
+    const longitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[0] : x
+    const latitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[1] : y
+    const padding = 0.14 * window.innerHeight; // 14% of the window height
+    const adjustedLatitude = latitude - (padding / map.getCanvas().height) * (map.getBounds().getNorth() - map.getBounds().getSouth());
+
+    map.flyTo({ center: [longitude, adjustedLatitude], duration: 600, zoom: current })
+    // map.flyTo({ center: [longitude, latitude], duration: 750, zoom: scale })
+    setTimeout(() => mode.delete("zooming"), 751)
+    if (simulateClick) {
+      if (d.geometry.type === "Point") {
+        handlePointClick(null, d, true)
+      } else {
+        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        // const coordinates = panTo(d, width, height, e, null, map)
+        const centroid = turf.centroid(d);
+        const coordinates = centroid.geometry.coordinates;
+        setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
+        setDrawerOpen(true)
+      }
+    }
+    return [longitude, latitude]
+  }
+
+  function handlePointClick(e, d, skipPan) {
     if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
     if (document.querySelector(".click-circle")) {
       document.querySelector(".click-circle").remove()
@@ -131,7 +152,8 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
     setDrawerContent({ locations, coordinates: d.geometry.coordinates, selected: d.properties.name })
     setDrawerOpen(true)
-    panTo(d, width, height, null, null, map)
+    if (skipPan) return
+    panTo(d)
   }
 
   function hover(e, { properties, geometry }) {
@@ -157,6 +179,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   useEffect(() => {
     if (!map) return
+    map.setZoom(map.getZoom() - 0.5)
     if (svg) svg.remove()
 
     // using replace
@@ -199,7 +222,10 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
-        const coordinates = panTo(d, width, height, e, null, map)
+        if (document.querySelector(".click-circle")) {
+          document.querySelector(".click-circle").remove()
+        }
+        const coordinates = panTo(d)
         setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
         setDrawerOpen(true)
       })
@@ -233,7 +259,10 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-        const coordinates = panTo(d, width, height, e, null, map)
+        if (document.querySelector(".click-circle")) {
+          document.querySelector(".click-circle").remove()
+        }
+        const coordinates = panTo(d)
         setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
         setDrawerOpen(true)
       })
@@ -527,16 +556,17 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   return (
     <>
+      <SearchBar map={map} name={name} data={data} panTo={panTo} mobile={mobile} />
       <Hamburger mode={mode} name={name} />
       <Tooltip {...tooltip} mobile={mobile} />
-      {mobile &&
-        <div className="absolute mt-28 ml-12 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
+      {true &&
+        <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
           <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
           <ZoomOut size={34} onClick={() => map.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
         </div>
       }
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
-      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} width={width} height={height} />
+      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} width={width} height={height} panTo={panTo} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
     </>
   )

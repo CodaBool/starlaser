@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import MapComponent from './map'
 import { getConsts, isMobile } from '@/lib/utils'
-import SearchBar from './searchbar'
 import Map from 'react-map-gl/maplibre'
 import mapStyle from '@/lib/style.json'
 
@@ -30,14 +29,17 @@ export default function Cartographer({ name, data }) {
 
   return (
     <>
-      <SearchBar map={name} data={data} width={size.width} height={size.height} mobile={mobile} />
       <Map
         id="map"
+        dragRotate={false}
+        attributionControl={false}
         initialViewState={{
           longitude: -100,
           latitude: 40,
           zoom: 3.5
         }}
+        maxZoom={16}
+        minZoom={4}
         style={{ width: size.width, height: size.height }}
         mapStyle={mapStyle}
       >

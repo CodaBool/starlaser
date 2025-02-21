@@ -13,12 +13,11 @@ import { Badge } from '@/components/ui/badge.jsx'
 import Link from "next/link"
 import { selectAll } from 'd3'
 import { color, accent, genLink } from "@/lib/utils.js"
-import { panTo } from "@/components/map"
 import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width, height }) {
+export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width, height, panTo }) {
   const { map } = useMap()
 
   function handleMouseOver(properties, geometry) {
@@ -101,7 +100,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               >
                 {card}
               </Link>
-            ) : <div key={properties.name} onClick={() => panTo(d, width, height, null, 80, map)}>{card}</div>
+            ) : <div key={properties.name} onClick={() => panTo(d)}>{card}</div>
           })}
         </div>
       </SheetContent >
