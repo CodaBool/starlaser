@@ -17,7 +17,7 @@ import * as SVG from './svg.js'
 import { useMap } from 'react-map-gl/maplibre'
 import { useEffect } from "react"
 
-export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected, width, height, panTo }) {
+export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, coordinates, name, selected }) {
   const { map } = useMap()
 
   function handleMouseOver(properties, geometry) {
@@ -100,7 +100,17 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               >
                 {card}
               </Link>
-            ) : <div key={properties.name} onClick={() => panTo(d)}>{card}</div>
+            ) : <div key={properties.name} onClick={() => {
+
+              // duplicate of map pan()
+              const arbitraryNumber = locations.length > 5 ? 9.5 : 10
+              let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+              zoomFactor = Math.max(zoomFactor, 4)
+              const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+              const lat = d.geometry.coordinates[1] - latDiff / 2
+
+              map.easeTo({ center: [d.geometry.coordinates[0], lat], duration: 800 })
+            }}>{card}</div>
           })}
         </div>
       </SheetContent >

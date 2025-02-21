@@ -8,11 +8,12 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
-import { searchBar } from "@/lib/utils.js"
+import { searchBar, accent } from "@/lib/utils.js"
 import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
+import { selectAll } from 'd3'
 
-export default function MenuComponent({ map, data, mobile, name, panTo }) {
+export default function MenuComponent({ map, data, mobile, name, pan }) {
   const [active, setActive] = useState()
   const cmd = useRef(null)
   const input = useRef(null)
@@ -23,14 +24,23 @@ export default function MenuComponent({ map, data, mobile, name, panTo }) {
     // close search menu
     setActive(false)
     input.current.blur()
-    const zoom = d.geometry.type === "Point" ? 8 : null
-    let { coordinates } = d.geometry
-    if (d.geometry.type !== "Point") {
-      const centroid = turf.centroid(d)
-      coordinates = centroid.geometry.coordinates
+    let className = ".territory"
+
+    if (d.geometry.type === "LineString") {
+      className = ".guide"
+    } else if (d.geometry.type === "Point") {
+      className = ".location"
     }
-    await map.jumpTo({ center: coordinates, zoom })
-    panTo(d, zoom, true)
+
+    selectAll('.animate-pulse').classed('animate-pulse', false)
+    document.querySelectorAll('.animate-pulse').forEach(el => el.classList.remove('animate-pulse'))
+
+    selectAll(className)
+      .filter(p => p.properties.name === d.properties.name)
+      .classed('animate-pulse', true)
+      .attr('fill', () => className === ".guide" ? "none" : accent(name, 1))
+      .attr('stroke', () => className === ".location" ? null : accent(name, 1))
+    pan(d, null, true)
   }
 
   useEffect(() => {

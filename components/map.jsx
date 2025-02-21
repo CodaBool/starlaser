@@ -67,93 +67,69 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
 
-  function panTo(d, customZoom, simulateClick) {
+  async function pan(d, locations, fit) {
     mode.add("zooming")
-    let geometry = d.geometry
-    if (d.geometry.type === "LineString") {
-      const polygon = turfHelper.lineString(d.geometry.coordinates)
-      geometry = turf.center(polygon).geometry
-    } else if (d.geometry.type.includes("Poly")) {
-      const polygon = turfHelper.multiPolygon([d.geometry.coordinates])
-      geometry = turf.center(polygon).geometry
-    }
-    const [x, y] = geometry.coordinates
-    const current = map.getZoom()
-    if ((current > 5 && d.geometry.type.includes("Poly")) || (current > 5 && d.geometry.type === "LineString")) {
-      // clicked on faction when at max zooom, this likely was a mistake
-      return [x, y]
-    }
-    const bounds = path.bounds(d);
-    const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
-    const bottomMostPoint = bounds[0][1] > bounds[1][1] ? bounds[0] : bounds[1];
+    let fly = true, lat, lng, coordinates = d.geometry.coordinates
+    let zoomedOut = map.getZoom() < 6
 
-    // Calculate the height of the object
-    const yDifference = Math.abs(topMostPoint[1] - bottomMostPoint[1])
+    // force a zoom if panning to location by search
+    if (fit) zoomedOut = true
+    let zoom = map.getZoom()
 
-    // set max and min zoom levels, 500/dif is decent middle ground for large and small territories
-    // let scale = Math.min(Math.max(500 / yDifference, 1), current)
-    // if (customZoom) scale = customZoom
+    if (d.geometry.type === "Point") {
+      [lng, lat] = coordinates
 
-    // console.log("custom zoom", customZoom, "scale", scale)
-
-
-    const longitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[0] : x
-    const latitude = d.geometry.coordinates.length === 2 ? d.geometry.coordinates[1] : y
-    const padding = 0.14 * window.innerHeight; // 14% of the window height
-    const adjustedLatitude = latitude - (padding / map.getCanvas().height) * (map.getBounds().getNorth() - map.getBounds().getSouth());
-
-    map.flyTo({ center: [longitude, adjustedLatitude], duration: 600, zoom: current })
-    // map.flyTo({ center: [longitude, latitude], duration: 750, zoom: scale })
-    setTimeout(() => mode.delete("zooming"), 751)
-    if (simulateClick) {
-      if (d.geometry.type === "Point") {
-        handlePointClick(null, d, true)
-      } else {
-        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-        // const coordinates = panTo(d, width, height, e, null, map)
-        const centroid = turf.centroid(d);
-        const coordinates = centroid.geometry.coordinates;
-        setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
-        setDrawerOpen(true)
+      // zoom in for location clicks, if zoomed out
+      if (zoomedOut) {
+        zoom = 8
       }
+
+    } else {
+
+      // remove sheet circle
+      if (document.querySelector(".click-circle")) {
+        document.querySelector(".click-circle").remove()
+      }
+
+      // find center of territory or guide
+      const centroid = turf.centroid(d)
+      coordinates = centroid.geometry.coordinates
+      lng = coordinates[0]
+      lat = coordinates[1]
+
+      // zoom view to fit territory or guide when searched
+      if (fit) {
+        const bounds = path.bounds(d);
+        const [[x0, y0], [x1, y1]] = bounds;
+        const dx = x1 - x0;
+        const dy = y1 - y0;
+        const padding = 20;
+        const newZoom = Math.min(
+          map.getZoom() + Math.log2(Math.min(map.getContainer().clientWidth / (dx + padding), map.getContainer().clientHeight / (dy + padding))),
+          map.getMaxZoom()
+        )
+        zoom = newZoom
+      }
+      if (!zoomedOut) fly = false
     }
-    return [longitude, latitude]
-  }
 
-  function handlePointClick(e, d, skipPan) {
-    if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-    if (document.querySelector(".click-circle")) {
-      document.querySelector(".click-circle").remove()
+    // offset for sheet
+    // TODO: doesn't this always need to be done?
+    if (zoomedOut) {
+      const arbitraryNumber = locations?.length > 5 ? 9.5 : 10
+      let zoomFactor = Math.pow(2, arbitraryNumber - map.getZoom())
+      zoomFactor = Math.max(zoomFactor, 4)
+      const latDiff = (map.getBounds().getNorth() - map.getBounds().getSouth()) / zoomFactor
+      lat = coordinates[1] - latDiff / 2
     }
-    const bounds = map.getBounds()
-    const diagonalDistance = turf.distance(
-      turf.point([bounds.getWest(), bounds.getSouth()]),
-      turf.point([bounds.getEast(), bounds.getNorth()]),
-      { units: 'kilometers' }
-    );
-    const selectionRadius = Math.min(diagonalDistance / 15, 140)
 
-    clickCir = svg
-      .selectAll('click-circle')
-      .data(generateCircle(d.geometry.coordinates, selectionRadius).features)
-      .enter()
-      .append('path')
-      .attr('d', d => path(d.geometry))
-      .attr('fill', accent(name, 0.1))
-      .attr('stroke', accent(name, 0.15))
-      .attr("class", "click-circle")
-      .attr("pointer-events", "none")
+    if (fly) {
+      map.flyTo({ center: [lng, lat], duration: 800, zoom })
+      setTimeout(() => mode.delete("zooming"), 801)
+    }
 
-    // Find all locations that are within the clickCir
-    const locations = data.location.filter(location => {
-      const point = turf.point(location.geometry.coordinates);
-      return turf.booleanPointInPolygon(point, clickCir.data()[0]);
-    }) || []
-
-    setDrawerContent({ locations, coordinates: d.geometry.coordinates, selected: d.properties.name })
+    setDrawerContent({ locations: locations || [d], coordinates, selected: d.properties.name })
     setDrawerOpen(true)
-    if (skipPan) return
-    panTo(d)
   }
 
   function hover(e, { properties, geometry }) {
@@ -179,7 +155,6 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   useEffect(() => {
     if (!map) return
-    map.setZoom(map.getZoom() - 0.5)
     if (svg) svg.remove()
 
     // using replace
@@ -222,12 +197,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
-        if (document.querySelector(".click-circle")) {
-          document.querySelector(".click-circle").remove()
-        }
-        const coordinates = panTo(d)
-        setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
-        setDrawerOpen(true)
+        pan(d)
       })
       .on("mouseout", hover)
       .on("mousemove", e => positionTooltip(e))
@@ -259,12 +229,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
-        if (document.querySelector(".click-circle")) {
-          document.querySelector(".click-circle").remove()
-        }
-        const coordinates = panTo(d)
-        setDrawerContent({ locations: [d], coordinates, selected: d.properties.name })
-        setDrawerOpen(true)
+        pan(d)
       })
       .on("mouseout", hover)
 
@@ -304,7 +269,35 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .attr('fill', d => color(name, d.properties, "fill", d.geometry.type))
       .attr("pointer-events", "bounding-box")
       .attr('class', d => d.properties.unofficial === "unofficial" ? 'unofficial location' : 'location')
-      .on('click', (event, d) => handlePointClick(event, d))
+      .on('click', (e, d) => {
+        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        const bounds = map.getBounds()
+        const diagonalDistance = turf.distance(
+          turf.point([bounds.getWest(), bounds.getSouth()]),
+          turf.point([bounds.getEast(), bounds.getNorth()]),
+          { units: 'kilometers' }
+        );
+        let selectionRadius = Math.min(diagonalDistance / 15, 140)
+        if (document.querySelector(".click-circle")) {
+          document.querySelector(".click-circle").remove()
+        }
+        if (map.getZoom() < 6) selectionRadius = 25
+        clickCir = svg
+          .selectAll('click-circle')
+          .data(generateCircle(d.geometry.coordinates, selectionRadius).features)
+          .enter()
+          .append('path')
+          .attr('d', d => path(d.geometry))
+          .attr('fill', accent(name, 0.1))
+          .attr('stroke', accent(name, 0.15))
+          .attr("class", "click-circle")
+          .attr("pointer-events", "none")
+        const locations = data.location.filter(location => {
+          const point = turf.point(location.geometry.coordinates);
+          return turf.booleanPointInPolygon(point, clickCir.data()[0]);
+        }) || []
+        pan(d, locations)
+      })
       .on('mouseover', hover)
       .on('mouseout', hover)
 
@@ -556,7 +549,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
   return (
     <>
-      <SearchBar map={map} name={name} data={data} panTo={panTo} mobile={mobile} />
+      <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />
       <Hamburger mode={mode} name={name} />
       <Tooltip {...tooltip} mobile={mobile} />
       {true &&
@@ -566,7 +559,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
         </div>
       }
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
-      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} width={width} height={height} panTo={panTo} />
+      <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} map={map} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
     </>
   )

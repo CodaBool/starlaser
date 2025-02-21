@@ -59,13 +59,13 @@ export default function Hamburger({ mode, name }) {
         <DropdownMenuLabel>Links</DropdownMenuLabel>
         {/* <DropdownMenuItem className="cursor-pointer"><Copyright /> License</DropdownMenuItem> */}
         {/* <DropdownMenuItem className="cursor-pointer"><Heart /> Credits</DropdownMenuItem> */}
-        <Dialog>
+        <Dialog className="" >
           <DialogTrigger asChild>
             <Button variant="ghost" className="w-full pl-0">
               <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-8px]" /> Credits
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]" style={{ color: 'white' }}>
+          <DialogContent className="max-w-[410px]" style={{ color: 'white' }} onInteractOutside={e => console.log("outside")}>
             <DialogHeader>
               <DialogTitle><><Heart size={18} className="pe-[2px] animate-bounce inline mr-2" /> Credits</></DialogTitle>
               <DialogDescription className="py-6">

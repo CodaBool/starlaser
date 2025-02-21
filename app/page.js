@@ -10,8 +10,8 @@ export default function page() {
     <>
       <h1 className="text-5xl my-4 text-center">Maps</h1 >
       <div className="container mx-auto flex flex-wrap justify-center">
-        <Link href="/lancer">
-          <Card className="m-4 max-w-[400px] cursor-pointer">
+        <Link href="/">
+          <Card className="m-5 max-w-[200px] cursor-pointer lg:max-w-[400px]">
             <CardHeader>
               <CardTitle className="text-center">LANCER</CardTitle >
             </CardHeader>
@@ -25,7 +25,7 @@ export default function page() {
           </Card >
         </Link >
         <Link href="/fallout">
-          <Card className="m-4 max-w-[400px] cursor-pointer">
+          <Card className="m-5 max-w-[200px] cursor-pointer lg:max-w-[400px]">
             <CardHeader>
               <CardTitle className="text-center">FALLOUT</CardTitle >
             </CardHeader>
