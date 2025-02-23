@@ -105,7 +105,11 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
           if (!mode.has("crosshairZoom") || !mode.has("crosshair")) return
           crosshairX.attr('lng', lng).attr('lat', lat).attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
           crosshairY.attr('lng', lng).attr('lat', lat).attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-          text.text(`${name.includes("lancer") ? "Y" : "Lat"}: ${lat.toFixed(3)}, ${name.includes("lancer") ? "X" : "Lng"}: ${lng.toFixed(3)}`).style('visibility', 'visible')
+          if (UNIT === "ly") {
+            text.text(`X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)} `).style('visibility', 'visible')
+          } else {
+            text.text(`Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`).style('visibility', 'visible')
+          }
         }, 120)
       } else if (mode.has("measure")) {
         mode.add("measureStart")
