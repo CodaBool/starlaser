@@ -44,11 +44,10 @@
 - all factions, regions, clusters will now be type "region". Neutral states, countries, and Lancer guide. Will now be "null" type. Regions will now use a faction prop which will determine further detail
 
 # todo:
-- solve text issue for Lancer
-- solve icons are too close
 - style fixes, too dark
-- peak at tooltip code = https://visgl.github.io/react-map-gl/examples/maplibre/geojson
-- 3d terrain = https://visgl.github.io/react-map-gl/examples/maplibre/terrain
+- lancer allow for switching map type
+- contribute pages
+- download topojson
 
 # menu items needed
 - measure btn

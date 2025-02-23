@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap } from 'react-map-gl/maplibre'
 import { geoPath, geoMercator, geoTransform } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip, bg, accent, ignoreList } from "@/lib/utils.js"
+import { color, important, positionTooltip, bg, accent, ignoreList, getConsts } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
@@ -51,13 +51,13 @@ export function getIcon(d, create, simple) {
   }
   return icon ? icon : null
 }
-let guideIndex = 0;
 
-export default function Map({ width, height, data, name, mobile, CENTER, SCALE }) {
+export default function Map({ width, height, data, name, mobile }) {
   const { map } = useMap()
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
+  const { CENTER, SCALE, CLICK_ZOOM } = getConsts(name)
 
   async function pan(d, locations, fit) {
     mode.add("zooming")
@@ -73,7 +73,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
 
       // zoom in for location clicks, if zoomed out
       if (zoomedOut) {
-        zoom = 8
+        zoom = CLICK_ZOOM
       }
 
     } else {
@@ -146,11 +146,14 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
   }
 
   function getTextCoord(d) {
+    if (d.properties.type !== "line") {
+      const point = map.project(new maplibregl.LngLat(...turf.centroid(d).geometry.coordinates))
+      return [point.x, point.y]
+    }
     const i = data.territory.filter(d => d.properties.type === "line").findIndex(line => line.properties.name === d.properties.name)
     // Compute the geographic centroid of the feature
     const pointy = turf.point([-77, 42]);
-    const offsetCoord = turf.destination(pointy, (i * 620), 45)
-    // console.log(d.properties.name, offsetCoord.geometry.coordinates)
+    const offsetCoord = turf.destination(pointy, ((i + 1) * 550), 45)
     const point = map.project(new maplibregl.LngLat(...offsetCoord.geometry.coordinates))
     return [point.x, point.y]
   }
@@ -175,7 +178,7 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .style("position", "absolute")
       .style("z-index", 2)
 
-    if (name === "lancer") {
+    if (name.includes("lancer")) {
       svg.style("background", `radial-gradient(${bg[name]})`)
       for (let i = 0; i < height * width / 10000; i++) {
         svg.append('circle')
@@ -186,20 +189,15 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
           .style('fill', `rgba(255, 255, 255, ${Math.random() / 3})`)
       }
 
-
       guideLabel = svg
         .selectAll('.guide-label')
         .data(data.territory.filter(d => d.properties.type === "line"))
         .enter().append('text')
         .text(d => d.properties.name)
         .attr('class', 'guide-label')
-        .style('font-size', '.7em')
+        .style('font-size', '.8em')
         .attr("pointer-events", "none")
-        .style('fill', 'white')
-        // .attr('color', 'white')
-        .attr("x", d => getTextCoord(d)[0])
-        .attr("y", d => getTextCoord(d)[1])
-
+        .style('fill', 'rgba(255, 255, 255, 0.6)')
     }
 
     const territory = svg
@@ -218,21 +216,19 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on("mouseout", hover)
       .on("mousemove", e => positionTooltip(e))
 
-    // territory labels
-    // g.append('g')
+    // const territoryLabel = svg
     //   .selectAll('.territory-label')
     //   .data(data.territory)
+    //   // .data(data.location.filter(d => important(name, d.properties) && !d.properties.crowded))
     //   .enter().append('text')
-    //   .attr('class', d => d.properties.unofficial ? 'unofficial territory-label' : 'territory-label')
-    //   .attr('x', d => path.centroid(d)[0])
-    //   .attr('y', d => path.centroid(d)[1])
-    //   .attr('dy', '.35em')
     //   .text(d => d.properties.name)
-    //   .style('font-size', '5px')
-    //   .style('fill', 'white')
+    //   .attr('class', d => d.properties.unofficial ? 'unofficial territory-label' : 'official territory-label')
+    //   .style('font-weight', d => important(name, d.properties) && 600)
     //   .style('text-anchor', 'middle')
+    //   .style('font-size', '.6em')
+    //   .attr('dy', '.35em')
+    //   .style('fill', 'white')
     //   .style('pointer-events', 'none')
-
 
     const guide = svg
       .selectAll('.lines')
@@ -254,8 +250,8 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .enter()
       .append("foreignObject")
       .html(d => getIcon(d))
-      .attr("width", 20)
-      .attr("height", 20)
+      .attr("width", d => d.properties.type === "star" ? 10 : 20)
+      .attr("height", d => d.properties.type === "star" ? 10 : 20)
       .attr('fill', d => color(name, d.properties, "fill", d.geometry.type))
       .attr("pointer-events", "bounding-box")
       .attr('class', d => d.properties.unofficial === "unofficial" ? 'unofficial location' : 'location')
@@ -272,16 +268,17 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
           document.querySelector(".click-circle").remove()
         }
         if (map.getZoom() < 6) selectionRadius = 25
+        if (name.includes("lancer")) selectionRadius = 100
         clickCir = svg
           .selectAll('click-circle')
           .data(generateCircle(d.geometry.coordinates, selectionRadius).features)
-          .enter()
-          .append('path')
+          .enter().append('path')
           .attr('d', d => path(d.geometry))
           .attr('fill', accent(name, 0.1))
           .attr('stroke', accent(name, 0.15))
           .attr("class", "click-circle")
           .attr("pointer-events", "none")
+          .attr("visibility", `${name.includes("lancer") ? "hidden" : "visible"}`)
         const locations = data.location.filter(location => {
           const point = turf.point(location.geometry.coordinates);
           return turf.booleanPointInPolygon(point, clickCir.data()[0]);
@@ -291,48 +288,19 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       .on('mouseover', hover)
       .on('mouseout', hover)
 
-    // const locationLabel = g.append('g')
-    //   .selectAll('.location-label')
-    //   .data(data.location)
-    //   .enter().append('text')
-    //   .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')
-    //   .attr('x', d => projection(d.geometry.coordinates)[0])
-    //   .attr('y', d => projection(d.geometry.coordinates)[1] + 13.375)
-    //   // .attr('y', d => projection(d.geometry.coordinates)[1] + (important(map, d.properties) ? 11 : 9))
-    //   .text(d => d.properties.name)
-    //   .style('font-size', d => important(map, d.properties) ? '10.85px' : '8.35px')
-    //   .style('font-weight', d => important(map, d.properties) && 600)
-    //   .style('opacity', d => (important(map, d.properties) && !d.properties.crowded) ? 1 : 0)
-    //   .style('text-anchor', 'middle')
-    //   .style('fill', 'white')
-    //   .style('pointer-events', 'none')
-
-
-    // g.append('g')
-    //   .selectAll('.guide-label')
-    //   .data(data.guide)
-    //   .enter().append('text')
-    //   .attr('class', d => d.properties.unofficial ? 'unofficial guide-label' : 'official guide-label')
-    //   // .attr('x', d => {
-    //   //   const centroid = path.centroid(d);
-    //   //   const bounds = path.bounds(d);
-    //   //   const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1];
-    //   //   const radius = Math.sqrt(
-    //   //     Math.pow(topMostPoint[0] - centroid[0], 2) +
-    //   //     Math.pow(topMostPoint[1] - centroid[1], 2)
-    //   //   )
-    //   //   const offsetX = 0
-    //   //   return centroid[0] + offsetX + (radius / 5);
-    //   // })
-    //   // .attr('y', d => {
-    //   //   const bounds = path.bounds(d);
-    //   //   const topMostPoint = bounds[0][1] < bounds[1][1] ? bounds[0] : bounds[1]
-    //   //   return topMostPoint[1] + 35;
-    //   // })
-    //   .text(d => d.properties.name)
-    //   .style('font-size', '.1em')
-    //   .style('fill', 'white')
-    //   .style('pointer-events', 'none')
+    const locationLabel = svg
+      .selectAll('.location-label')
+      .data(data.location.filter(d => important(name, d.properties) && !d.properties.crowded))
+      .enter().append('text')
+      .text(d => d.properties.name)
+      .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')
+      .style('font-size', d => important(name, d.properties) ? '10.85px' : '8.35px')
+      .style('font-weight', d => important(name, d.properties) && 600)
+      .style('text-anchor', 'middle')
+      .style('fill', 'white')
+      .attr('dy', '-.8em')
+      .attr('dx', '.7em')
+      .style('pointer-events', 'none')
 
     function render() {
 
@@ -358,6 +326,12 @@ export default function Map({ width, height, data, name, mobile, CENTER, SCALE }
       territory.attr("d", path)
       clickCir?.attr("d", path)
       guideLabel
+        ?.attr("x", d => getTextCoord(d)[0])
+        .attr("y", d => getTextCoord(d)[1])
+      // territoryLabel
+      //   ?.attr("x", d => getTextCoord(d)[0])
+      //   .attr("y", d => getTextCoord(d)[1])
+      locationLabel
         ?.attr("x", d => getTextCoord(d)[0])
         .attr("y", d => getTextCoord(d)[1])
       location

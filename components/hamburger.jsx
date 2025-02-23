@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
 import {
   Dialog,
   DialogContent,
@@ -74,13 +73,30 @@ export default function Hamburger({ mode, name }) {
             </DialogHeader>
           </DialogContent>
         </Dialog>
-        {/* <DropdownMenuItem className="cursor-pointer"><Plus /> Contribute</DropdownMenuItem> */}
-
-        <DropdownMenuItem className="cursor-pointer">
-          <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
-            <DropdownMenuItem className="cursor-pointer"><Github /> GitHub</DropdownMenuItem>
+        <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
+          <DropdownMenuItem className="cursor-pointer">
+            <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
+          </DropdownMenuItem>
+        </a>
+        <a href={`/api/download/${name}`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
+          </DropdownMenuItem>
+        </a>
+        {name === "lancer" &&
+          <a href="/lancer_starwall">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="ml-[.6em]" /> <span className="ml-[5px]">Variant</span>
+            </DropdownMenuItem>
           </a>
-        </DropdownMenuItem>
+        }
+        {name === "lancer_starwall" &&
+          <a href="/lancer">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="ml-[.6em]" /> <span className="ml-[5px]">Core</span>
+            </DropdownMenuItem>
+          </a>
+        }
       </DropdownMenuContent>
     </DropdownMenu >
   )
@@ -113,7 +129,7 @@ function Credits({ name }) {
           </svg>
         </span>
         <span className="flex-1 text-left">
-          {name === "lancer"
+          {name.includes("lancer")
             ? <>
               <span><Sparkles className="inline pr-2" /><a href="https://janederscore.tumblr.com" target="_blank"> Janederscore <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
               <span><Sparkles className="inline pr-2" /> Starwall</span><br />
@@ -150,7 +166,7 @@ function Credits({ name }) {
         </span>
       </span>
       <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href="/easteregg" style={{ color: "#60677c" }}>CodaBool</Link></span>
-      {name === "lancer" && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
+      {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
       {name === "fallout" && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Fallout product<br />Fallout is copyright Bethesda Softworks</span>}
     </>
   )

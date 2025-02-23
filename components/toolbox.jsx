@@ -105,7 +105,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
           if (!mode.has("crosshairZoom") || !mode.has("crosshair")) return
           crosshairX.attr('lng', lng).attr('lat', lat).attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
           crosshairY.attr('lng', lng).attr('lat', lat).attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-          text.text(`${name === "lancer" ? "Y" : "Lat"}: ${lat.toFixed(3)}, ${name === "lancer" ? "X" : "Lng"}: ${lng.toFixed(3)}`).style('visibility', 'visible')
+          text.text(`${name.includes("lancer") ? "Y" : "Lat"}: ${lat.toFixed(3)}, ${name.includes("lancer") ? "X" : "Lng"}: ${lng.toFixed(3)}`).style('visibility', 'visible')
         }, 120)
       } else if (mode.has("measure")) {
         mode.add("measureStart")
@@ -144,7 +144,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
                 const walkingTimeHours = miles / walkingSpeedMph;
                 text.text(`${miles.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`)
                 text.style("visibility", "visible")
-              } else if (name === "lancer") {
+              } else if (name.includes("lancer")) {
                 const km = distance(turfPoint1, turfPoint2)
                 // Janederscore's map is 135ly across. Convert km so they match up
                 const lightYears = km * 0.013043478
