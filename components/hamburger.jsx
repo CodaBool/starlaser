@@ -134,7 +134,10 @@ function Credits({ name }) {
               <span><Sparkles className="inline pr-2" /><a href="https://janederscore.tumblr.com" target="_blank"> Janederscore <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
               <span><Sparkles className="inline pr-2" /> Starwall</span><br />
             </>
-            : <></>
+            : <>
+
+              <span><Sparkles className="inline pr-2" /> <a href="https://github.com/MeepChangeling/FalloutTTRPGWorldMap" target="_blank"> MeepChangeling <SquareArrowOutUpRight className="inline" size={14} /></a></span><br />
+            </>
           }
         </span>
       </span>

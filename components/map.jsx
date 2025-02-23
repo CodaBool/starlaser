@@ -210,7 +210,7 @@ export default function Map({ width, height, data, name, mobile }) {
       .attr('stroke', d => color(name, d.properties, "stroke", d.geometry.type))
       .on("mouseover", hover)
       .on("click", (e, d) => {
-        if (mode.has("measure") || (mode.has("crosshair") && mobile) || (d.properties.type !== "region" && d.properties.type !== "faction")) return
+        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
         pan(d)
       })
       .on("mouseout", hover)
@@ -328,9 +328,6 @@ export default function Map({ width, height, data, name, mobile }) {
       guideLabel
         ?.attr("x", d => getTextCoord(d)[0])
         .attr("y", d => getTextCoord(d)[1])
-      // territoryLabel
-      //   ?.attr("x", d => getTextCoord(d)[0])
-      //   .attr("y", d => getTextCoord(d)[1])
       locationLabel
         ?.attr("x", d => getTextCoord(d)[0])
         .attr("y", d => getTextCoord(d)[1])

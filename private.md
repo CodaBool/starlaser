@@ -45,8 +45,7 @@
 
 # todo:
 - style fixes, too dark
-- contribute pages
-- set map bounds
+- contribute pages (save for later)
 
 # menu items needed
 - measure btn

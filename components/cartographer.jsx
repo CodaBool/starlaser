@@ -6,7 +6,7 @@ import Map from 'react-map-gl/maplibre'
 import mapStyle from '@/lib/style.json'
 
 export default function Cartographer({ name, data }) {
-  const { SCALE, CENTER, STYLE, VIEW } = getConsts(name)
+  const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS } = getConsts(name)
   const [size, setSize] = useState()
   const mobile = isMobile()
 
@@ -39,8 +39,8 @@ export default function Cartographer({ name, data }) {
       dragRotate={false}
       attributionControl={false}
       initialViewState={VIEW}
-      maxZoom={VIEW.MAX_ZOOM}
-      minZoom={VIEW.MIN_ZOOM}
+      maxZoom={MAX_ZOOM}
+      minZoom={MIN_ZOOM}
       style={{ width: size.width, height: size.height }}
       mapStyle={style}
     >
