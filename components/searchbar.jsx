@@ -45,7 +45,7 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
 
   useEffect(() => {
     if (input.current) {
-      input.current.addEventListener('blur', () => setActive(false));
+      input.current.addEventListener('blur-sm', () => setActive(false));
     }
     function down(e) {
       if (e.code === 'Space') {
@@ -62,7 +62,7 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
     document.addEventListener('keydown', down)
     return () => {
       document.removeEventListener('keydown', down)
-      input?.current?.removeEventListener('blur', () => setActive(false));
+      input?.current?.removeEventListener('blur-sm', () => setActive(false));
     }
   }, [])
 

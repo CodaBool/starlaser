@@ -80,9 +80,19 @@ export default function Hamburger({ mode, name }) {
         </a>
         <a href={`/api/download/${name}`}>
           <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">TopoJSON</span>
           </DropdownMenuItem>
         </a>
+        <a href={`/api/download/${name}?format=geo`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">GeoJSON</span>
+          </DropdownMenuItem>
+        </a>
+        {/* <Link href={`/contribute/${name}`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
+          </DropdownMenuItem>
+        </Link> */}
         {name === "lancer" &&
           <a href="/lancer_starwall">
             <DropdownMenuItem className="cursor-pointer">

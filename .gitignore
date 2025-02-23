@@ -3,10 +3,4 @@ out/
 build/
 .next/
 .env
-.vercel
 junk.*
-junk/
-
-
-# temp while I develop on a laptop
-deno.*

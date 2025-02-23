@@ -47,6 +47,8 @@
 - style fixes, too dark
 - contribute pages (save for later)
 
+# Contribute work
+-
 # menu items needed
 - measure btn
 - coordinate
@@ -77,3 +79,32 @@ click
 
 ## moving mouse on desktop
 mouseMove
+
+
+# Map VTT Data
+- starfinder 5.5%
+	- seems there is no real need for one but Star Wars map could work for this one
+- RED 5.1%
+	- interactive copyrighted https://www.nightcity.io/red
+	- Ced23Ric image (2022) https://www.reddit.com/r/cyberpunkred/comments/z1744r/night_city_2045_map_cleaned_and_updated/
+		- [best] best https://www.ced23ric.de/cpr-pbp/CyberpunkRed_NightCity2045_full_map_rework_dpl.jpg
+	- crossvalidated image (2022) https://www.reddit.com/r/cyberpunkred/comments/114bn3e/night_city_2045_map_revamp/
+		- best https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fbrr12zotooia1.jpg
+	- [blurry] fandom image (2024) https://cyberpunk-red-2047.fandom.com/wiki/Night_City_Map
+- Star Wars 3.7%
+	- Henry M Bernberg interactive (2019) http://www.swgalaxymap.com
+		- [both] embed https://hbernberg.carto.com/viz/76e286d4-fbab-11e3-b014-0e73339ffa50/embed_map
+	- Otherlife_Art interactive (2024) https://www.reddit.com/r/Star_Wars_Maps/comments/12yolnk/ultimate_star_wars_galaxy_map_online_update_and/
+		- dev is responsive in this thread
+		- [both] embed https://otherlife.davidcanavese.com/galaxymap2/
+- Alien 3.3%
+	- [both] Clay DeGruchy interactive https://map.weylandyutani.company
+	- [both] image (2024) https://uploads.worldanvil.com/uploads/maps/4145d8eb23b023c349544e8dda5282c7.jpg
+- Warhammer 2.3%
+	- [both] s3xyrandal image (2023) https://tcrepo.com/downloads/warhammer-40k-galaxy-map/
+	- [both] Michelle Louise Janion (2023) https://jambonium.co.uk/40kmap/
+	- kyrtuck image (2024) https://www.deviantart.com/kyrtuck/art/Warhammer-40-000-Map-2-1082557287
+- Fallout 2.2%
+	- stargazer
+- Lancer 2.1%
+	- stargazer

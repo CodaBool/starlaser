@@ -26,6 +26,7 @@ model Location {
   description String    @db.VarChar(3000)
   city        String    @db.VarChar(100)
   type        String    @db.VarChar(25)
+  geometry    String    @db.VarChar(25)
   coordinates String    @db.VarChar(100)
   faction     String    @db.VarChar(50)
   source      String    @db.VarChar(100)
@@ -44,6 +45,7 @@ model Location {
 
 model User {
   id            String     @id @default(cuid())
+  vip           Boolean    @default(false)
   email         String     @unique
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import db from "@/lib/db"
 
 async function sendVerificationRequest({ identifier: email, url }) {
+  console.log("sending email to", email, url)
   const urlParams = new URLSearchParams({
     subject: "Sign into Community Maps",
     to: email,

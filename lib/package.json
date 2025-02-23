@@ -1,0 +1,12 @@
+{
+  "name": "data-scripts",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=../.env upload.js"
+  },
+  "dependencies": {
+    "d3-geo": "^3.1.1",
+    "pg": "^8.13.3",
+    "topojson-client": "^3.1.0"
+  }
+}
