@@ -16,9 +16,9 @@ export default async function mapLobby({ params }) {
   // even if its just in a console log
   // path.resolve(`app/[map]/topojson/fallout.json`)
   // path.resolve(`app/[map]/topojson/lancer.json`)
-  console.log("path", path.resolve(`app/[map]/topojson/fallout.json`))
-  console.log("path", path.resolve(`app/[map]/topojson/lancer.json`))
-  console.log("path", path.resolve(`app/[map]/topojson/lancer_starwall.json`))
+  path.resolve(`app/[map]/topojson/fallout.json`)
+  path.resolve(`app/[map]/topojson/lancer.json`)
+  path.resolve(`app/[map]/topojson/lancer_starwall.json`)
   // const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}.json`), 'utf8')
   // const content = await fs.promises.readFile(process.cwd() + '/app/fallout/fallout.json', 'utf8')
   // const content = fs.readFileSync(filePath, 'utf-8')
