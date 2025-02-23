@@ -7,11 +7,13 @@ import { useMap } from 'react-map-gl/maplibre'
 import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
+import { getConsts } from '@/lib/utils'
 
 let point
 
 export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }) {
   const { map } = useMap()
+  const { UNIT } = getConsts(name)
 
   useEffect(() => {
     if (!map) return
@@ -103,7 +105,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
           if (!mode.has("crosshairZoom") || !mode.has("crosshair")) return
           crosshairX.attr('lng', lng).attr('lat', lat).attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
           crosshairY.attr('lng', lng).attr('lat', lat).attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-          text.text(`Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`).style('visibility', 'visible')
+          text.text(`${name === "lancer" ? "Y" : "Lat"}: ${lat.toFixed(3)}, ${name === "lancer" ? "X" : "Lng"}: ${lng.toFixed(3)}`).style('visibility', 'visible')
         }, 120)
       } else if (mode.has("measure")) {
         mode.add("measureStart")
@@ -135,6 +137,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
               lineRef.style.visibility = 'visible'
               const turfPoint1 = turfPoint([point.attr("lng"), point.attr("lat")])
               const turfPoint2 = turfPoint([lng, lat])
+
               if (name === "fallout") {
                 const miles = distance(turfPoint1, turfPoint2, { units: 'miles' })
                 const walkingSpeedMph = 3; // average walking speed in miles per hour
@@ -142,9 +145,11 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
                 text.text(`${miles.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`)
                 text.style("visibility", "visible")
               } else if (name === "lancer") {
-                // const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
-                // const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
-                // text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`)
+                const km = distance(turfPoint1, turfPoint2)
+                // Janederscore's map is 135ly across. Convert km so they match up
+                const lightYears = km * 0.013043478
+                const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
+                text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} observer years`)
               }
             } else {
 
@@ -172,7 +177,11 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
         const { lat, lng } = map.unproject([mouseX, mouseY])
         crosshairX.attr('y1', mouseY).attr('y2', mouseY).style('visibility', 'visible')
         crosshairY.attr('x1', mouseX).attr('x2', mouseX).style('visibility', 'visible')
-        text.text(`Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`).style('visibility', 'visible')
+        if (UNIT === "ly") {
+          text.text(`X: ${lng.toFixed(1)} | Y: ${lat.toFixed(1)} `).style('visibility', 'visible')
+        } else {
+          text.text(`Lat: ${lat.toFixed(3)}° | Lng: ${lng.toFixed(3)}°`).style('visibility', 'visible')
+        }
       } else if (mode.has("measure")) {
         if (!pointRef) return
         if (!pointRef.getAttribute('cx')) return
@@ -193,17 +202,19 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
         lineRef.setAttribute('x1', point.attr("cx"))
         lineRef.setAttribute('y1', point.attr("cy"))
 
-        if (name === "fallout") {
-          const turfPoint1 = turfPoint([point.attr("lng"), point.attr("lat")])
-          const turfPoint2 = turfPoint([lng, lat])
+        const turfPoint1 = turfPoint([point.attr("lng"), point.attr("lat")])
+        const turfPoint2 = turfPoint([lng, lat])
+        if (UNIT === "miles") {
           const miles = distance(turfPoint1, turfPoint2, { units: 'miles' })
           const walkingSpeedMph = 3; // average walking speed in miles per hour
           const walkingTimeHours = miles / walkingSpeedMph;
           text.text(`${miles.toFixed(1)} miles | ${walkingTimeHours.toFixed(1)} hours on foot (3mph)`);
-        } else if (name === "lancer") {
-          // const lightYears = geoDistance(point, point2) * 87 // 87 is arbitrary to get a close enough ly distance from the map
-          // const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
-          // text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} real years`)
+        } else if (UNIT === "ly") {
+          const km = distance(turfPoint1, turfPoint2)
+          // Janederscore's map is 135ly across. Convert km so they match up
+          const lightYears = km * 0.013043478
+          const relativeTime = (lightYears / Math.sinh(Math.atanh(0.995))).toFixed(1)
+          text.text(`${lightYears.toFixed(1)}ly | ${relativeTime} rel. years (.995u) | ${(lightYears / 0.995).toFixed(1)} observer years`)
         }
       }
     })

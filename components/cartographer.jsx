@@ -6,7 +6,7 @@ import Map from 'react-map-gl/maplibre'
 import mapStyle from '@/lib/style.json'
 
 export default function Cartographer({ name, data }) {
-  const { SCALE, CENTER } = getConsts(name)
+  const { SCALE, CENTER, STYLE, VIEW } = getConsts(name)
   const [size, setSize] = useState()
   const mobile = isMobile()
 
@@ -27,24 +27,24 @@ export default function Cartographer({ name, data }) {
     )
   }
 
+  let style = mapStyle
+  if (STYLE === "none") {
+    // where we are going we don't need vector tiles
+    style = { version: 8, layers: [], sources: {} }
+  }
+
   return (
-    <>
-      <Map
-        id="map"
-        dragRotate={false}
-        attributionControl={false}
-        initialViewState={{
-          longitude: -100,
-          latitude: 40,
-          zoom: 3.5
-        }}
-        maxZoom={16}
-        minZoom={4}
-        style={{ width: size.width, height: size.height }}
-        mapStyle={mapStyle}
-      >
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
-      </Map>
-    </>
+    <Map
+      id="map"
+      dragRotate={false}
+      attributionControl={false}
+      initialViewState={VIEW}
+      maxZoom={VIEW.MAX_ZOOM}
+      minZoom={VIEW.MIN_ZOOM}
+      style={{ width: size.width, height: size.height }}
+      mapStyle={style}
+    >
+      <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
+    </Map>
   )
 }

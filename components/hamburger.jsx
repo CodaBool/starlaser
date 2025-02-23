@@ -62,12 +62,12 @@ export default function Hamburger({ mode, name }) {
         <Dialog className="" >
           <DialogTrigger asChild>
             <Button variant="ghost" className="w-full pl-0">
-              <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-8px]" /> Credits
+              <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-6px]" /> <span className="left-[-6px] relative">Credits</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-[410px]" style={{ color: 'white' }} onInteractOutside={e => console.log("outside")}>
             <DialogHeader>
-              <DialogTitle><><Heart size={18} className="pe-[2px] animate-bounce inline mr-2" /> Credits</></DialogTitle>
+              <DialogTitle className="text-center"><><Heart size={18} className="pe-[2px] animate-bounce inline mr-2" /> Credits</></DialogTitle>
               <DialogDescription className="py-6">
                 <Credits name={name} />
               </DialogDescription>
@@ -78,11 +78,11 @@ export default function Hamburger({ mode, name }) {
 
         <DropdownMenuItem className="cursor-pointer">
           <a href="https://github.com/codabool/stargazer.vercel.app" target="_blank">
-            <DropdownMenuItem className="cursor-pointer"><Github /> Source Code</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer"><Github /> GitHub</DropdownMenuItem>
           </a>
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+    </DropdownMenu >
   )
 }
 
@@ -90,8 +90,8 @@ export default function Hamburger({ mode, name }) {
 function Credits({ name }) {
   return (
     <>
-      <span className="text-xl"><Telescope className="inline pr-2 ml-[13em]" size={32} /> Major</span>
-      <span className="flex mb-[10em]">
+      <span className="text-xl"><Telescope className="inline pr-2 ml-[6.8em]" size={32} /> Major</span>
+      <span className="flex mb-12 mt-5">
         <span className="flex-1">
           <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(-40, -90) scale(0.4)">
@@ -122,7 +122,7 @@ function Credits({ name }) {
           }
         </span>
       </span>
-      <span className="text-xl"><MoonStar className="inline pr-2 ml-[13em]" size={32} /> Minor</span>
+      <span className="text-xl"><MoonStar className="inline pr-2 ml-[7em]" size={32} /> Minor</span>
       <span className="flex">
         <span className="flex-1">
           <svg width="240" height="100" xmlns="http://www.w3.org/2000/svg">

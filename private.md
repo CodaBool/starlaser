@@ -47,6 +47,8 @@
 - solve text issue for Lancer
 - solve icons are too close
 - style fixes, too dark
+- peak at tooltip code = https://visgl.github.io/react-map-gl/examples/maplibre/geojson
+- 3d terrain = https://visgl.github.io/react-map-gl/examples/maplibre/terrain
 
 # menu items needed
 - measure btn
