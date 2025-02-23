@@ -45,9 +45,8 @@
 
 # todo:
 - style fixes, too dark
-- lancer allow for switching map type
 - contribute pages
-- download topojson
+- set map bounds
 
 # menu items needed
 - measure btn
