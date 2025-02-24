@@ -29,10 +29,11 @@ export async function GET(req, { params }) {
   const headers = new Headers()
   if (format === "kml") {
     headers.append("Content-Disposition", `attachment; filename="${map}.${format}"`)
+    headers.append("Content-Type", "application/vnd.google-earth.kml+xml")
   } else {
     headers.append("Content-Disposition", `attachment; filename="${map}.${format}.json"`)
+    headers.append("Content-Type", "application/json")
   }
-  headers.append("Content-Type", "application/json")
   return new Response(buffer, {
     headers,
   })
