@@ -24,7 +24,17 @@
 - extra = https://fallout.fandom.com/wiki/Map:FO_United_States_Map_(base_1959_map)
 
 # commands
-- npx mapshaper -i topo1.json topo2.json combine-files -merge-layers -o merge.json
+- npx mapshaper -i ./merge_me/guide.json ./merge_me/point.json ./merge_me/territory.json combine-files -merge-layers -o ./merge_me/merged.json
+- npx mapshaper -i source.geojson -clean -o ./merged.json target=source,source,source
+
+
+result.features = this.files.filter((f) => f.geojson.features).map((f) => f.geojson.features).flat(1)
+
+npx mapshaper *.json \
+  -each 'this.properties = Object.assign({name:"", type:"", description:"", faction:"", FID:"", icon:"", source:""}, this.properties || {})' \
+  -merge-layers \
+  -o merged.geojson
+
 
 # rules
 - all styling depends on map/{type & faction}

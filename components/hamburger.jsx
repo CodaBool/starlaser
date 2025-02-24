@@ -88,6 +88,11 @@ export default function Hamburger({ mode, name }) {
             <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">GeoJSON</span>
           </DropdownMenuItem>
         </a>
+        <a href={`/api/download/${name}?format=kml`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
+          </DropdownMenuItem>
+        </a>
         {/* <Link href={`/contribute/${name}`}>
           <DropdownMenuItem className="cursor-pointer">
             <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
