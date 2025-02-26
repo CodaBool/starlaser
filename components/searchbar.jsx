@@ -73,8 +73,8 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
   // "#020e03"
 
   return (
-    <div className="flex mt-5 w-full justify-center absolute z-10">
-      <Command className="rounded-lg border shadow-md w-4/5 searchbar" style={{ backgroundColor: searchBar[name].background, borderColor: searchBar[name].border }}>
+    <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none">
+      <Command className="rounded-lg border shadow-md w-4/5 searchbar pointer-events-auto" style={{ backgroundColor: searchBar[name].background, borderColor: searchBar[name].border }}>
         <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: searchBar[name].background }} />
         {active &&
           <CommandList style={{ height: '351px', zIndex: 100 }}>

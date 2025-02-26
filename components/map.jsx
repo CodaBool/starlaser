@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap } from 'react-map-gl/maplibre'
 import { geoPath, geoMercator, geoTransform } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip, bg, accent, ignoreList, getConsts } from "@/lib/utils.js"
+import { color, important, positionTooltip, accent, ignoreList, getConsts } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
@@ -179,7 +179,7 @@ export default function Map({ width, height, data, name, mobile }) {
       .style("z-index", 2)
 
     if (name.includes("lancer")) {
-      svg.style("background", `radial-gradient(${bg[name]})`)
+      // svg.style("background", `radial-gradient(${bg[name]})`)
       for (let i = 0; i < height * width / 10000; i++) {
         svg.append('circle')
           .attr('class', 'background')
