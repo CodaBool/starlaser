@@ -43,6 +43,17 @@ model Location {
   user        User      @relation(fields: [userId], references: [id])
 }
 
+model Map {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(200)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  userId    String
+  published Boolean  @default(false)
+  topojson  String
+  map       String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 model User {
   id            String     @id @default(cuid())
   vip           Boolean    @default(false)
@@ -53,6 +64,7 @@ model User {
   alias         String?    @unique @db.VarChar(16)
   comments      Comment[]
   locations     Location[]
+  maps          Map[]
 }
 
 model VerificationToken {

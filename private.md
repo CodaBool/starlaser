@@ -118,3 +118,9 @@ mouseMove
 	- stargazer
 - Lancer 2.1%
 	- stargazer
+
+# Saving Data Spitballing
+- save geojson locally after any and all actions
+- button to copy share ID, which will upload topojson to R2. Provide an ID and give a notice that after 90 days it will be deleted unless claimed by an account
+- export geojson to local file (can toggle source + user)
+- store multiple maps, have a selection screen if a local storage is found
