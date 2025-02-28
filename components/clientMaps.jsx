@@ -39,7 +39,7 @@ export default function ClientMaps() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-      {Object.entries(maps).map(([key, data]) => {
+      {Object.entries(maps || {}).map(([key, data]) => {
         const [name, dateId] = key.split('-')
         return (
           <div key={key} className="bg-gray-800 p-4 rounded-lg shadow-lg">

@@ -18,7 +18,7 @@ export default async function Export({ params, searchParams }) {
       userId: user?.id,
       map,
     },
-  })
+  }) || []
   return (
     <div className='text-white mx-auto md:container p-4 mt-2 md:mt-14'>
       {/* <Link href="/" className="mb-4">
