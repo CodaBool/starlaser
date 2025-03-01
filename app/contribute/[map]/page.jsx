@@ -41,29 +41,28 @@ export default async function Contribute({ params, searchParams }) {
     <div className="md:container mx-auto my-10 mr-1">
       {openLocationForm
         ? <CreateLocation map={map} />
-        : <Link href={`/contribute/${map}?p=1`} ><Button variant="outline" className="w-full my-4">Create a new Location</Button ></Link>
+        : <Link href={`/contribute/${map}?p=1`} ><Button variant="outline" className="w-full my-4 cursor-pointer">Create a new Location</Button ></Link>
       }
       <Dialog>
         <DialogTrigger className="rounded-md border border-slate-800 bg-slate-950 hover:bg-slate-800 hover:text-slate-50 h-10 w-full my-4">What is this?</DialogTrigger>
         <DialogContent className="sm:px-6 px-0  pr-2">
           <DialogHeader>
-            <DialogTitle>This is not a wiki</DialogTitle>
+            <DialogTitle>Community driven data</DialogTitle>
             <DialogDescription>
-              &emsp;Here you can find a list of the current locations for the map. As well as any community submitted locations.
-              <br /><br />
-              &emsp;The purpose of this is to keep the coordinates and simple location data as accurate as possible.
+              &emsp;Here you can find a list of all data points for {map}. As well as any community submitted locations.
+              The purpose of this is to keep the core location data as accurate as possible.
               <br /><br />
               &emsp;If you have spotted an inaccuracy and can find supporting evidence, your contribution is very welcome.
               <br /><br />
-              &emsp;That said, the application is intentionally scoped as a map and should not be used as a repository of lore. There are only a few of pieces of information that are needed:
+              &emsp;That said, the application is intentionally scoped as a map and should not be used as a repository of lore. There are only a few of pieces of information that are really needed:
               <br /><br />
-              <span className="text-gray-200">- name and aliases</span>
+              <span className="text-gray-200">- name</span>
               <br />
-              <span className="text-gray-200">- type of location (i.e. moon, gate)</span>
+              <span className="text-gray-200">- type of location (i.e. station)</span>
               <br />
-              <span className="text-gray-200">- its location</span>
+              <span className="text-gray-200">- coordinates</span>
               <br /><br />
-              the focus of this application is the map
+              the focus of this application is <b>the map</b>
 
               <svg xmlns="http://www.w3.org/2000/svg" className="sm:pl-10">
                 <g transform="translate(0, -40) scale(0.4)">

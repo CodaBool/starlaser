@@ -40,6 +40,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
     // if no data exists set an id and save
     if (!mapsWithData.length || params.get("new")) {
       console.log("no data exists, or given create param")
+      // TODO: consider const uuid = crypto.randomUUID()
       const id = Date.now()
       setMapId(`${name}-${id}`)
 
@@ -112,6 +113,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
         // duplicate of ?new=1 conditional
         const id = Date.now()
+        // TODO: consider const uuid = crypto.randomUUID()
         setMapId(`${name}-${id}`)
         const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
         console.log("replaced URL to", url)

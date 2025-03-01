@@ -1,16 +1,19 @@
 import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import db from "@/lib/db"
+import { starHTML } from "@/lib/utils"
 
 async function sendVerificationRequest({ identifier: email, url }) {
-  console.log("sending email to", email, url)
   const urlParams = new URLSearchParams({
     subject: "Sign into Community Maps",
     to: email,
     name: "contributor",
     from: "Community Maps",
     secret: process.env.EMAIL_SECRET,
-    simpleBody: `<h1>Welcome to Stargazer</h1><a href="${url}">Please click here to login</a><p>This link is only valid for 24 hours</p>`
+    simpleBody: `<h1>Welcome to Stargazer</h1>
+    ${starHTML}
+    <br/>
+    <a href="${url}">Please click here to login</a><p>This link is only valid for 24 hours</p>`
   }).toString()
   // just keep email contents in a param for now
   const res = await fetch(`https://email.codabool.workers.dev/?${urlParams}`, {

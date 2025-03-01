@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair } from "lucide-react"
+import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake } from "lucide-react"
 import { select } from 'd3'
 import { useState } from "react"
 
@@ -78,26 +78,6 @@ export default function Hamburger({ mode, name }) {
             <Github className="ml-[.6em]" /> <span className="ml-[5px]">GitHub</span>
           </DropdownMenuItem>
         </a>
-        <a href={`/api/download/${name}`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">TopoJSON</span>
-          </DropdownMenuItem>
-        </a>
-        <a href={`/api/download/${name}?format=geo`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">GeoJSON</span>
-          </DropdownMenuItem>
-        </a>
-        <a href={`/api/download/${name}?format=kml`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
-          </DropdownMenuItem>
-        </a>
-        {/* <Link href={`/contribute/${name}`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
-          </DropdownMenuItem>
-        </Link> */}
         {name === "lancer" &&
           <a href="/lancer_starwall">
             <DropdownMenuItem className="cursor-pointer">
@@ -112,6 +92,34 @@ export default function Hamburger({ mode, name }) {
             </DropdownMenuItem>
           </a>
         }
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Export</DropdownMenuLabel>
+        <a href={`/api/download/${name}`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Topojson</span>
+          </DropdownMenuItem>
+        </a>
+        <a href={`/api/download/${name}?format=geo`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
+          </DropdownMenuItem>
+        </a>
+        <a href={`/api/download/${name}?format=kml`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
+          </DropdownMenuItem>
+        </a>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Create</DropdownMenuLabel>
+        <Link href={`/contribute/${name}`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <HeartHandshake className="ml-[.6em] inline" /> <span className="ml-[5px]">Contribute</span>
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuItem className="cursor-pointer">
+          <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
+        </DropdownMenuItem>
+
       </DropdownMenuContent>
     </DropdownMenu >
   )

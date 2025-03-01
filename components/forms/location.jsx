@@ -44,7 +44,9 @@ export default function CreateLocation({ map }) {
   const form = useForm()
 
   if (status === "unauthenticated") {
-    router.push("/contribute")
+    setTimeout(() => {
+      router.push("/contribute")
+    }, 0)
     return (
       <LoaderCircle className="animate-spin mt-[48px] mx-auto" />
     )
