@@ -1,33 +1,51 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from './ui/button'
+import { useMap } from "react-map-gl/maplibre";
+import LocationForm from "./forms/LocationForm";
+import randomName from "@scaleway/random-name";
 
-export default function FeaturePopup({ feature, onSave, onClose }) {
-  // Convert feature properties from an object to an array of { key, value } pairs
-  const initialRows = Object.entries(feature.properties || {}).map(([key, value]) => ({ key, value }));
-  const [rows, setRows] = useState(initialRows)
+export default function FeaturePopup({ draw, mapName, mapId }) {
+  const { map } = useMap()
+  const [popup, setPopup] = useState()
 
-  // Update a row's key or value
-  const handleChange = (index, field, newValue) => {
-    const newRows = [...rows];
-    newRows[index] = { ...newRows[index], [field]: newValue };
-    setRows(newRows);
+  function handleClick(e) {
+    // console.log("pre select", draw.getSelected())
+    if (!draw.getSelected().features.length) return
+    const f = draw.getSelected().features[0]
+    if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
+    const feature = draw.get(f.id) || f
+    // console.log("selected", feature)
+    setPopup(feature)
   }
 
-  // Add a new empty row
-  const addRow = () => {
-    setRows([...rows, { key: '', value: '' }]);
-  }
 
-  // On save, convert the rows back into an object (ignoring rows with empty keys)
-  const handleSave = () => {
-    const newProps = {};
-    rows.forEach(({ key, value }) => {
-      if (key.trim()) {
-        newProps[key] = value;
+  useEffect(() => {
+    if (!map || !draw) return
+    map.on('touchstart', handleClick)
+    map.on('click', handleClick)
+    return () => {
+      map.off('click', handleClick)
+      map.off('touchstart', handleClick)
+    }
+  }, [map, draw])
+
+  useEffect(() => {
+    if (!popup || !draw) return
+    // duplicate of controls save function
+    const urlParams = new URLSearchParams(window.location.search);
+    const mapId = mapName + "-" + urlParams.get('id')
+    const geojson = draw.getAll()
+    if (!geojson.features.length) return
+    const prev = JSON.parse(localStorage.getItem('maps')) || {}
+    localStorage.setItem('maps', JSON.stringify({
+      ...prev, [mapId]: {
+        geojson,
+        name: prev[mapId]?.name || randomName(),
+        updated: Date.now(),
+        map: mapName,
       }
-    })
-    onSave(feature.id, newProps);
-  }
+    }))
+  }, [popup, draw])
 
   return (
     <div
@@ -35,39 +53,13 @@ export default function FeaturePopup({ feature, onSave, onClose }) {
         position: 'absolute',
         left: '20px',
         bottom: '20px',
-        background: 'white',
-        padding: '10px',
-        border: '1px solid #ccc',
-        zIndex: 100,
-        color: "black",
+        background: 'black',
+        padding: '8px',
+        zIndex: 10,
       }}
+      className="border"
     >
-      <h4 className="text-xl mb-4 text-bold">Edit Feature</h4>
-      <table>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              <td style={{ paddingRight: '5px' }}>
-                <input
-                  value={row.key}
-                  placeholder="Property Key"
-                  onChange={(e) => handleChange(index, 'key', e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  value={row.value}
-                  placeholder="Property Value"
-                  onChange={(e) => handleChange(index, 'value', e.target.value)}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Button onClick={addRow} className="cursor-pointer">Add Row</Button>
-      <Button onClick={handleSave} className="cursor-pointer">Save</Button>
-      <Button onClick={onClose} className="cursor-pointer">Close</Button>
+      {popup && <LocationForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />}
     </div>
   );
 }

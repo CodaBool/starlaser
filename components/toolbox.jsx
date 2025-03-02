@@ -24,7 +24,7 @@ export default function Toolbox({ mode, g, width, height, mobile, svgRef, name }
       .attr("width", "100%")
       .attr("height", "100%")
       .style("position", "absolute")
-      .style("z-index", 3)
+      .style("z-index", 6)
       .attr('pointer-events', 'none')
 
     point = svg

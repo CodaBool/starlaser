@@ -13,10 +13,9 @@ export default function DrawControl({ name, setDraw, draw, params }) {
   useEffect(() => {
     if (!draw || !mapId) return
     const geojson = draw.getAll()
+    console.log("geo", geojson)
     if (!geojson.features.length) return
-    console.log("saving", mapId)
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
-    console.log("prev", prev, "new", { ...prev, [mapId]: {} })
     localStorage.setItem('maps', JSON.stringify({
       ...prev, [mapId]: {
         geojson,
@@ -29,7 +28,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
   useEffect(() => {
     if (!mapId) return
-    console.log("map id change", mapId)
+    // console.log("map id change", mapId)
   }, [mapId])
 
   useEffect(() => {
@@ -39,13 +38,13 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
     // if no data exists set an id and save
     if (!mapsWithData.length || params.get("new")) {
-      console.log("no data exists, or given create param")
+      // console.log("no data exists, or given create param")
       // TODO: consider const uuid = crypto.randomUUID()
       const id = Date.now()
       setMapId(`${name}-${id}`)
 
       const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
-      console.log("replaced URL to", url)
+      // console.log("replaced URL to", url)
       window.history.replaceState(null, '', url)
 
       setSaveTrigger(p => !p)
@@ -54,12 +53,12 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
     // if id is set save
     if (mapId) {
-      console.log("mapId already exists", mapId, "save")
+      // console.log("mapId already exists", mapId, "save")
       setSaveTrigger(p => !p)
       return
     }
 
-    console.log(mapsWithData.length, "map found")
+    // console.log(mapsWithData.length, "map found")
 
     // if data exists ask to restore and save id
     // const matchingMapsCount = mapsWithData.length;
@@ -67,7 +66,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
     if (params.get("id")) {
       // TODO: toast system, show a message "restored local map"
-      console.log("chose map from URL param")
+      // console.log("chose map from URL param")
       const mId = `${name}-${params.get("id")}`
       const geojson = savedMaps[mId]?.geojson
       if (geojson) {
@@ -93,30 +92,30 @@ export default function DrawControl({ name, setDraw, draw, params }) {
       } else {
         daysAgo = daysAgo + " days ago"
       }
-      console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
+      // console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
       // TODO: need a way to have multiple stored maps for the same map
       const restore = window.confirm(`${mapsWithData.length === 1 ? "A previous session was found" : mapsWithData.length + " previous sessions found, one"} from ${daysAgo}. Would you like to ${mapsWithData.length === 1 ? "restore this session" : "choose a session to restore"}?`)
       if (restore) {
         if (mapsWithData.length === 1) {
-          console.log("restore session, only one found", key)
+          // console.log("restore session, only one found", key)
           setMapId(key)
-          draw.add(data)
+          draw.add(data.geojson)
           return
         } else {
-          console.log(`need to redirect to /${name}/export page since there are multiple`, key)
+          // console.log(`need to redirect to /${name}/export page since there are multiple`, key)
           router.push(`/${name}/export`)
           return
         }
       } else {
         // TODO: toast system, show a message "fresh map started"
-        console.log("start a new session")
+        // console.log("start a new session")
 
         // duplicate of ?new=1 conditional
         const id = Date.now()
         // TODO: consider const uuid = crypto.randomUUID()
         setMapId(`${name}-${id}`)
         const url = new URL(window.location).toString().split("?")[0] + "?id=" + id
-        console.log("replaced URL to", url)
+        // console.log("replaced URL to", url)
         window.history.replaceState(null, '', url)
 
         setSaveTrigger(p => !p)
@@ -125,12 +124,17 @@ export default function DrawControl({ name, setDraw, draw, params }) {
     }
   }, [draw]);
 
-  function s() {
+  function s(data) {
+    unsavedData = data
+    console.log("save this data", data)
     setSaveTrigger(p => !p)
   }
 
+  // MapboxDrawOptions
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mapbox__mapbox-gl-draw/index.d.ts
   const d = useControl(
     () => new MapboxDraw({
+      touchEnabled: true,
       controls: {
         combine_features: false,
         uncombine_features: false,
@@ -151,5 +155,5 @@ export default function DrawControl({ name, setDraw, draw, params }) {
     }
   )
   useEffect(() => setDraw(d), [])
-  return null;
+  return null
 }

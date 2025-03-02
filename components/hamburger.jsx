@@ -116,9 +116,9 @@ export default function Hamburger({ mode, name }) {
             <HeartHandshake className="ml-[.6em] inline" /> <span className="ml-[5px]">Contribute</span>
           </DropdownMenuItem>
         </Link>
-        <DropdownMenuItem className="cursor-pointer">
+        {/* <DropdownMenuItem className="cursor-pointer">
           <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
       </DropdownMenuContent>
     </DropdownMenu >

@@ -38,7 +38,7 @@ export default async function Contribute({ params, searchParams }) {
   })
 
   return (
-    <div className="md:container mx-auto my-10 mr-1">
+    <div className="md:container mx-auto my-10 mr-1 p-2">
       {openLocationForm
         ? <CreateLocation map={map} />
         : <Link href={`/contribute/${map}?p=1`} ><Button variant="outline" className="w-full my-4 cursor-pointer">Create a new Location</Button ></Link>

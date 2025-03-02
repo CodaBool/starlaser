@@ -176,7 +176,7 @@ export default function Map({ width, height, data, name, mobile }) {
       .attr("width", "100%")
       .attr("height", "100%")
       .style("position", "absolute")
-      .style("z-index", 2)
+      .style("z-index", 5)
 
     if (name.includes("lancer")) {
       // svg.style("background", `radial-gradient(${bg[name]})`)

@@ -13,6 +13,7 @@
 - maplibre gl https://maplibre.org/maplibre-gl-js/docs/API
 - react map gl https://visgl.github.io/react-map-gl/docs/api-reference/maplibre/map
 - maplibre style editor https://maplibre.org/maputnik
+- draw api https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md
 
 # icons
 - https://game-icons.net
@@ -47,7 +48,6 @@ npx mapshaper *.json \
 - vault
 - building
 - cave
-- region
 - compound
 
 # Region change
@@ -56,6 +56,7 @@ npx mapshaper *.json \
 # todo:
 - style fixes, too dark
 - contribute pages (save for later)
+- measure broken on mobile
 
 # Contribute work
 -

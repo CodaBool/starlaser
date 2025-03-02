@@ -11,41 +11,8 @@ export default function Cartographer({ name, data }) {
   const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS, BG } = getConsts(name)
   const [size, setSize] = useState()
   const mobile = isMobile()
-  const [popup, setPopup] = useState()
   const [draw, setDraw] = useState()
   const params = useSearchParams()
-
-  // When the map is clicked, query the drawn layers for a feature.
-  // Adjust the layers array to match the ones from your draw control.
-  const handleMapClick = (e) => {
-    if (!draw.getSelected().features.length) return
-    const f = draw.getSelected().features[0]
-    if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
-    const feature = draw.get(f.id) || f
-    console.log("select", f)
-    setPopup({ feature, position: { x: e.point.x, y: e.point.y } });
-  };
-
-  // Update the feature properties in state (and optionally update the drawn feature)
-  // const saveFeatureProps = (id, properties) => {
-  //   console.log("saving", id, properties)
-  //   setFeatures(curr => {
-  //     const feature = curr[id];
-  //     if (feature) {
-  //       const updated = { ...feature, properties };
-  //       return { ...curr, [id]: updated };
-  //     }
-  //     return curr;
-  //   })
-  //   if (draw) {
-  //     const feature = draw.get(id)
-  //     if (feature) {
-  //       const updatedFeature = { ...feature, properties }
-  //       draw.delete([id]);
-  //       draw.add(updatedFeature);
-  //     }
-  //   }
-  // }
 
   useEffect(() => {
     const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -75,18 +42,12 @@ export default function Cartographer({ name, data }) {
         minZoom={MIN_ZOOM}
         style={{ width: size.width, height: size.height }}
         mapStyle={STYLE}
-        onClick={handleMapClick}
+      // onClick={handleMapClick}
       >
-        <DrawControl setDraw={setDraw} draw={draw} name={name} params={params} />
+        {!mobile && <DrawControl setDraw={setDraw} draw={draw} name={name} params={params} />}
         <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
       </Map>
-      {popup && (
-        <Editor
-          feature={popup.feature}
-          // onSave={saveFeatureProps}
-          onClose={() => setPopup(null)}
-        />
-      )}
+      <Editor draw={draw} mapName={name} />
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )
