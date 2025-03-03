@@ -18,14 +18,13 @@ export default function FeaturePopup({ draw, mapName, mapId }) {
     setPopup(feature)
   }
 
-
   useEffect(() => {
     if (!map || !draw) return
-    map.on('touchstart', handleClick)
+    // map.on('touchstart', handleClick)
     map.on('click', handleClick)
     return () => {
       map.off('click', handleClick)
-      map.off('touchstart', handleClick)
+      // map.off('touchstart', handleClick)
     }
   }, [map, draw])
 
