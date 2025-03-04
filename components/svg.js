@@ -73,7 +73,5 @@ export const terrestrial = `<svg viewBox="0 0 512 512" height="19px" width="19px
 </svg>`
 
 export const moon = `<svg viewBox="0 0 512 512" height="19px" width="19px" xmlns="http://www.w3.org/2000/svg">
-  <g transform="">
-    <path d="M253 19a239 239 0 1 0 0 477 239 239 0 0 0 0-477zm-24 52c41 0 78 13 109 34l-17-1a152 152 0 1 0 17 304A186 186 0 1 1 229 70z" />
-  </g>
+  <path d="M253 19a239 239 0 1 0 0 477 239 239 0 0 0 0-477zm-24 52c41 0 78 13 109 34l-17-1a152 152 0 1 0 17 304A186 186 0 1 1 229 70z" />
 </svg>`

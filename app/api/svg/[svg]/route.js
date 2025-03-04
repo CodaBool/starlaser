@@ -3,8 +3,12 @@ import * as svgs from '@/components/svg.js';
 export async function GET(req, { params }) {
   try {
     const { svg } = await params
-    const icon = svgs[svg]
+    let icon = svgs[svg]
     if (!icon) throw "no icon for " + svg + " found"
+    icon = icon.replace(
+      /<svg([^>]*)>/,
+      `<svg$1><style>svg { fill: white; }</style>`
+    );
     return new Response(icon, {
       headers: { "Content-Type": "image/svg+xml" }
     })
