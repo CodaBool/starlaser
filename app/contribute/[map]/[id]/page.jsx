@@ -20,6 +20,7 @@ import { getServerSession } from "next-auth"
 import DOMPurify from "isomorphic-dompurify"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
+import * as d3 from 'd3-geo'
 import { ArrowLeft, Star, CircleX } from "lucide-react"
 // import MiniMap from "@/components/minimap"
 import { adminIds } from "@/lib/utils"
@@ -97,9 +98,23 @@ export default async function Location({ params, searchParams }) {
 
   let panX = "wow such NaN"
   let panY = "wow such NaN"
+  let type = "location"
   if (location.coordinates.includes(",")) {
+    // console.log("coord setup", location.coordinates)
     panX = Number(location.coordinates.split(",")[0].trim())
     panY = Number(location.coordinates.split(",")[1].trim())
+    if (location.geometry.includes("Poly")) {
+      type = "territory"
+    } else if (location.geometry === "LineString") {
+      type = "guide"
+    }
+
+    if (type !== "location") {
+      const centroid = d3.geoPath().centroid(location)
+      // console.log("centroid", centroid)
+      let coord = centroid.join(",")
+      // console.log("centroid coord", coord)
+    }
   }
 
   return (
@@ -135,8 +150,8 @@ export default async function Location({ params, searchParams }) {
                 ? <div>
                   <CircleX className="mx-auto" /> Invalid Coordinates
                 </div>
-                : <p>minimap placeholder</p>
-                // : <MiniMap panX={panX} panY={panY} creator={creator} />
+                // : <p>minimap placeholder</p>
+                : <iframe src={`/${map}?mini=1&x=${panX}&y=${panY}&name=${encodeURIComponent(location.name)}&type=${type}`} width="600" height="400" style={{ border: "none" }}></iframe>
               }
             </AccordionContent>
           </AccordionItem>

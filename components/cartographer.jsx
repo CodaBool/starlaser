@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import MapComponent from './map'
 import { getConsts, isMobile } from '@/lib/utils'
 import Map from 'react-map-gl/maplibre'
-import DrawControl from './controls.jsx'
+import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
 
@@ -13,6 +13,7 @@ export default function Cartographer({ name, data }) {
   const mobile = isMobile()
   const [draw, setDraw] = useState()
   const params = useSearchParams()
+  const mini = params.get("mini") === "1"
 
   useEffect(() => {
     const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -36,18 +37,19 @@ export default function Cartographer({ name, data }) {
       <Map
         id="map"
         dragRotate={false}
+        scrollZoom={!mini}
+        dragPan={!mini}
         attributionControl={false}
         initialViewState={VIEW}
         maxZoom={MAX_ZOOM}
         minZoom={MIN_ZOOM}
         style={{ width: size.width, height: size.height }}
         mapStyle={STYLE}
-      // onClick={handleMapClick}
       >
-        {!mobile && <DrawControl setDraw={setDraw} draw={draw} name={name} params={params} />}
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} />
+        {(!mobile && !mini) && <Controls setDraw={setDraw} draw={draw} name={name} params={params} setSize={setSize} />}
+        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} mini={mini} params={params} />
       </Map>
-      <Editor draw={draw} mapName={name} />
+      {!mini && <Editor draw={draw} mapName={name} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
 
-export default function DrawControl({ name, setDraw, draw, params }) {
+export default function Controls({ name, setDraw, draw, params, setSize }) {
   const [saveTrigger, setSaveTrigger] = useState()
   const [mapId, setMapId] = useState()
   const router = useRouter()
@@ -13,7 +13,6 @@ export default function DrawControl({ name, setDraw, draw, params }) {
   useEffect(() => {
     if (!draw || !mapId) return
     const geojson = draw.getAll()
-    console.log("geo", geojson)
     if (!geojson.features.length) return
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
     localStorage.setItem('maps', JSON.stringify({
@@ -76,7 +75,6 @@ export default function DrawControl({ name, setDraw, draw, params }) {
       } else {
         // TODO: give toast message "map not found locally"
         console.log("could not find map using id", mId)
-
       }
     }
 
@@ -103,6 +101,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
           return
         } else {
           // console.log(`need to redirect to /${name}/export page since there are multiple`, key)
+          setSize(null)
           router.push(`/${name}/export`)
           return
         }
@@ -126,7 +125,7 @@ export default function DrawControl({ name, setDraw, draw, params }) {
 
   function s(data) {
     unsavedData = data
-    console.log("save this data", data)
+    // console.log("save this data", data)
     setSaveTrigger(p => !p)
   }
 

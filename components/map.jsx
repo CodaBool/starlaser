@@ -52,7 +52,7 @@ export function getIcon(d, create, simple) {
   return icon ? icon : null
 }
 
-export default function Map({ width, height, data, name, mobile }) {
+export default function Map({ width, height, data, name, mobile, mini, params }) {
   const { map } = useMap()
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
@@ -60,6 +60,7 @@ export default function Map({ width, height, data, name, mobile }) {
   const { CENTER, SCALE, CLICK_ZOOM } = getConsts(name)
 
   async function pan(d, locations, fit) {
+    if (mini && !fit) return
     mode.add("zooming")
     let fly = true, lat, lng, coordinates = d.geometry.coordinates
     let zoomedOut = map.getZoom() < 6
@@ -340,6 +341,28 @@ export default function Map({ width, height, data, name, mobile }) {
     map.on("move", render)
     map.on("moveend", render)
     render()
+
+    if (mini) {
+      const name = params.get("name")
+      const x = params.get("x")
+      const y = params.get("y")
+      const geometry = params.get("type")
+      console.log("all geo type", data, geometry)
+      const d = data[geometry].find(f => {
+        if (geometry === "location") {
+          return f.properties.name === name && f.geometry.coordinates[0][0] === parseFloat(x) && f.geometry.coordinates[0][1] === parseFloat(y)
+        } else {
+          console.log("compare ", f.properties.name, "vs", name, "x", f.geometry.coordinates[0][0][0], "vs", parseFloat(x), "y", f.geometry.coordinates[0][0][1], "vs", parseFloat(y))
+          return f.properties.name === name && f.geometry.coordinates[0][0][0] === parseFloat(x) && f.geometry.coordinates[0][0][1] === parseFloat(y)
+        }
+      });
+      console.log("given", name, x, y, geometry, "did you mean", d)
+      if (d) {
+        pan(d, [d], true);
+      } else {
+        console.log("could not find using", name, x, y, geometry)
+      }
+    }
     return () => {
       map.off("viewreset", render)
       map.off("move", render)
@@ -347,20 +370,20 @@ export default function Map({ width, height, data, name, mobile }) {
     }
   }, [map])
 
+  if (mini) return (<Tooltip {...tooltip} mobile={mobile} />)
+
   return (
     <>
-      <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />
-      <Hamburger mode={mode} name={name} />
-      <Tooltip {...tooltip} mobile={mobile} />
-      {true &&
-        <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
-          <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
-          <ZoomOut size={34} onClick={() => map.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
-        </div>
-      }
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} map={map} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
+      <Hamburger mode={mode} name={name} />
+      <Tooltip {...tooltip} mobile={mobile} />
+      <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />
+      <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
+        <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
+        <ZoomOut size={34} onClick={() => map.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />
+      </div>
     </>
   )
 }

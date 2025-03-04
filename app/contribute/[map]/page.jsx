@@ -38,13 +38,13 @@ export default async function Contribute({ params, searchParams }) {
   })
 
   return (
-    <div className="md:container mx-auto my-10 mr-1 p-2">
+    <div className="md:container mx-auto my-10 md:p-0 p-2">
       {openLocationForm
         ? <CreateLocation map={map} />
         : <Link href={`/contribute/${map}?p=1`} ><Button variant="outline" className="w-full my-4 cursor-pointer">Create a new Location</Button ></Link>
       }
       <Dialog>
-        <DialogTrigger className="rounded-md border border-slate-800 bg-slate-950 hover:bg-slate-800 hover:text-slate-50 h-10 w-full my-4">What is this?</DialogTrigger>
+        <DialogTrigger className="rounded-md border border-slate-800 bg-slate-950 hover:bg-slate-800 hover:text-slate-50 h-10 w-full my-4 cursor-pointer">What is this?</DialogTrigger>
         <DialogContent className="sm:px-6 px-0  pr-2">
           <DialogHeader>
             <DialogTitle>Community driven data</DialogTitle>
@@ -130,6 +130,7 @@ export default async function Contribute({ params, searchParams }) {
       <hr className="my-4" />
       <h1 className="text-5xl text-center">Guides</h1>
       <hr className="my-4" />
+      {locations?.filter(l => l.geometry === "LineString").length === 0 && <p className="text-center text-lg text-gray-600">This map has no guides</p>}
       <div className="flex flex-wrap justify-center">
         {locations?.filter(l => l.geometry === "LineString").map(location => {
           return (

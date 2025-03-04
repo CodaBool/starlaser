@@ -154,7 +154,7 @@ export default function TableForm({ feature, draw, setPopup }) {
             <CircleHelp className="cursor-pointer stroke-gray-400 inline" size={14} /> Special Keys
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-[800px]">
+        <DialogContent className="max-w-[1000px]">
           <DialogHeader>
             <DialogTitle>Special Properties</DialogTitle>
             <DialogDescription>
@@ -165,8 +165,9 @@ export default function TableForm({ feature, draw, setPopup }) {
           <Table>
             <TableHeader>
               <TableRow className="text-center">
-                <TableHead className="text-center">Key</TableHead>
+                <TableHead className="">Key</TableHead>
                 <TableHead className="text-center">Effect</TableHead>
+                <TableHead className="text-center">Type</TableHead>
                 <TableHead className="text-center">Required</TableHead>
               </TableRow>
             </TableHeader>
@@ -174,11 +175,12 @@ export default function TableForm({ feature, draw, setPopup }) {
             <TableBody>
               {Object.entries(AVAILABLE_PROPERTIES).map((obj, i) => (
                 <TableRow key={i}>
-                  <TableCell>{obj[0]}</TableCell>
+                  <TableCell className="">{obj[0]}</TableCell>
                   <TableCell>
-                    <div dangerouslySetInnerHTML={{ __html: obj[1].split("|required")[0] }} />
+                    <div dangerouslySetInnerHTML={{ __html: obj[1].split("|")[0] }} />
                   </TableCell>
-                  {obj[1].includes("|required") && <TableCell title="this field is required" className="cursor-help">🚩</TableCell>}
+                  <TableCell className="text-center">{obj[1].split("|type=")[1]}</TableCell>
+                  {obj[1].includes("|required") && <TableCell title="this field is required" className="cursor-help text-center">🚩</TableCell>}
                 </TableRow>
               ))}
             </TableBody>
