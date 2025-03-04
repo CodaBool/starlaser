@@ -54,6 +54,18 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
   }
 
   useEffect(() => {
+
+    // move editor table
+    const el = document.querySelector(".editor-table")
+    if (el) {
+      if (drawerOpen) {
+        el.style.bottom = "50%"
+      } else {
+        el.style.bottom = "20px"
+      }
+    }
+
+    // remove highlight circle
     if (document.querySelector(".click-circle") && drawerOpen === false) {
       document.querySelector(".click-circle").remove()
     }

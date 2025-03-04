@@ -124,7 +124,7 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
   }, [draw]);
 
   function s(data) {
-    unsavedData = data
+    // unsavedData = data
     // console.log("save this data", data)
     setSaveTrigger(p => !p)
   }

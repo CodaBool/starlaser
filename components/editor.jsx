@@ -55,8 +55,9 @@ export default function FeaturePopup({ draw, mapName, mapId }) {
         background: 'black',
         padding: '8px',
         zIndex: 10,
+        transition: 'bottom 0.5s ease-in-out',
       }}
-      className="border"
+      className="border editor-table"
     >
       {popup && <LocationForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />}
     </div>
