@@ -111,9 +111,9 @@ export default async function Location({ params, searchParams }) {
 
     if (type !== "location") {
       const centroid = d3.geoPath().centroid(location)
-      // console.log("centroid", centroid)
+      console.log("centroid", centroid)
       let coord = centroid.join(",")
-      // console.log("centroid coord", coord)
+      console.log("centroid coord", coord)
     }
   }
 
@@ -144,7 +144,7 @@ export default async function Location({ params, searchParams }) {
 
         <Accordion type="single" collapsible className="md:mx-8 mx-4">
           <AccordionItem value="item-1">
-            <AccordionTrigger>See on map</AccordionTrigger>
+            <AccordionTrigger className="cursor-pointer">See on map</AccordionTrigger>
             <AccordionContent className="map-container flex justify-around">
               {isNaN(panX)
                 ? <div>
@@ -160,7 +160,7 @@ export default async function Location({ params, searchParams }) {
         <CardFooter className="flex-col items-start mt-4 md:p-6 p-1">
           {commentFormOpen
             ? <CommentForm map={map} locationId={id} />
-            : <Link href={`/contribute/${map}/${id}/?c=1`} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full">Create Comment</Button></Link>
+            : <Link href={`/contribute/${map}/${id}/?c=1`} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
           }
           <div className="w-full my-4">
             {location.comments.map(comment => {

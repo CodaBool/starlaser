@@ -39,6 +39,7 @@ export default function Cartographer({ name, data }) {
         dragRotate={false}
         scrollZoom={!mini}
         dragPan={!mini}
+        doubleClickZoom={!mini}
         attributionControl={false}
         initialViewState={VIEW}
         maxZoom={MAX_ZOOM}

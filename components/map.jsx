@@ -126,7 +126,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   }
 
   function hover(e, { properties, geometry }) {
-    if (mode.has("crosshair") && mobile) return
+    if ((mode.has("crosshair") && mobile) || mini) return
     const guide = geometry.type === "LineString"
     const location = geometry.type === "Point"
     const territory = geometry.type?.includes("Poly")
@@ -343,24 +343,25 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     render()
 
     if (mini) {
-      const name = params.get("name")
-      const x = params.get("x")
-      const y = params.get("y")
+      const featName = params.get("name")
+      const x = parseFloat(params.get("x"))
+      const y = parseFloat(params.get("y"))
       const geometry = params.get("type")
-      console.log("all geo type", data, geometry)
       const d = data[geometry].find(f => {
         if (geometry === "location") {
-          return f.properties.name === name && f.geometry.coordinates[0][0] === parseFloat(x) && f.geometry.coordinates[0][1] === parseFloat(y)
+          return f.properties.name === featName && f.geometry.coordinates[0] === x && f.geometry.coordinates[1] === y
         } else {
-          console.log("compare ", f.properties.name, "vs", name, "x", f.geometry.coordinates[0][0][0], "vs", parseFloat(x), "y", f.geometry.coordinates[0][0][1], "vs", parseFloat(y))
-          return f.properties.name === name && f.geometry.coordinates[0][0][0] === parseFloat(x) && f.geometry.coordinates[0][0][1] === parseFloat(y)
+          const coordinates = d3.geoPath().centroid(f)
+          return f.properties.name === featName && coordinates[0] === x && coordinates[1] === y
         }
-      });
-      console.log("given", name, x, y, geometry, "did you mean", d)
+      })
       if (d) {
-        pan(d, [d], true);
-      } else {
-        console.log("could not find using", name, x, y, geometry)
+        pan(d, [d], true)
+        d3.selectAll("." + geometry)
+          .filter(p => d.geometry.coordinates === p.geometry.coordinates)
+          .classed('animate-pulse', true)
+          .attr('fill', () => geometry === "guide" ? "none" : accent(name, .7, "255, 142, 0"))
+          .attr('stroke', () => geometry === "location" ? null : accent(name, .7, "255, 142, 0"))
       }
     }
     return () => {
@@ -377,7 +378,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} map={map} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
-      <Hamburger mode={mode} name={name} />
+      <Hamburger mode={mode} name={name} c={params.get("c") === "1"} />
       <Tooltip {...tooltip} mobile={mobile} />
       <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />
       <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >

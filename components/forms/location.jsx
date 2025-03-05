@@ -83,15 +83,15 @@ export default function CreateLocation({ map }) {
         <Card className="mx-auto max-w-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Create a New Location</CardTitle>
-              <Button variant="ghost" onClick={e => {
+              <CardTitle>Create a New Core Location</CardTitle>
+              <Button variant="ghost" className="cursor-pointer" onClick={e => {
                 e.preventDefault()
                 router.push(`/contribute/${map}`)
               }}>
                 <X />
               </Button>
             </div>
-            <CardDescription>Add either a new polygon or point to the map. For other requests use the <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues">issues</a> page</CardDescription>
+            <CardDescription>Add either a new polygon or point to the shared core map. For other requests use the <a className="text-blue-50" href="https://github.com/CodaBool/community-vtt-maps/issues">issues</a> page</CardDescription>
           </CardHeader>
           <CardContent>
             <FormField
@@ -122,18 +122,18 @@ export default function CreateLocation({ map }) {
                   <FormLabel>Type</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="territory.polygon">Territory (polygon)</SelectItem>
-                        <SelectItem value="cluster.polygon">Star Cluster (polygon)</SelectItem>
-                        <SelectItem value="terrestrial.point">Terrestrial</SelectItem>
-                        <SelectItem value="star.point">Star</SelectItem>
-                        <SelectItem value="station.point">Station</SelectItem>
-                        <SelectItem value="gate.point">Gate</SelectItem>
-                        <SelectItem value="jovian.point">Jovian</SelectItem>
-                        <SelectItem value="moon.point">Moon</SelectItem>
+                        <SelectItem value="territory.polygon" className="cursor-pointer">Territory (polygon)</SelectItem>
+                        <SelectItem value="cluster.polygon" className="cursor-pointer">Star Cluster (polygon)</SelectItem>
+                        <SelectItem value="terrestrial.point" className="cursor-pointer">Terrestrial</SelectItem>
+                        <SelectItem value="star.point" className="cursor-pointer">Star</SelectItem>
+                        <SelectItem value="station.point" className="cursor-pointer">Station</SelectItem>
+                        <SelectItem value="gate.point" className="cursor-pointer">Gate</SelectItem>
+                        <SelectItem value="jovian.point" className="cursor-pointer">Jovian</SelectItem>
+                        <SelectItem value="moon.point" className="cursor-pointer">Moon</SelectItem>
                       </SelectContent>
                     </Select >
                   </FormControl>
@@ -240,6 +240,7 @@ export default function CreateLocation({ map }) {
                   <FormControl>
                     <Checkbox
                       checked={field.value}
+                      className="cursor-pointer"
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -263,6 +264,7 @@ export default function CreateLocation({ map }) {
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
                   <FormControl>
                     <Checkbox
+                      className="cursor-pointer"
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -288,6 +290,7 @@ export default function CreateLocation({ map }) {
                   <FormControl>
                     <Checkbox
                       checked={field.value}
+                      className="cursor-pointer"
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -324,7 +327,7 @@ export default function CreateLocation({ map }) {
             />
           </CardContent>
           <CardFooter>
-            <Button disabled={submitting} type="submit" variant="outline" className="w-full">
+            <Button disabled={submitting} type="submit" variant="outline" className="w-full cursor-pointer">
               {submitting
                 ? <LoaderCircle className="animate-spin" />
                 : "Submit"

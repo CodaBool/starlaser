@@ -19,9 +19,9 @@ import {
 } from "@/components/ui/dialog"
 import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake } from "lucide-react"
 import { select } from 'd3'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-export default function Hamburger({ mode, name }) {
+export default function Hamburger({ mode, name, c }) {
   const [check, setCheck] = useState()
 
   function toggle(newMode, skipnull) {
@@ -42,6 +42,12 @@ export default function Hamburger({ mode, name }) {
       select(".line-click").raise()
     }
   }
+
+  useEffect(() => {
+    if (c && !mode.has("crosshair")) {
+      toggle("crosshair", true)
+    }
+  }, [])
 
   return (
     <DropdownMenu>
