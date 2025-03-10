@@ -6,6 +6,13 @@ import Map from 'react-map-gl/maplibre'
 import Controls from './controls.jsx'
 import Editor from './editor'
 import { useSearchParams } from 'next/navigation'
+import { create } from 'zustand'
+
+export const useStore = create((set) => ({
+  editorTable: null,
+  setEditorTable: editorTable => set({ editorTable }),
+  // resetEditorTable: () => set({ editorTable: null }),
+}))
 
 export default function Cartographer({ name, data }) {
   const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS, BG } = getConsts(name)

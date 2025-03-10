@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { Button } from './ui/button'
 import { useMap } from "react-map-gl/maplibre";
-import LocationForm from "./forms/LocationForm";
+import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 
-export default function FeaturePopup({ draw, mapName, mapId }) {
+export default function Editor({ draw, mapName, mapId }) {
   const { map } = useMap()
   const [popup, setPopup] = useState()
 
@@ -14,7 +14,7 @@ export default function FeaturePopup({ draw, mapName, mapId }) {
     const f = draw.getSelected().features[0]
     if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
     const feature = draw.get(f.id) || f
-    // console.log("selected", feature)
+    // console.log("selected", feature, f)
     setPopup(feature)
   }
 
@@ -39,7 +39,7 @@ export default function FeaturePopup({ draw, mapName, mapId }) {
     localStorage.setItem('maps', JSON.stringify({
       ...prev, [mapId]: {
         geojson,
-        name: prev[mapId]?.name || randomName(),
+        name: prev[mapId]?.name || randomName('', ' '),
         updated: Date.now(),
         map: mapName,
       }
@@ -59,7 +59,7 @@ export default function FeaturePopup({ draw, mapName, mapId }) {
       }}
       className="border editor-table"
     >
-      {popup && <LocationForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />}
+      {popup && <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />}
     </div>
   );
 }

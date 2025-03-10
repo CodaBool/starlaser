@@ -99,27 +99,15 @@ export default function Hamburger({ mode, name, c }) {
           </a>
         }
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Export</DropdownMenuLabel>
-        <a href={`/api/download/${name}`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Topojson</span>
-          </DropdownMenuItem>
-        </a>
-        <a href={`/api/download/${name}?format=geo`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
-          </DropdownMenuItem>
-        </a>
-        <a href={`/api/download/${name}?format=kml`}>
-          <DropdownMenuItem className="cursor-pointer">
-            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
-          </DropdownMenuItem>
-        </a>
-        <DropdownMenuSeparator />
         <DropdownMenuLabel>Create</DropdownMenuLabel>
         <Link href={`/contribute/${name}`}>
           <DropdownMenuItem className="cursor-pointer">
             <HeartHandshake className="ml-[.6em] inline" /> <span className="ml-[5px]">Contribute</span>
+          </DropdownMenuItem>
+        </Link>
+        <Link href={`/${name}/export`}>
+          <DropdownMenuItem className="cursor-pointer">
+            <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
           </DropdownMenuItem>
         </Link>
         {/* <DropdownMenuItem className="cursor-pointer">

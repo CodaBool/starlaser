@@ -4,21 +4,38 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useCallback, useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
+import { getConsts } from '@/lib/utils'
 
 export default function Controls({ name, setDraw, draw, params, setSize }) {
   const [saveTrigger, setSaveTrigger] = useState()
   const [mapId, setMapId] = useState()
   const router = useRouter()
+  const { TYPES } = getConsts(name)
 
   useEffect(() => {
     if (!draw || !mapId) return
     const geojson = draw.getAll()
     if (!geojson.features.length) return
+    geojson.features.forEach(f => {
+      const availableTypes = Object.keys(TYPES).filter(t =>
+        f.geometry.type.toLowerCase() === t.split(".")[1]
+      ).map(t => t.split(".")[0])
+      if (!f.properties.name) {
+        f.properties.name = randomName('', ' ')
+        draw.add(f)
+      }
+      if (!f.properties.type) {
+        // console.log("found missing type for feature", f, "adding", availableTypes[0])
+        f.properties.type = availableTypes[0] || "placeholder"
+        draw.add(f)
+      }
+    })
+    // console.log("ah finished addin these keys, now i can go down for a long nap and watch tiktok", geojson)
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
     localStorage.setItem('maps', JSON.stringify({
       ...prev, [mapId]: {
         geojson,
-        name: prev[mapId]?.name || randomName(),
+        name: prev[mapId]?.name || randomName('', ' '),
         updated: Date.now(),
         map: name,
       }
@@ -125,7 +142,7 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
 
   function s(data) {
     // unsavedData = data
-    // console.log("save this data", data)
+    // console.log("save this!", data)
     setSaveTrigger(p => !p)
   }
 

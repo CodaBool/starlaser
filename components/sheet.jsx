@@ -59,7 +59,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
     const el = document.querySelector(".editor-table")
     if (el) {
       if (drawerOpen) {
-        el.style.bottom = "50%"
+        el.style.bottom = "40%"
       } else {
         el.style.bottom = "20px"
       }

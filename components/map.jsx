@@ -57,7 +57,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
-  const { CENTER, SCALE, CLICK_ZOOM } = getConsts(name)
+  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN } = getConsts(name)
 
   async function pan(d, locations, fit) {
     if (mini && !fit) return
@@ -212,6 +212,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       .on("mouseover", hover)
       .on("click", (e, d) => {
         if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        if (NO_PAN.includes(d.properties.type)) return
         pan(d)
       })
       .on("mouseout", hover)

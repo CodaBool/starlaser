@@ -12,9 +12,11 @@ import { searchBar, accent } from "@/lib/utils.js"
 import * as turf from '@turf/turf'
 import { useEffect, useRef, useState } from "react"
 import { selectAll } from 'd3'
+import { useStore } from "./cartographer"
 
 export default function MenuComponent({ map, data, mobile, name, pan }) {
   const [active, setActive] = useState()
+  const { editorTable } = useStore()
   const cmd = useRef(null)
   const input = useRef(null)
 
@@ -43,12 +45,18 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
     pan(d, null, true)
   }
 
+  const combinedData = [...data.guide || [], ...data.location, ...data.territory]
+
+  // "#020e03"
+  // "#0a400d"
+  // "#020e03"
+
   useEffect(() => {
     if (input.current) {
       input.current.addEventListener('blur-sm', () => setActive(false));
     }
     function down(e) {
-      if (e.code === 'Space') {
+      if (e.code === 'Space' && !editorTable) {
         if (input.current !== document.activeElement) {
           e.preventDefault()
         }
@@ -64,18 +72,24 @@ export default function MenuComponent({ map, data, mobile, name, pan }) {
       document.removeEventListener('keydown', down)
       input?.current?.removeEventListener('blur-sm', () => setActive(false));
     }
-  }, [])
+  }, [editorTable])
 
-  const combinedData = [...data.guide || [], ...data.location, ...data.territory]
+  useEffect(() => {
+    if (active) {
+      // console.log("active", input.current)
+      if (!mobile) input.current.placeholder = "Escape to close"
+    } else {
+      input.current.placeholder = mobile ? "Search for a location" : "press Space to search"
+    }
+  }, [active])
 
-  // "#020e03"
-  // "#0a400d"
-  // "#020e03"
+  // BUG: would be nice to apply a .trim() to the input for CommandInput but I can't figure out how to do that
 
   return (
     <div className="flex mt-5 w-full justify-center absolute z-10 pointer-events-none">
       <Command className="rounded-lg border shadow-md w-[75%] searchbar pointer-events-auto" style={{ backgroundColor: searchBar[name].background, borderColor: searchBar[name].border }}>
-        <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: searchBar[name].background }} />
+        <CommandInput placeholder={mobile ? "Search for a location" : "press Space to search"} ref={input} onClick={() => setActive(true)} style={{ backgroundColor: searchBar[name].background }}
+        />
         {active &&
           <CommandList style={{ height: '351px', zIndex: 100 }}>
             <CommandEmpty>No results found.</CommandEmpty>
