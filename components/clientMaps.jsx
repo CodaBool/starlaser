@@ -12,7 +12,6 @@ import {
 import { feature } from 'topojson-client'
 import { topology } from 'topojson-server'
 import { toKML } from '@placemarkio/tokml'
-// import geojsonMerge from '@mapbox/geojson-merge'z
 
 export default function ClientMaps({ map }) {
   const [maps, setMaps] = useState({})
@@ -48,141 +47,138 @@ export default function ClientMaps({ map }) {
     setNameInput(null)
   }
 
-  function combineAndDownload(type, key) {
+  async function combineAndDownload(type, key) {
+    // Function to normalize properties and ensure FID is a string
+    function normalizeFeatures(features, allKeys) {
+      if (!features) return [];
+      return features.map(feature => {
+        allKeys.forEach(propKey => {
+          if (!feature.properties.hasOwnProperty(propKey)) {
+            feature.properties[propKey] = null; // Ensure missing fields are included
+          }
+        });
+        feature.properties.FID = String(feature.properties.FID); // Ensure FID is always a string
+        return feature;
+      });
+    }
 
-    window.alert("combined data not available yet. also export format for user data is not respected yet. All buttons give geojson. You must use a site like https://findthatpostcode.uk/tools/merge-geojson or npx mapshaper")
-    fetch(`/api/download/${map}`)
-      .then(response => response.json())
-      .then(data => {
+    function combineLayers(geojsons) {
+      const allKeys = new Set();
 
-
-        const localGeojson = maps[key].geojson;
-
-
-        // const serverData = feature(data, data.objects[Object.keys(data.objects)[0]])
-        // console.log("1", serverData, "2", localGeojson)
-        // var combined1 = geojsonMerge.merge([
-        //   serverData,
-        //   localGeojson
-        // ]);
-        // console.log("combined simple", combined1)
-        // const topology2 = topology({ foo: combined1 })
-        // console.log("topology2", topology2)
-
-        const blob2 = new Blob([JSON.stringify(localGeojson)], { type: "application/json" })
-        const url2 = URL.createObjectURL(blob2);
-        const a2 = document.createElement("a");
-        a2.href = url2;
-        a2.download = `${map}.${type}`;
-        document.body.appendChild(a2);
-        a2.click();
-        document.body.removeChild(a2);
-
-        return
-
-        const location = {
-          type: "FeatureCollection",
-          features: localGeojson.features.filter(f => f.geometry.type === "Point")
-        };
-        const territory = {
-          type: "FeatureCollection",
-          features: localGeojson.features.filter(f => f.geometry.type.includes("Poly"))
-        };
-        const guide = {
-          type: "FeatureCollection",
-          features: localGeojson.features.filter(f => f.geometry.type === "LineString")
-        };
-
-        // Convert GeoJSON to TopoJSON
-        const localTopojson = topology({ location, territory, guide }, {});
-
-        // Helper function to merge layers
-        function mergeLayers(layerName, topo1, topo2) {
-          const geometries1 = topo1.objects[layerName]?.geometries || [];
-          const geometries2 = topo2.objects[layerName]?.geometries || [];
-          return [...geometries1, ...geometries2];
+      // Collect all unique property keys
+      geojsons.forEach(geojson => {
+        if (geojson?.features) {
+          geojson.features.forEach(f => Object.keys(f.properties).forEach(key => allKeys.add(key)));
         }
+      });
 
-        // Merge the layers
-        const mergedTerritory = mergeLayers('territory', localTopojson, data);
-        const mergedGuide = mergeLayers('guide', localTopojson, data);
-        const mergedLocation = mergeLayers('location', localTopojson, data);
-
-        // Combine all layers into one object
-        const mergedObjects = {
-          territory: { type: 'GeometryCollection', geometries: mergedTerritory },
-          guide: { type: 'GeometryCollection', geometries: mergedGuide },
-          location: { type: 'GeometryCollection', geometries: mergedLocation },
-        };
-
-        // Create the final combined topojson object with the correct structure
-        const combinedTopojson = {
-          type: 'Topology',
-          objects: mergedObjects,
-          arcs: localTopojson.arcs.concat(data.arcs), // Combine the arcs from both topologies
-          transform: localTopojson.transform, // Reuse the transform from localTopojson (or merge if needed)
-        };
-
-        console.log("Combined TopoJSON:", combinedTopojson);
-
-        // const serverTopojson = topology({ server: feature(data, data.objects[Object.keys(data.objects)[0]]) });
-
-        // const combinedTopojson = {
-        //   type: "Topology",
-        //   objects: {
-        //     location: {
-        //       type: "GeometryCollection",
-        //       geometries: [
-        //         ...localTopojson.objects.local.geometries.filter(f => f.type === "Point"),
-        //         ...serverTopojson.objects.server.geometries.filter(f => f.type === "Point")
-        //       ]
-        //     },
-        //     territory: {
-        //       type: "GeometryCollection",
-        //       geometries: [
-        //         ...localTopojson.objects.local.geometries.filter(f => f.type.includes("Poly")),
-        //         ...serverTopojson.objects.server.geometries.filter(f => f.type.includes("Poly"))
-        //       ]
-        //     },
-        //     guide: {
-        //       type: "GeometryCollection",
-        //       geometries: [
-        //         ...localTopojson.objects.local.geometries.filter(f => f.type === "LineString"),
-        //         ...serverTopojson.objects.server.geometries.filter(f => f.type === "LineString")
-        //       ]
-        //     }
-        //   },
-        //   arcs: [...localTopojson.arcs, ...serverTopojson.arcs],
-        //   transform: localTopojson.transform || serverTopojson.transform
-        // };
-
-        console.log("combinedTopojson", combinedTopojson);
-
-
-        let convertedData
-        if (type === "geojson") {
-          convertedData = feature(combinedTopojson, combinedTopojson.objects[Object.keys(combinedTopojson.objects)[0]])
-        } else if (type === "topojson") {
-          convertedData = combinedTopojson;
-        } else if (type === "kml") {
-          const geojson = feature(combinedTopojson, combinedTopojson.objects[Object.keys(combinedTopojson.objects)[0]]);
-          convertedData = toKML(geojson)
+      // Normalize features and merge into a single list
+      let combinedFeatures = [];
+      geojsons.forEach(geojson => {
+        if (geojson?.features) {
+          const normalized = normalizeFeatures(geojson.features, allKeys);
+          combinedFeatures = combinedFeatures.concat(normalized);
         }
-        let blob
-        if (type === "kml") {
-          blob = new Blob([JSON.stringify(convertedData)], { type: "application/vnd.google-earth.kml+xml" })
-        } else {
-          blob = new Blob([JSON.stringify(convertedData)], { type: "application/json" })
+      });
+
+      return {
+        type: "FeatureCollection",
+        features: combinedFeatures
+      };
+    }
+
+    function combineLayersForTopoJSON(geojsons) {
+      const allKeys = new Set();
+
+      let categorizedFeatures = {
+        location: [],
+        territory: [],
+        guide: []
+      };
+
+      geojsons.forEach(geojson => {
+        if (geojson?.features) {
+          geojson.features.forEach(f => Object.keys(f.properties).forEach(key => allKeys.add(key)));
+          const normalized = normalizeFeatures(geojson.features, allKeys);
+          normalized.forEach(feature => {
+            const geomType = feature.geometry.type;
+            if (geomType === "Point") {
+              categorizedFeatures.location.push(feature);
+            } else if (geomType.includes("Poly")) { // Polygon & MultiPolygon
+              categorizedFeatures.territory.push(feature);
+            } else if (geomType === "LineString") {
+              categorizedFeatures.guide.push(feature);
+            }
+          });
         }
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${map}.${type}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      })
-      .catch(error => console.error('Error downloading map:', error));
+      });
+
+      return {
+        location: { type: "FeatureCollection", features: categorizedFeatures.location },
+        territory: { type: "FeatureCollection", features: categorizedFeatures.territory },
+        guide: { type: "FeatureCollection", features: categorizedFeatures.guide }
+      };
+    }
+
+    try {
+      const response = await fetch(`/api/download/${map}`);
+      const data = await response.json();
+
+      const localGeojson = maps[key].geojson; // User's local GeoJSON
+
+      // Convert TopoJSON to GeoJSON for server layers
+      const serverGeojsonLocation = feature(data, data.objects["location"]);
+      const serverGeojsonTerritory = feature(data, data.objects["territory"]);
+      const serverGeojsonGuide = feature(data, data.objects["guide"] || { type: "GeometryCollection", geometries: [] });
+
+      let finalData;
+      let fileType = "application/json";
+
+      if (type === "kml") {
+        // Combine all layers and export as KML
+        const combinedGeojson = combineLayers([
+          localGeojson,
+          serverGeojsonLocation,
+          serverGeojsonTerritory,
+          serverGeojsonGuide
+        ]);
+        finalData = toKML(combinedGeojson);
+        fileType = "application/vnd.google-earth.kml+xml";
+      } else if (type === "topojson") {
+        // Use separate layers for TopoJSON
+        const combinedTopoJSON = combineLayersForTopoJSON([
+          localGeojson,
+          serverGeojsonLocation,
+          serverGeojsonTerritory,
+          serverGeojsonGuide
+        ]);
+        finalData = JSON.stringify(topology(combinedTopoJSON));
+      } else {
+        // GeoJSON behavior remains the same: single FeatureCollection
+        finalData = JSON.stringify(
+          combineLayers([
+            localGeojson,
+            serverGeojsonLocation,
+            serverGeojsonTerritory,
+            serverGeojsonGuide
+          ]),
+          null,
+          2
+        );
+      }
+
+      // Create and trigger file download
+      const blob = new Blob([finalData], { type: fileType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${map}.${type}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading map:", error);
+    }
   }
 
   return (
