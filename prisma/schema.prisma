@@ -44,27 +44,17 @@ model Location {
 }
 
 model Map {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid(7))
   name      String   @db.VarChar(200)
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  userId    String
-  published Boolean  @default(false)
-  topojson  String
-  map       String
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-// TODO: if this becomes large, will need to move to R2 to cut costs
-model Topojson {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(200)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
+  lastUsed  DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt
   userId    String
   published Boolean  @default(false)
-  topojson  Json
+  locations   Int @default(0)
+  territories Int @default(0)
+  guides      Int @default(0)
   map       String
-  lastUsed  DateTime @default(now()) @db.Timestamp(6)
   user      User     @relation(fields: [userId], references: [id])
 }
 
@@ -79,7 +69,6 @@ model User {
   comments      Comment[]
   locations     Location[]
   maps          Map[]
-  topojsons     Topojson[]
 }
 
 model VerificationToken {

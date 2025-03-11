@@ -25,6 +25,7 @@ export default async function Export({ params, searchParams }) {
       map,
     },
   }) || []
+
   return (
     <div className='text-white mx-auto md:container p-4 mt-2 md:mt-14'>
       <div className='flex flex-col md:flex-row'>
@@ -69,9 +70,13 @@ export default async function Export({ params, searchParams }) {
       <ClientMaps map={map} />
 
       <h2 className='md:text-4xl text-2xl my-4'><Cloud className='inline relative top-[-4px]' size={34} /> Cloud</h2>
+      <h3 className='text-gray-300'>Saved remotely</h3>
 
       {/* TODO: should have a redirect param to this page */}
-      {cloud.length === 0 &&
+      {(user && cloud.length === 0) &&
+        <p>You have not maps saved remotely</p>
+      }
+      {!user &&
         <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map</h3>
       }
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">

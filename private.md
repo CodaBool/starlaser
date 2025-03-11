@@ -57,6 +57,7 @@ npx mapshaper *.json \
 - style fixes, too dark
 - contribute pages (save for later)
 - measure broken on mobile
+- BUG: if you add a key that exists it overwrites it. It shouldn't be possible to save an existing key
 
 # Contribute work
 -
