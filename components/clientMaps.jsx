@@ -226,7 +226,7 @@ export default function ClientMaps({ map }) {
                   <PopoverContent className="flex flex-col text-sm">
                     <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>
                     <hr className='border my-2 border-gray-500' />
-                    <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, with the benefit of smaller file size</p>
+                    <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
                     <Button className="cursor-pointer w-full" variant="secondary" onClick={() => combineAndDownload("topojson", key)}>
                       <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
                     </Button>

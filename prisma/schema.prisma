@@ -54,6 +54,20 @@ model Map {
   user      User     @relation(fields: [userId], references: [id])
 }
 
+// TODO: if this becomes large, will need to move to R2 to cut costs
+model Topojson {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(200)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
+  userId    String
+  published Boolean  @default(false)
+  topojson  Json
+  map       String
+  lastUsed  DateTime @default(now()) @db.Timestamp(6)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 model User {
   id            String     @id @default(cuid())
   vip           Boolean    @default(false)
@@ -65,6 +79,7 @@ model User {
   comments      Comment[]
   locations     Location[]
   maps          Map[]
+  topojsons     Topojson[]
 }
 
 model VerificationToken {

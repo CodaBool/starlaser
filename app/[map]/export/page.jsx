@@ -41,7 +41,7 @@ export default async function Export({ params, searchParams }) {
             <PopoverContent className="flex flex-col">
               <p className='mb-3 text-gray-200'>This is the base core data. Without any user submitted geography data</p>
               <hr className='border my-2 border-gray-500' />
-              <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, with the benefit of smaller file size</p>
+              <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
               <a href={`/api/download/${map}`}>
                 <Button className="cursor-pointer w-full" variant="secondary">
                   <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
