@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload } from 'lucide-react'
+import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy } from 'lucide-react'
 import { Input } from "./ui/input"
 import { Button } from '@/components/ui/button'
 import {
@@ -261,22 +261,22 @@ export function CloudMaps({ maps, revalidate, mapName }) {
   const [showNameInput, setShowNameInput] = useState()
   const setMaps = useMaps((state) => state.setMaps)
 
-  function saveMap(body, id) {
+  function putMap(body) {
     fetch('/api/map', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...body, id }),
+      body: JSON.stringify(body),
     })
       .then(response => response.json())
       .then(data => {
-        if (data.error) {
-          toast.warning(data.error)
+        if (data.err) {
+          toast.warning(data.err)
         } else {
           setShowNameInput(null)
           revalidate(`/app/${mapName}/export`)
-          toast.success(`Remote map for ${mapName} updated successfully`)
+          toast.success(`"${data.map.name}" successfully updated`)
         }
       })
       .catch(err => {
@@ -329,16 +329,16 @@ export function CloudMaps({ maps, revalidate, mapName }) {
   return (
     <div className="flex items-center my-2 flex-wrap justify-start">
       {maps.map(map =>
-        <div className="bg-gray-800 p-4 rounded shadow-lg m-2 w-full md:w-80" key={map.id}>
+        <div className="bg-gray-800 p-4 rounded shadow-lg m-2 min-w-full md:min-w-[25em]" key={map.id}>
           {showNameInput
             ? <>
               <Input value={nameInput} className="w-[80%] mb-4 inline" id={`local-map-${map.id}`}
                 onChange={(e) => setNameInput(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') saveMap({ name: nameInput, id: map.id })
+                  if (e.key === 'Enter') putMap({ name: nameInput, id: map.id })
                 }}
               />
-              <Save onClick={() => saveMap({ name: nameInput, id: map.id })} size={22} className="cursor-pointer inline ml-4" />
+              <Save onClick={() => putMap({ name: nameInput, id: map.id })} size={22} className="cursor-pointer inline ml-4" />
             </>
             : <h2 className="text-2xl font-bold mb-4">{map.name} <Pencil onClick={() => { setNameInput(map.name); setShowNameInput(map.id) }} size={16} className="cursor-pointer inline ml-4" /></h2>
           }
@@ -357,14 +357,29 @@ export function CloudMaps({ maps, revalidate, mapName }) {
           <p className="text-gray-400 ">Locations: {map.locations}</p>
           <p className="text-gray-400 ">Territories: {map.territories}</p>
           <p className="text-gray-400">Guides: {map.guides}</p>
+          <p className="text-gray-400">Published:
+            {map.published
+              ? <>
+                <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
+                {navigator.clipboard
+                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(map.id)}><Copy />Share Code</Button>
+                  : <Input value={map.id} readOnly className="inline ms-2 w-20" />
+                }
+              </>
+              : <X className="inline text-red-200 relative top-[-3px] ms-1" />
+            }
+          </p>
           <div className="flex justify-between items-center mt-4">
             <Button size="sm" className="cursor-pointer rounded text-blue-300 mr-4" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
-            <div className="flex space-x-2">
-              <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
-            </div>
+            {map.published
+              ? <Button size="sm" className="cursor-pointer rounded mr-2" onClick={() => putMap({ published: !map.published, id: map.id })}><CloudOff /> Unpublish</Button>
+              : <Button size="sm" className="cursor-pointer rounded mr-2" onClick={() => putMap({ published: !map.published, id: map.id })}><BookOpenCheck /> Publish</Button>
+            }
+            <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 }

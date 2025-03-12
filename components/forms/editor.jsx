@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
 import { CircleHelp, Pencil, Plus, Save, Trash2 } from "lucide-react"
 import { AVAILABLE_PROPERTIES, getConsts } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
@@ -61,6 +62,11 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
         return
       }
       const latestFeature = draw.get(feature.id)
+      const keyExists = Object.keys(feature.properties).includes(newRow.key);
+      if (keyExists) {
+        toast.warning(`"${newRow.key}" Key already exists`)
+        return
+      }
       const newFeature = { ...latestFeature, properties: { ...feature.properties, [newRow.key]: newRow.value } }
       draw.add(newFeature)
       setPopup(newFeature)
