@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload } from 'lucide-react'
+import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload } from 'lucide-react'
 import { Input } from "./ui/input"
 import { Button } from '@/components/ui/button'
 import {
@@ -9,13 +9,39 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { combineAndDownload } from "@/lib/utils"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { combineAndDownload, isMobile } from "@/lib/utils"
 import { toast } from "sonner"
+import { create } from 'zustand'
 
-export default function ClientMaps({ map, revalidate }) {
-  const [maps, setMaps] = useState({})
+const useMaps = create(set => ({
+  maps: {},
+  setMaps: maps => set({ maps }),
+}))
+
+export default function ClientMaps({ map, revalidate, cloudMaps }) {
   const [nameInput, setNameInput] = useState()
   const [showNameInput, setShowNameInput] = useState()
+  const maps = useMaps((state) => state.maps)
+  const setMaps = useMaps((state) => state.setMaps)
+  const mobile = isMobile()
 
   useEffect(() => {
     setMaps(JSON.parse(localStorage.getItem('maps')))
@@ -30,6 +56,30 @@ export default function ClientMaps({ map, revalidate }) {
     }
   }
 
+  function replaceRemoteMap(id, localMap) {
+    fetch('/api/map', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ geojson: localMap.geojson, id }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.err) {
+          toast.warning(data.err)
+        } else {
+          setShowNameInput(false)
+          revalidate(`/app/${map.map}/export`)
+          toast.success(`Remote map for ${map.map} updated successfully`)
+        }
+      })
+      .catch(err => {
+        console.log(err)
+        toast.warning("A server error occurred")
+      })
+  }
+
   function uploadMap(key, name) {
     const body = JSON.stringify(maps[key])
     fetch('/api/map', {
@@ -41,10 +91,10 @@ export default function ClientMaps({ map, revalidate }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.error) {
-          toast.warning(data.error)
+        if (data.err) {
+          toast.warning(data.err)
         } else {
-          toast.success(`${data.map} map, ${data.name}, successfully uploaded`)
+          toast.success(`${data.map.map} map, ${data.map.name}, successfully uploaded`)
           revalidate(`/app/${map}/export`)
         }
       })
@@ -96,11 +146,11 @@ export default function ClientMaps({ map, revalidate }) {
   )
 
   return (
-    <div className="flex items-center my-2">
+    <div className="flex items-center my-2 flex-wrap">
       {Object.entries(maps || {}).map(([key, data]) => {
         const [name, dateId] = key.split('-')
         return (
-          <div key={key} className="bg-gray-800 p-4 m-2 rounded-lg shadow-lg w-full md:w-[440px]">
+          <div key={key} className="bg-gray-800 p-4 m-2 rounded w-full md:w-[440px]">
             {showNameInput === key
               ? <>
                 <Input value={nameInput} className="w-[80%] mb-4 inline" id={`local-map-${key}`}
@@ -119,7 +169,7 @@ export default function ClientMaps({ map, revalidate }) {
               month: "long",
               day: "numeric",
             })}</p>
-            <p className="text-gray-400 ">Last Updated: {new Date(data.updated).toLocaleDateString("en-US", {
+            <p className="text-gray-400 ">Updated: {new Date(data.updated).toLocaleDateString("en-US", {
               hour: "numeric",
               minute: "numeric",
               month: "long",
@@ -129,14 +179,56 @@ export default function ClientMaps({ map, revalidate }) {
             <p className="text-gray-400 ">Territories: {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}</p>
             <p className="text-gray-400">Guides: {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}</p>
             <div className="flex justify-between items-center mt-4">
-              <Link href={`/${name}?id=${dateId}`} className="text-blue-300"><Button size="sm" className="cursor-pointer rounded" variant="outline"><Eye /> View</Button></Link>
+              <Link href={`/${name}?id=${dateId}`} className="text-blue-300"><Button size="sm" className="cursor-pointer rounded" variant="outline"><Eye /> {!mobile && "View"}</Button></Link>
               <div className="flex space-x-2">
-                <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> Delete</Button>
-                <Button size="sm" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><Cloud /> Upload</Button>
+                <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> {!mobile && "Delete"}</Button>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="cursor-pointer rounded"><Cloud /> {!mobile && "Upload"}</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[40em] overflow-auto">
+                    <DialogHeader>
+                      <DialogTitle>Upload to Cloud</DialogTitle>
+                      <DialogDescription>
+                        You can either overwrite an existing remote map, or create a new one
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogClose asChild>
+                      <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a New Map</Button>
+                    </DialogClose>
+                    <hr className="mt-2" />
+                    <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
+                    <p className="text-gray-600">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
+                    {cloudMaps.filter(m => m.name.trim() === data.name.trim()).map(cloudMap => (
+                      <DialogClose asChild key={cloudMap.id} >
+                        <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
+                          <CardHeader>
+                            <CardTitle>{cloudMap.name}</CardTitle>
+                            <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
+                              hour: "numeric",
+                              minute: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
+                            <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
+                            <p className="text-gray-400">Guides: {cloudMap.guides}</p>
+                          </CardContent>
+                        </Card>
+                      </DialogClose>
+                    ))}
+                    <DialogFooter>
+
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button size="sm" className="cursor-pointer rounded"><ArrowRightFromLine /> Export</Button>
+                    <Button size="sm" className="cursor-pointer rounded"><ArrowRightFromLine /> {!mobile && "Export"}</Button>
                   </PopoverTrigger>
                   <PopoverContent className="flex flex-col text-sm">
                     <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>
@@ -164,27 +256,27 @@ export default function ClientMaps({ map, revalidate }) {
   )
 }
 
-
-export function MapCard({ map, revalidate }) {
+export function CloudMaps({ maps, revalidate, mapName }) {
   const [nameInput, setNameInput] = useState()
   const [showNameInput, setShowNameInput] = useState()
+  const setMaps = useMaps((state) => state.setMaps)
 
-  function saveMap(body) {
+  function saveMap(body, id) {
     fetch('/api/map', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ...body, id: map.id }),
+      body: JSON.stringify({ ...body, id }),
     })
       .then(response => response.json())
       .then(data => {
         if (data.error) {
           toast.warning(data.error)
         } else {
-          setShowNameInput(false)
-          revalidate(`/app/${map.map}/export`)
-          toast.success(`Remote map for ${map.map} updated successfully`)
+          setShowNameInput(null)
+          revalidate(`/app/${mapName}/export`)
+          toast.success(`Remote map for ${mapName} updated successfully`)
         }
       })
       .catch(err => {
@@ -201,12 +293,12 @@ export function MapCard({ map, revalidate }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.error) {
-          toast.warning(data.error)
+        if (data.err) {
+          toast.warning(data.err)
         } else {
-          revalidate(`/app/${map.map}/export`)
+          revalidate(`/app/${mapName}/export`)
 
-          toast.success(`Map with id ${id} successfully deleted`)
+          toast.success(`${data.map.name} deleted`)
           // Optionally, you can add code here to update the UI after deletion
         }
       })
@@ -216,58 +308,63 @@ export function MapCard({ map, revalidate }) {
       })
   }
 
-  async function saveLocally() {
-    const response = await fetch(`/api/map?id=${map.id}`)
+  async function saveLocally(id) {
+    const response = await fetch(`/api/map?id=${id}`)
     const data = await response.json()
-    const key = `${map.map}-${Date.now()}`
+    const key = `${mapName}-${Date.now()}`
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
-    localStorage.setItem('maps', JSON.stringify({
+    const newMaps = {
       ...prev, [key]: {
         geojson: JSON.parse(data.geojson),
         name: data.name,
         updated: Date.now(),
-        map: map.map,
+        map: mapName,
       }
-    }))
+    }
+    localStorage.setItem('maps', JSON.stringify(newMaps))
+    setMaps(newMaps)
     toast.success("Map saved locally")
-    // TODO: use zustard to have the clientMaps see the new localstorage
   }
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-      {showNameInput
-        ? <>
-          <Input value={nameInput} className="w-[80%] mb-4 inline" id={`local-map-${map.id}`}
-            onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') saveMap({ name: nameInput })
-            }}
-          />
-          <Save onClick={() => saveMap({ name: nameInput })} size={22} className="cursor-pointer inline ml-4" />
-        </>
-        : <h2 className="text-2xl font-bold mb-4">{map.name} <Pencil onClick={() => { setNameInput(map.name); setShowNameInput(true) }} size={16} className="cursor-pointer inline ml-4" /></h2>
-      }
-      <p className="text-gray-400 ">Created: {new Date(map.createdAt).toLocaleDateString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        month: "long",
-        day: "numeric",
-      })}</p>
-      <p className="text-gray-400 ">Last Updated: {new Date(map.updatedAt).toLocaleDateString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        month: "long",
-        day: "numeric",
-      })}</p>
-      <p className="text-gray-400 ">Locations: {map.locations}</p>
-      <p className="text-gray-400 ">Territories: {map.territories}</p>
-      <p className="text-gray-400">Guides: {map.guides}</p>
-      <div className="flex justify-between items-center mt-4">
-        <Button size="sm" className="cursor-pointer rounded text-blue-300" onClick={saveLocally} variant="outline"><CloudDownload /> Save Locally</Button>
-        <div className="flex space-x-2">
-          <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
+    <div className="flex items-center my-2 flex-wrap justify-start">
+      {maps.map(map =>
+        <div className="bg-gray-800 p-4 rounded shadow-lg m-2 w-full md:w-80" key={map.id}>
+          {showNameInput
+            ? <>
+              <Input value={nameInput} className="w-[80%] mb-4 inline" id={`local-map-${map.id}`}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') saveMap({ name: nameInput, id: map.id })
+                }}
+              />
+              <Save onClick={() => saveMap({ name: nameInput, id: map.id })} size={22} className="cursor-pointer inline ml-4" />
+            </>
+            : <h2 className="text-2xl font-bold mb-4">{map.name} <Pencil onClick={() => { setNameInput(map.name); setShowNameInput(map.id) }} size={16} className="cursor-pointer inline ml-4" /></h2>
+          }
+          <p className="text-gray-400 ">Created: {new Date(map.createdAt).toLocaleDateString("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+            month: "long",
+            day: "numeric",
+          })}</p>
+          <p className="text-gray-400 ">Updated: {new Date(map.updatedAt).toLocaleDateString("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+            month: "long",
+            day: "numeric",
+          })}</p>
+          <p className="text-gray-400 ">Locations: {map.locations}</p>
+          <p className="text-gray-400 ">Territories: {map.territories}</p>
+          <p className="text-gray-400">Guides: {map.guides}</p>
+          <div className="flex justify-between items-center mt-4">
+            <Button size="sm" className="cursor-pointer rounded text-blue-300 mr-4" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
+            <div className="flex space-x-2">
+              <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

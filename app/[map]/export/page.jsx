@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
-import ClientMaps, { MapCard } from '@/components/clientMaps'
+import ClientMaps, { CloudMaps } from '@/components/clientMaps'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -12,7 +12,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { revalidatePath } from 'next/cache'
-
 
 export default async function Export({ params, searchParams }) {
   // const
@@ -76,7 +75,7 @@ export default async function Export({ params, searchParams }) {
 
       <h2 className='md:text-4xl text-2xl my-4'><WifiOff className='inline relative top-[-4px]' size={30} /> Local</h2>
       <h3 className='text-gray-300'>Saved in browser</h3>
-      <ClientMaps map={map} revalidate={revalidate} />
+      <ClientMaps map={map} revalidate={revalidate} cloudMaps={cloud} />
 
       <h2 className='md:text-4xl text-2xl my-4'><Cloud className='inline relative top-[-4px]' size={34} /> Cloud</h2>
       <h3 className='text-gray-300'>Saved remotely</h3>
@@ -88,9 +87,7 @@ export default async function Export({ params, searchParams }) {
       {!user &&
         <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map</h3>
       }
-      <div className="flex items-center my-2">
-        {cloud.map(map => <MapCard map={map} key={map.id} revalidate={revalidate} />)}
-      </div>
+      <CloudMaps maps={cloud} revalidate={revalidate} mapName={map} />
     </div>
   )
 }

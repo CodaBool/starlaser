@@ -12,7 +12,7 @@
     "@hyvilo/maplibre-gl-draw": "^1.0.0",
     "@mapbox/mapbox-gl-draw": "^1.5.0",
     "@placemarkio/tokml": "^0.3.7",
-    "@prisma/client": "^6.4.1",
+    "@prisma/client": "^6.5.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-checkbox": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.6",
@@ -37,7 +37,7 @@
     "maplibre-gl": "^5.2.0",
     "next": "latest",
     "next-auth": "^4.24.11",
-    "next-themes": "^0.4.5",
+    "next-themes": "^0.4.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.54.2",
@@ -53,9 +53,9 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.12",
+    "@tailwindcss/postcss": "^4.0.13",
     "postcss": "^8.5.3",
-    "prisma": "^6.4.1",
-    "tailwindcss": "^4.0.12"
+    "prisma": "^6.5.0",
+    "tailwindcss": "^4.0.13"
   }
 }

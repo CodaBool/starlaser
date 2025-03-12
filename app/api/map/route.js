@@ -73,6 +73,7 @@ export async function PUT(req) {
       updates.guides = guides
       const newHash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
       geojsonChange = map.hash !== newHash
+      if (!geojsonChange) throw "this map is already in sync"
       updates.hash = newHash
     }
     if (body.name) {
@@ -105,7 +106,7 @@ export async function PUT(req) {
         // Expires: new Date("TIMESTAMP"),
         Metadata: {
           "user": user.id,
-          "map": body.map,
+          "map": map.map,
           "alias": user.alias,
           "email": user.email,
         },
@@ -149,7 +150,7 @@ export async function DELETE(req) {
       where: { id },
     })
 
-    return Response.json({ msg: "success", map: 1 })
+    return Response.json({ msg: "success", map: deleted })
   } catch (err) {
     console.error(err)
     if (typeof err === 'string') {
@@ -176,7 +177,7 @@ export async function POST(req) {
     })
 
     if (maps.length > 9) {
-      throw "only 10 maps are allowed"
+      throw "only 10 cloud maps are allowed"
     }
 
     const { locations, territories, guides } = getFeatureData(body.geojson)
