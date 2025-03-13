@@ -42,6 +42,11 @@ export default async function mapLobby({ params, searchParams }) {
 
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
   const filePath = path.join(dataDir, `${map}.json`)
+
+  // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
+  path.resolve(`app/[map]/topojson/fallout.json`)
+  path.resolve(`app/[map]/topojson/lancer.json`)
+  path.resolve(`app/[map]/topojson/lancer_starwall.json`)
   const content = await fs.promises.readFile(filePath, 'utf8')
   const topojson = JSON.parse(content)
   const geojson = JSON.parse(clientGeojson)
