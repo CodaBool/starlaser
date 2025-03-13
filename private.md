@@ -14,6 +14,7 @@
 - react map gl https://visgl.github.io/react-map-gl/docs/api-reference/maplibre/map
 - maplibre style editor https://maplibre.org/maputnik
 - draw api https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md
+- nextjs cache options https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
 
 # icons
 - https://game-icons.net

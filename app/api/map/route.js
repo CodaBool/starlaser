@@ -109,6 +109,7 @@ export async function PUT(req) {
           "map": map.map,
           "alias": user.alias,
           "email": user.email,
+          "published": map.published,
         },
       })
       const response = await s3.send(command)
@@ -211,6 +212,7 @@ export async function POST(req) {
         "map": body.map,
         "alias": user.alias,
         "email": user.email,
+        "published": map.published,
       },
       // Tagging: "STRING_VALUE",
     })

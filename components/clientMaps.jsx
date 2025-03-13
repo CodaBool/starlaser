@@ -30,6 +30,7 @@ import {
 import { combineAndDownload, isMobile } from "@/lib/utils"
 import { toast } from "sonner"
 import { create } from 'zustand'
+import { useRouter } from 'next/navigation'
 
 const useMaps = create(set => ({
   maps: {},
@@ -42,6 +43,7 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
   const maps = useMaps((state) => state.maps)
   const setMaps = useMaps((state) => state.setMaps)
   const mobile = isMobile()
+  const router = useRouter()
 
   useEffect(() => {
     setMaps(JSON.parse(localStorage.getItem('maps')))
@@ -178,76 +180,75 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
             <p className="text-gray-400 ">Locations: {data.geojson?.features.filter(f => f.geometry.type === "Point").length}</p>
             <p className="text-gray-400 ">Territories: {data.geojson?.features.filter(f => f.geometry.type.includes("Poly")).length}</p>
             <p className="text-gray-400">Guides: {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}</p>
-            <div className="flex justify-between items-center mt-4">
-              <Link href={`/${name}?id=${dateId}`} className="text-blue-300"><Button size="sm" className="cursor-pointer rounded" variant="outline"><Eye /> {!mobile && "View"}</Button></Link>
-              <div className="flex space-x-2">
-                <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> {!mobile && "Delete"}</Button>
+            <div className="grid grid-cols-2 gap-2">
+              {/* <div className="flex justify-between items-center mt-4"> */}
+              <Button className="cursor-pointer rounded m-2" onClick={() => router.push(`/${map}?id=${map.id}`)} variant="outline"><Eye /> {!mobile && "View"}</Button>
+              <Button className="text-red-500 cursor-pointer rounded m-2" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> {!mobile && "Delete"}</Button>
 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="cursor-pointer rounded"><Cloud /> {!mobile && "Upload"}</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-h-[40em] overflow-auto">
-                    <DialogHeader>
-                      <DialogTitle>Upload to Cloud</DialogTitle>
-                      <DialogDescription>
-                        You can either overwrite an existing remote map, or create a new one
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogClose asChild>
-                      <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a New Map</Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="cursor-pointer rounded m-2"><Cloud /> {!mobile && "Upload"}</Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[40em] overflow-auto">
+                  <DialogHeader>
+                    <DialogTitle>Upload to Cloud</DialogTitle>
+                    <DialogDescription>
+                      You can either overwrite an existing remote map, or create a new one
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogClose asChild>
+                    <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a New Map</Button>
+                  </DialogClose>
+                  <hr className="mt-2" />
+                  <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
+                  <p className="text-gray-600">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
+                  {cloudMaps.filter(m => m.name.trim() === data.name.trim()).map(cloudMap => (
+                    <DialogClose asChild key={cloudMap.id} >
+                      <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
+                        <CardHeader>
+                          <CardTitle>{cloudMap.name}</CardTitle>
+                          <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
+                            hour: "numeric",
+                            minute: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
+                          <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
+                          <p className="text-gray-400">Guides: {cloudMap.guides}</p>
+                        </CardContent>
+                      </Card>
                     </DialogClose>
-                    <hr className="mt-2" />
-                    <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
-                    <p className="text-gray-600">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
-                    {cloudMaps.filter(m => m.name.trim() === data.name.trim()).map(cloudMap => (
-                      <DialogClose asChild key={cloudMap.id} >
-                        <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
-                          <CardHeader>
-                            <CardTitle>{cloudMap.name}</CardTitle>
-                            <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
-                              hour: "numeric",
-                              minute: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
-                            <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
-                            <p className="text-gray-400">Guides: {cloudMap.guides}</p>
-                          </CardContent>
-                        </Card>
-                      </DialogClose>
-                    ))}
-                    <DialogFooter>
+                  ))}
+                  <DialogFooter>
 
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button size="sm" className="cursor-pointer rounded"><ArrowRightFromLine /> {!mobile && "Export"}</Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="flex flex-col text-sm">
-                    <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>
-                    <hr className='border my-2 border-gray-500' />
-                    <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
-                    <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("topojson", key)}>
-                      <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
-                    </Button>
-                    <p className='my-2 text-gray-300'>Geojson is an extremely common spec for geography data</p>
-                    <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => download("geojson", key)}>
-                      <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
-                    </Button>
-                    <p className='my-2 text-gray-300'>KML can be imported into a <a href="https://www.google.com/maps/d/u/0/?hl=en" className='text-blue-300' target="_blank">Google Maps</a> layer. Which can be easily distributed publicly for free.</p>
-                    <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("kml", key)}>
-                      <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
-                    </Button>
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button className="cursor-pointer rounded m-2"><ArrowRightFromLine /> {!mobile && "Export"}</Button>
+                </PopoverTrigger>
+                <PopoverContent className="flex flex-col text-sm">
+                  <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>
+                  <hr className='border my-2 border-gray-500' />
+                  <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
+                  <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("topojson", key)}>
+                    <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
+                  </Button>
+                  <p className='my-2 text-gray-300'>Geojson is an extremely common spec for geography data</p>
+                  <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => download("geojson", key)}>
+                    <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
+                  </Button>
+                  <p className='my-2 text-gray-300'>KML can be imported into a <a href="https://www.google.com/maps/d/u/0/?hl=en" className='text-blue-300' target="_blank">Google Maps</a> layer. Which can be easily distributed publicly for free.</p>
+                  <Button className="cursor-pointer w-full" variant="secondary" onClick={() => download("kml", key)}>
+                    <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
+                  </Button>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         );
@@ -260,6 +261,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
   const [nameInput, setNameInput] = useState()
   const [showNameInput, setShowNameInput] = useState()
   const setMaps = useMaps((state) => state.setMaps)
+  const router = useRouter()
 
   function putMap(body) {
     fetch('/api/map', {
@@ -369,13 +371,16 @@ export function CloudMaps({ maps, revalidate, mapName }) {
               : <X className="inline text-red-200 relative top-[-3px] ms-1" />
             }
           </p>
-          <div className="flex justify-between items-center mt-4">
-            <Button size="sm" className="cursor-pointer rounded text-blue-300 mr-4" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
+
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button className="cursor-pointer rounded m-2" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
+            <Button className="cursor-pointer rounded m-2" variant="outline" onClick={() => router.push(`/${map.map}?id=${map.id}`)}><Eye /> Preview</Button>
             {map.published
-              ? <Button size="sm" className="cursor-pointer rounded mr-2" onClick={() => putMap({ published: !map.published, id: map.id })}><CloudOff /> Unpublish</Button>
-              : <Button size="sm" className="cursor-pointer rounded mr-2" onClick={() => putMap({ published: !map.published, id: map.id })}><BookOpenCheck /> Publish</Button>
+              ? <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><CloudOff /> Unpublish</Button>
+              : <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><BookOpenCheck /> Publish</Button>
             }
-            <Button size="sm" className="text-red-500 cursor-pointer rounded" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
+            <Button className="text-red-500 cursor-pointer rounded m-2" variant="destructive" onClick={() => deleteMap(map.id)}><Trash2 /> Delete</Button>
           </div>
         </div>
       )
