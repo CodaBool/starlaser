@@ -21,9 +21,9 @@ async function sendVerificationRequest({ identifier: email, url }) {
   })
 
   if (!res.ok) {
-    const err = await res.text()
-    console.error(err)
-    throw new Error(err)
+    const error = await res.text()
+    console.error(error)
+    throw new Error(error)
   }
 }
 

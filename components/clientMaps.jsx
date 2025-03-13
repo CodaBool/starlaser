@@ -66,16 +66,16 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.err) {
-          toast.warning(data.err)
+        if (data.error) {
+          toast.warning(data.error)
         } else {
           setShowNameInput(false)
           revalidate(`/app/${map.map}/export`)
           toast.success(`Remote map for ${map.map} updated successfully`)
         }
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        console.log(error)
         toast.warning("A server error occurred")
       })
   }
@@ -91,15 +91,15 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.err) {
-          toast.warning(data.err)
+        if (data.error) {
+          toast.warning(data.error)
         } else {
           toast.success(`${data.map.map} map, ${data.map.name}, successfully uploaded`)
           revalidate(`/app/${map}/export`)
         }
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        console.log(error)
         toast.warning("A server error occurred")
       });
   }
@@ -271,16 +271,16 @@ export function CloudMaps({ maps, revalidate, mapName }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.err) {
-          toast.warning(data.err)
+        if (data.error) {
+          toast.warning(data.error)
         } else {
           setShowNameInput(null)
           revalidate(`/app/${mapName}/export`)
           toast.success(`"${data.map.name}" successfully updated`)
         }
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        console.log(error)
         toast.warning("A server error occurred")
       })
   }
@@ -293,8 +293,8 @@ export function CloudMaps({ maps, revalidate, mapName }) {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.err) {
-          toast.warning(data.err)
+        if (data.error) {
+          toast.warning(data.error)
         } else {
           revalidate(`/app/${mapName}/export`)
 
@@ -302,8 +302,8 @@ export function CloudMaps({ maps, revalidate, mapName }) {
           // Optionally, you can add code here to update the UI after deletion
         }
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        console.log(error)
         toast.warning("A server error occurred")
       })
   }

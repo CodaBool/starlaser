@@ -94,14 +94,14 @@ export async function POST(req) {
     return Response.json({
       msg: published ? `Your ${body.table} has been published` : `Your ${body.table} has been submitted for review`
     })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
   // const { searchParams } = new URL(request.url)

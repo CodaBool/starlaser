@@ -51,7 +51,7 @@ export default function CreateLocation({ user }) {
       toast.success("Profile successfully updated")
       router.refresh()
     } else {
-      console.error(response.err)
+      console.error(response.error)
       toast.warning("Could not update profile at this time")
     }
   }

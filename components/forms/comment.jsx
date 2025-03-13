@@ -49,7 +49,7 @@ export default function CreateComment({ map, locationId }) {
       // TODO: this doesn't close comment form
       router.refresh()
     } else {
-      console.error(response.err)
+      console.error(response.error)
       toast.warning("Could not create a new comment at this time")
     }
   }

@@ -40,14 +40,14 @@ export async function GET(req) {
     if (!geojson) throw 'file not found'
 
     return Response.json({ name: map.name, geojson })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
 }
@@ -115,14 +115,14 @@ export async function PUT(req) {
     }
 
     return Response.json({ msg: "success", map })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
 }
@@ -151,14 +151,14 @@ export async function DELETE(req) {
     })
 
     return Response.json({ msg: "success", map: deleted })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
 }
@@ -216,14 +216,14 @@ export async function POST(req) {
     })
     const response = await s3.send(command)
     return Response.json({ msg: "success", map })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
 }

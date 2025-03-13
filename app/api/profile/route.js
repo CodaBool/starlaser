@@ -14,14 +14,14 @@ export async function PUT(req) {
       data: { alias: body.alias }
     })
     return Response.json({ msg: "success" })
-  } catch (err) {
-    console.error(err)
-    if (typeof err === 'string') {
-      return Response.json({ err }, { status: 400 })
-    } else if (typeof err?.message === "string") {
-      return Response.json({ err: err.message }, { status: 500 })
+  } catch (error) {
+    console.error(error)
+    if (typeof error === 'string') {
+      return Response.json({ error }, { status: 400 })
+    } else if (typeof error?.message === "string") {
+      return Response.json({ error: error.message }, { status: 500 })
     } else {
-      return Response.json(err, { status: 500 })
+      return Response.json(error, { status: 500 })
     }
   }
 }

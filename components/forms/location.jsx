@@ -72,7 +72,7 @@ export default function CreateLocation({ map }) {
       toast.success(response.msg)
       router.push(`/contribute/${map}`)
     } else {
-      console.error(response.err)
+      console.error(response.error)
       toast.warning("Could not create a new location at this time")
     }
   }

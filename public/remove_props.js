@@ -7,9 +7,9 @@ const outputPath = './south-fix.json'
 const LAYER_NAME = "southern_countries"
 const PRESERVE_PROPS = ["NAME_EN"];
 
-fs.readFile(filePath, 'utf8', (err, data) => {
-  if (err) {
-    console.error('Error reading file:', err);
+fs.readFile(filePath, 'utf8', (error, data) => {
+  if (error) {
+    console.error('Error reading file:', error);
     return;
   }
 
