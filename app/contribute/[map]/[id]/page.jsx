@@ -150,7 +150,6 @@ export default async function Location({ params, searchParams }) {
                 ? <div>
                   <CircleX className="mx-auto" /> Invalid Coordinates
                 </div>
-                // : <p>minimap placeholder</p>
                 : <iframe src={`/${map}?mini=1&x=${panX}&y=${panY}&name=${encodeURIComponent(location.name)}&type=${type}`} width="600" height="400" style={{ border: "none" }}></iframe>
               }
             </AccordionContent>
@@ -160,7 +159,9 @@ export default async function Location({ params, searchParams }) {
         <CardFooter className="flex-col items-start mt-4 md:p-6 p-1">
           {commentFormOpen
             ? <CommentForm map={map} locationId={id} />
-            : <Link href={`/contribute/${map}/${id}/?c=1`} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
+            : session
+              ? <Link href={`/contribute/${map}/${id}/?c=1`} className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
+              : <Link href="/api/auth/signin" className="md:w-[150px] w-full"><Button variant="outline" className="md:w-[150px] w-full cursor-pointer">Create Comment</Button></Link>
           }
           <div className="w-full my-4">
             {location.comments.map(comment => {

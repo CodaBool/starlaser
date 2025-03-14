@@ -58,7 +58,6 @@ npx mapshaper *.json \
 - style fixes, too dark
 - contribute pages (save for later)
 - measure broken on mobile
-- add menu and overall navigation stuff, export, profile, contribute all need menus
 - change thirdParty to unofficial
 - change region to another name for a location type
 

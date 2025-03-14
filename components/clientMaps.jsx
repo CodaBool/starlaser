@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy } from 'lucide-react'
+import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy, Download } from 'lucide-react'
 import { Input } from "./ui/input"
 import { Button } from '@/components/ui/button'
 import {
@@ -37,12 +37,11 @@ const useMaps = create(set => ({
   setMaps: maps => set({ maps }),
 }))
 
-export default function ClientMaps({ map, revalidate, cloudMaps }) {
+export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
   const [nameInput, setNameInput] = useState()
   const [showNameInput, setShowNameInput] = useState()
   const maps = useMaps((state) => state.maps)
   const setMaps = useMaps((state) => state.setMaps)
-  const mobile = isMobile()
   const router = useRouter()
 
   useEffect(() => {
@@ -182,12 +181,12 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
             <p className="text-gray-400">Guides: {data.geojson?.features.filter(f => f.geometry.type === "LineString").length}</p>
             <div className="grid grid-cols-2 gap-2">
               {/* <div className="flex justify-between items-center mt-4"> */}
-              <Button className="cursor-pointer rounded m-2" onClick={() => router.push(`/${map}?id=${map.id}`)} variant="outline"><Eye /> {!mobile && "View"}</Button>
-              <Button className="text-red-500 cursor-pointer rounded m-2" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> {!mobile && "Delete"}</Button>
+              <Button className="cursor-pointer rounded m-2" onClick={() => router.push(`/${map}?id=${dateId}`)} variant="outline"><Eye /> View</Button>
+              <Button className="text-red-500 cursor-pointer rounded m-2" variant="destructive" onClick={() => deleteMap(key)}><Trash2 /> Delete</Button>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="cursor-pointer rounded m-2"><Cloud /> {!mobile && "Upload"}</Button>
+                  <Button className="cursor-pointer rounded m-2" disabled={!session} ><Cloud /> Upload</Button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[40em] overflow-auto">
                   <DialogHeader>
@@ -222,15 +221,12 @@ export default function ClientMaps({ map, revalidate, cloudMaps }) {
                       </Card>
                     </DialogClose>
                   ))}
-                  <DialogFooter>
-
-                  </DialogFooter>
                 </DialogContent>
               </Dialog>
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button className="cursor-pointer rounded m-2"><ArrowRightFromLine /> {!mobile && "Export"}</Button>
+                  <Button className="cursor-pointer rounded m-2"><Download /> Download</Button>
                 </PopoverTrigger>
                 <PopoverContent className="flex flex-col text-sm">
                   <p className='mb-3 text-gray-200'>This is your map data combined with the core map data</p>

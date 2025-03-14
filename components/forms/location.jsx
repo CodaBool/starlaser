@@ -45,7 +45,7 @@ export default function CreateLocation({ map }) {
 
   if (status === "unauthenticated") {
     setTimeout(() => {
-      router.push("/contribute")
+      router.replace('/contribute')
     }, 0)
     return (
       <LoaderCircle className="animate-spin mt-[48px] mx-auto" />

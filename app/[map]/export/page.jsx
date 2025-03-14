@@ -1,4 +1,4 @@
-import { ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine } from 'lucide-react'
+import { ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getServerSession } from "next-auth"
@@ -13,11 +13,9 @@ import {
 } from "@/components/ui/popover"
 import { revalidatePath } from 'next/cache'
 
-export default async function Export({ params, searchParams }) {
-  // const
+export default async function Export({ params }) {
   const session = await getServerSession(authOptions)
   const { map } = await params
-  // const { c: commentFormOpen } = await searchParams
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
   let cloud = []
   if (user?.id) {
@@ -36,6 +34,11 @@ export default async function Export({ params, searchParams }) {
 
   return (
     <div className='text-white mx-auto md:container p-4 mt-2 md:mt-14'>
+      <Link href={`/${map}`} className="w-[50px] block">
+        <div className="w-[40px] h-[40px] rounded-2xl border border-[#1E293B]" style={{ background: "#070a0d" }}>
+          <ArrowLeft size={32} className="relative left-[3px] top-[3px]" />
+        </div>
+      </Link>
       <div className='flex flex-col md:flex-row'>
         <h1 className='md:text-6xl text-4xl inline'>{map.charAt(0).toUpperCase() + map.slice(1)} Maps</h1>
         <div className='flex flex-col md:flex-row mt-4'>
@@ -45,7 +48,7 @@ export default async function Export({ params, searchParams }) {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button className="cursor-pointer rounded relative top-[-8px] md:ms-[64px]" variant="secondary"><ArrowRightFromLine /> Export Source</Button>
+              <Button className="cursor-pointer rounded relative top-[-8px] md:ms-[64px]" variant="secondary"><Download /> Download {map}</Button>
             </PopoverTrigger>
             <PopoverContent className="flex flex-col">
               <p className='mb-3 text-gray-200'>This is the base core data. Without any user submitted geography data</p>
@@ -75,7 +78,7 @@ export default async function Export({ params, searchParams }) {
 
       <h2 className='md:text-4xl text-2xl my-4'><WifiOff className='inline relative top-[-4px]' size={30} /> Local</h2>
       <h3 className='text-gray-300'>Saved in browser</h3>
-      <ClientMaps map={map} revalidate={revalidate} cloudMaps={cloud} />
+      <ClientMaps map={map} revalidate={revalidate} cloudMaps={cloud} session={session} />
 
       <h2 className='md:text-4xl text-2xl my-4'><Cloud className='inline relative top-[-4px]' size={34} /> Cloud</h2>
       <h3 className='text-gray-300'>Saved remotely</h3>
@@ -85,7 +88,7 @@ export default async function Export({ params, searchParams }) {
         <p>You have no maps saved remotely</p>
       }
       {!user &&
-        <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map</h3>
+        <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
       }
       <CloudMaps maps={cloud} revalidate={revalidate} mapName={map} />
     </div>

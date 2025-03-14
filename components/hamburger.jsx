@@ -67,7 +67,7 @@ export default function Hamburger({ mode, name, c }) {
         <Dialog className="" >
           <DialogTrigger asChild>
             <Button variant="ghost" className="w-full pl-0">
-              <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-6px]" /> <span className="left-[-6px] relative">Credits</span>
+              <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-6px]" /> <span className="left-[-2px] relative">Credits</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-[410px]" style={{ color: 'white' }} onInteractOutside={e => console.log("outside")}>
@@ -98,6 +98,11 @@ export default function Hamburger({ mode, name, c }) {
             </DropdownMenuItem>
           </a>
         }
+        <Link href="/" >
+          <DropdownMenuItem className="cursor-pointer">
+            <Map className="ml-[.6em]" /> <span className="ml-[5px]">Other Maps</span>
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Create</DropdownMenuLabel>
         <Link href={`/contribute/${name}`}>
@@ -185,7 +190,7 @@ function Credits({ name }) {
           {/* <span><Sparkle className="inline pr-2" /> contribute to be added</span><br /> */}
         </span>
       </span>
-      <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href="/easteregg" style={{ color: "#60677c" }}>CodaBool</Link></span>
+      <span className="text-center block text-[dimgray] mt-4">Created with <Heart size={14} className="inline" /> by <Link href={`/easteregg?redirect=${window?.location?.href || "/" + name}`} style={{ color: "#60677c" }}>CodaBool</Link></span>
       {name.includes("lancer") && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Lancer product<br />Lancer is copyright Massif Press</span>}
       {name === "fallout" && <span className="text-center block text-[dimgray] mt-4">Stargazer is not an official Fallout product<br />Fallout is copyright Bethesda Softworks</span>}
     </>
