@@ -84,7 +84,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
   }
 
   function handleEdit() {
-    // console.log("row data", feature.properties)
     setEditorTable(feature.properties)
   }
 
@@ -145,7 +144,20 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
             Object.entries(feature.properties).map((arr, i) => (
               <TableRow key={i} >
                 <TableCell className="font-medium">{arr[0]}</TableCell>
-                <TableCell>{arr[1]}</TableCell>
+                {arr[1].startsWith("http") &&
+                  <TableCell>
+                    <svg width="20" height="20">
+                      <image href={arr[1]} width="20" height="20" />
+                    </svg>
+                  </TableCell>
+                }
+                {arr[1].startsWith("rgba") &&
+                  <TableCell>
+                    <div style={{ width: '20px', height: '20px', backgroundColor: arr[1] }}></div>
+                  </TableCell>
+                }
+                {(!arr[1].startsWith("rgba") && !arr[1].startsWith("http")) && <TableCell>{arr[1]}</TableCell>}
+
                 <TableCell>
                   <Dialog className="">
                     <DialogTrigger>

@@ -9,23 +9,17 @@ export default function Editor({ draw, mapName, mapId }) {
   const [popup, setPopup] = useState()
 
   function handleClick(e) {
-    // console.log("pre select", draw.getSelected())
     if (!draw.getSelected().features.length) return
     const f = draw.getSelected().features[0]
     if (draw.getMode() !== 'simple_select' && draw.getMode() !== 'direct_select') return
     const feature = draw.get(f.id) || f
-    // console.log("selected", feature, f)
     setPopup(feature)
   }
 
   useEffect(() => {
     if (!map || !draw) return
-    // map.on('touchstart', handleClick)
     map.on('click', handleClick)
-    return () => {
-      map.off('click', handleClick)
-      // map.off('touchstart', handleClick)
-    }
+    return () => map.off('click', handleClick)
   }, [map, draw])
 
   useEffect(() => {

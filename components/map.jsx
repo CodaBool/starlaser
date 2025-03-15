@@ -7,7 +7,7 @@ import maplibregl, {
 import { useMap } from 'react-map-gl/maplibre'
 import { geoPath, geoMercator, geoTransform } from 'd3-geo'
 import { useEffect, useRef, useState } from 'react'
-import { color, important, positionTooltip, accent, ignoreList, getConsts } from "@/lib/utils.js"
+import { color, important, positionTooltip, accent, ignoreList, getConsts, hashString } from "@/lib/utils.js"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import Tooltip from './tooltip'
 import Sheet from './sheet'
@@ -39,15 +39,14 @@ function generateCircle(center, radius) {
   }
 }
 
-export function getIcon(d, create, simple) {
-  const icon = SVG[d.properties.icon] || SVG[d.properties.type]
-  if (simple) return typeof icon
-  if (create) {
-    if (icon) {
-      return document.createElementNS(d3.namespaces.svg, 'g')
-    } else {
-      return document.createElementNS(d3.namespaces.svg, 'circle')
-    }
+export function getIcon(d) {
+  const icon = d.properties.icon || SVG[d.properties.type]
+  if (icon.startsWith('http')) {
+    return (
+      `<svg width="20" height="20">
+        <image href="${icon}" width="20" height="20" />
+      </svg>`
+    )
   }
   return icon ? icon : null
 }

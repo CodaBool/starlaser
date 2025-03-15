@@ -16,29 +16,34 @@ const s3 = new S3Client({
   },
 })
 
-export default async function mapLobby({ params, searchParams }) {
-
+export default async function mapLobby({ params }) {
   const { map, id } = await params
-  // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
-  const mapDB = await db.map.findUnique({
-    where: { id },
-  })
-  if (!mapDB?.published) {
-    return redirect(`/${map}`)
+  const skipCombine = id.length === 13
+
+  let geojson
+  if (!skipCombine) {
+    // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
+    const mapDB = await db.map.findUnique({
+      where: { id },
+    })
+    if (!mapDB?.published) {
+      return redirect(`/${map}`)
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: "maps",
+      Key: id,
+      ResponseContentType: "application/json",
+    })
+    const response = await s3.send(command)
+
+
+    // Read stream to buffer
+    const clientGeojson = await response.Body?.transformToString();
+    if (!clientGeojson) throw 'file not found'
+    geojson = JSON.parse(clientGeojson)
+
   }
-
-  const command = new GetObjectCommand({
-    Bucket: "maps",
-    Key: id,
-    ResponseContentType: "application/json",
-  })
-  const response = await s3.send(command)
-
-
-  // Read stream to buffer
-  const clientGeojson = await response.Body?.transformToString();
-
-  if (!clientGeojson) throw 'file not found'
 
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
   const filePath = path.join(dataDir, `${map}.json`)
@@ -48,9 +53,13 @@ export default async function mapLobby({ params, searchParams }) {
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
   const content = await fs.promises.readFile(filePath, 'utf8')
+
   const topojson = JSON.parse(content)
-  const geojson = JSON.parse(clientGeojson)
-  const [data, type] = await combineAndDownload("topojson", topojson, geojson)
+  if (skipCombine) {
+    return <Cartographer rawTopojson={topojson} name={map} mapId={id} />
+  }
+
+  const [data, type] = combineAndDownload("topojson", topojson, geojson)
   const combinedData = JSON.parse(data)
 
   // TODO: the layer name here will be different for each map

@@ -126,7 +126,7 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
       const response = await fetch(`/api/download/${map}`)
       const data = await response.json()
       const localGeojson = maps[key].geojson
-      const [finalData, fileType] = await combineAndDownload(type, data, localGeojson)
+      const [finalData, fileType] = combineAndDownload(type, data, localGeojson)
 
       // Create and trigger file download
       const blob = new Blob([finalData], { type: fileType });

@@ -56,7 +56,7 @@ export async function GET(req) {
     path.resolve(`app/[map]/topojson/lancer_starwall.json`)
     const topojson = JSON.parse(content)
     const geojson = JSON.parse(clientGeojson)
-    const [data, type] = await combineAndDownload("geojson", topojson, geojson)
+    const [data, type] = combineAndDownload("geojson", topojson, geojson)
     const combinedData = JSON.parse(data)
     // console.log("result", combinedData)
 

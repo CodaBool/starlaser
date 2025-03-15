@@ -17,12 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake } from "lucide-react"
+import { Heart, Github, UserRound, Copyright, Sparkles, Telescope, SquareArrowOutUpRight, MoonStar, Sparkle, BookOpen, Bug, Pencil, Plus, MapPin, RectangleHorizontal, Map, ArrowRightFromLine, Hexagon, ListCollapse, User, LogOut, Ruler, CodeXml, Menu, Crosshair, HeartHandshake, Eye } from "lucide-react"
 import { select } from 'd3'
 import { useEffect, useState } from "react"
 
 export default function Hamburger({ mode, name, c }) {
   const [check, setCheck] = useState()
+  const [id, setId] = useState()
+  const [editId, setEditId] = useState()
 
   function toggle(newMode, skipnull) {
     if (mode.has(newMode)) {
@@ -47,6 +49,22 @@ export default function Hamburger({ mode, name, c }) {
     if (c && !mode.has("crosshair")) {
       toggle("crosshair", true)
     }
+
+    let urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id')
+    const pathname = window.location.pathname
+    const datetime = pathname.split("/").pop()
+    const idOnPathName = /^\d+$/.test(datetime)
+
+    if (idOnPathName) setEditId(datetime)
+    if (id) setId(id)
+
+    // sometimes the id is created after page load
+    setTimeout(() => {
+      urlParams = new URLSearchParams(window.location.search);
+      const delayedId = urlParams.get('id')
+      if (delayedId) setId(delayedId)
+    }, 500)
   }, [])
 
   return (
@@ -115,10 +133,20 @@ export default function Hamburger({ mode, name, c }) {
             <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Export</span>
           </DropdownMenuItem>
         </Link>
-        {/* <DropdownMenuItem className="cursor-pointer">
-          <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
-        </DropdownMenuItem> */}
-
+        {id &&
+          <Link href={`/${name}/${id}`}>
+            <DropdownMenuItem className="cursor-pointer">
+              <Eye className="ml-[.6em] inline" /> <span className="ml-[5px]">Preview</span>
+            </DropdownMenuItem>
+          </Link>
+        }
+        {editId &&
+          <Link href={`/${name}?id=${editId}`}>
+            <DropdownMenuItem className="cursor-pointer">
+              <Pencil className="ml-[.6em] inline" /> <span className="ml-[5px]">Edit</span>
+            </DropdownMenuItem>
+          </Link>
+        }
       </DropdownMenuContent>
     </DropdownMenu >
   )

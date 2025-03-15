@@ -87,6 +87,7 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               map: name,
             }).toString()
             const icon = SVG[d.properties.type]
+            const remoteIcon = d.properties.icon
             const card = (
               <Card
                 className="min-h-[80px] m-2 min-w-[150px] cursor-pointer"
@@ -95,9 +96,16 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
               >
                 <CardContent className={`p-2 text-center ${selected === properties.name ? 'bg-yellow-800' : 'hover:bg-yellow-950'}`}>
                   {properties.unofficial && <Badge variant="destructive" className="mx-auto">unofficial</Badge>}
-
                   <p className="font-bold text-xl text-center">{properties.name}</p>
-                  <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
+                  {remoteIcon ?
+                    <p className="text-center text-gray-400 flex justify-center">
+                      <svg width="20" height="20" className="m-1">
+                        <image href={remoteIcon} width="20" height="20" />
+                      </svg>
+                      {properties.type}
+                    </p>
+                    : <p className="text-center text-gray-400 flex justify-center"><span dangerouslySetInnerHTML={{ __html: icon }} style={{ fill: "white", margin: '.2em' }} />{properties.type}</p>
+                  }
                   {properties.faction && <Badge className="mx-auto">{properties.faction}</Badge>}
                   {properties.destroyed && <Badge className="mx-auto">destroyed</Badge>}
                   {properties.capital && <Badge variant="destructive" className="mx-auto">capital</Badge>}
