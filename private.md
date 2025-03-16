@@ -58,6 +58,10 @@ npx mapshaper *.json \
 - style fixes, too dark
 - contribute pages (save for later)
 - measure broken on mobile
+- replace back some of the stargazer -> https://starlazer.vercel.app/ changes
+  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/api/auth/[...nextauth]/route.js#L15
+  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/api/contribute/route.js#L63
+  - https://github.com/CodaBool/starlaser/blob/976af63a5b5b86634afad0d7f2767656d007b46f/app/contribute/[map]/[id]/page.jsx#L78
 
 # Contribute work
 - brah
