@@ -84,7 +84,7 @@ export default function Hamburger({ mode, name, c }) {
         {/* <DropdownMenuItem className="cursor-pointer"><Heart /> Credits</DropdownMenuItem> */}
         <Dialog className="" >
           <DialogTrigger asChild>
-            <Button variant="ghost" className="w-full pl-0">
+            <Button variant="ghost" className="w-full pl-0 cursor-pointer">
               <Heart size={16} className="relative top-[-1px] pe-[2px] inline left-[-6px]" /> <span className="left-[-2px] relative">Credits</span>
             </Button>
           </DialogTrigger>

@@ -22,7 +22,7 @@ export async function POST(req) {
           description: body.description,
           type: body.type.split(".")[0],
           coordinates: body.coordinates,
-          thirdParty: body.thirdParty,
+          unofficial: body.unofficial,
           faction: body.faction,
           source: body.source,
           capital: body.capital,
@@ -57,8 +57,8 @@ export async function POST(req) {
       }).toString()
 
       let html = `
-        <h1><a href="https://stargazer.vercel.app/${body.map}">${body.map.toUpperCase()}</a></h1>
-        <a href="https://stargazer.vercel.app/api/contribute?type=${body.table}&id=${response.id}&secret=${process.env.EMAIL_SECRET}">approve?</a>
+        <h1><a href="https://stargazer.vercel.app/contribute/${body.map}/${response.id}">${body.map.toUpperCase()}</a></h1>
+        <a href="https://stargazer.vercel.app/api/contribute?type=${body.table}&id=${response.id}&secret=${process.env.EMAIL_SECRET}">approve</a>
         <h1>User</h1>
         <p><strong>userId:</strong> ${user.id}</p>
         <p><strong>email:</strong> ${session.user.email}</p>
@@ -70,12 +70,16 @@ export async function POST(req) {
           <div style="margin: 1em; border: 1px solid; padding: 1em">${body.content}</div>
         `
       } else {
-        html += `<h1>Location</h1>
+        html += `<h1>${body.type.split(".")[1].toUpperCase()}</h1>
           <p><strong>name:</strong> ${body.name}</p>
-          <p><strong>type:</strong> ${body.type}</p>
+          <p><strong>type:</strong> ${body.type.split(".")[0]}</p>
           <p><strong>coordinates:</strong> ${body.coordinates}</p>
-          <p><strong>thirdParty:</strong> ${body.thirdParty ? "true" : "false"}</p>
+          <p><strong>unofficial:</strong> ${body.unofficial ? "true" : "false"}</p>
+          <p><strong>destroyed:</strong> ${body.destroyed ? "true" : "false"}</p>
+          <p><strong>capital:</strong> ${body.capital ? "true" : "false"}</p>
           <p><strong>faction:</strong> ${body.faction}</p>
+          <p><strong>city:</strong> ${body.city}</p>
+          <p><strong>alias:</strong> ${body.alias}</p>
           <p><strong>source:</strong> ${body.source}</p>
           <p><strong>locationId:</strong> ${response.id}</p>
           <div style="margin: 1em; border: 1px solid; padding: 1em">${body.description}</div>

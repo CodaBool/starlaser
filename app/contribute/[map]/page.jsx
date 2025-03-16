@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { getConsts } from '@/lib/utils'
 
 import { Badge } from "@/components/ui/badge"
 
@@ -24,6 +25,7 @@ export default async function Contribute({ params, searchParams }) {
   const session = await getServerSession(authOptions)
   const { p: openLocationForm, v: variant } = await searchParams
   const { map } = await params
+  const { QUOTE } = getConsts(map)
 
   // TODO: test if this will be a cached request for unauth requests
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
@@ -78,7 +80,7 @@ export default async function Contribute({ params, searchParams }) {
                 </g>
               </svg>
               <span className="flex items-center justify-center">
-                <span className="text-gray-500 text-sm">&emsp;"...along ancient charted paths and out toward new worlds. Union could not bring their dead back home. But they would choke the stars with the living"</span>
+                <span className="text-gray-500 text-sm">&emsp;"{QUOTE}"</span>
               </span>
             </DialogDescription>
           </DialogHeader>

@@ -33,10 +33,10 @@ model Location {
   userId      String
   published   Boolean   @default(false)
   capital     Boolean   @default(false)
-  crowded     Boolean   @default(false)
+  label       Boolean   @default(false)
   destroyed   Boolean   @default(false)
   resolved    Boolean   @default(false)
-  thirdParty  Boolean   @default(false)
+  unofficial  Boolean   @default(false)
   alias       String?   @db.VarChar(50)
   map         String
   comments    Comment[]
@@ -44,19 +44,19 @@ model Location {
 }
 
 model Map {
-  id        String      @id @default(uuid(7))
-  name      String   @db.VarChar(200)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  lastUsed  DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt
-  userId    String
-  hash    String
-  published Boolean  @default(false)
-  locations   Int @default(0)
-  territories Int @default(0)
-  guides      Int @default(0)
-  map       String
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(uuid(7))
+  name        String   @db.VarChar(200)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  lastUsed    DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @updatedAt
+  userId      String
+  hash        String
+  published   Boolean  @default(false)
+  locations   Int      @default(0)
+  territories Int      @default(0)
+  guides      Int      @default(0)
+  map         String
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model User {

@@ -29,7 +29,6 @@
 - npx mapshaper -i ./merge_me/guide.json ./merge_me/point.json ./merge_me/territory.json combine-files -merge-layers -o ./merge_me/merged.json
 - npx mapshaper -i source.geojson -clean -o ./merged.json target=source,source,source
 
-
 result.features = this.files.filter((f) => f.geojson.features).map((f) => f.geojson.features).flat(1)
 
 npx mapshaper *.json \
@@ -53,13 +52,12 @@ npx mapshaper *.json \
 
 # Region change
 - all factions, regions, clusters will now be type "region". Neutral states, countries, and Lancer guide. Will now be "null" type. Regions will now use a faction prop which will determine further detail
+- "region" is the default polygon type. Common other types are: fallout ["faction"], lancer: ["cluster", "faction"]
 
 # todo:
 - style fixes, too dark
 - contribute pages (save for later)
 - measure broken on mobile
-- change thirdParty to unofficial
-- change region to another name for a location type
 
 # Contribute work
 - brah

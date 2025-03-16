@@ -3,6 +3,7 @@ import { Button } from './ui/button'
 import { useMap } from "react-map-gl/maplibre";
 import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
+import { X } from "lucide-react";
 
 export default function Editor({ draw, mapName, mapId }) {
   const { map } = useMap()
@@ -40,20 +41,28 @@ export default function Editor({ draw, mapName, mapId }) {
     }))
   }, [popup, draw])
 
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: '20px',
-        bottom: '20px',
-        background: 'black',
-        padding: '8px',
-        zIndex: 10,
-        transition: 'bottom 0.5s ease-in-out',
-      }}
-      className="border editor-table"
-    >
-      {popup && <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />}
-    </div>
-  );
+  if (popup) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: '20px',
+          bottom: '20px',
+          background: 'black',
+          padding: '8px',
+          zIndex: 10,
+          transition: 'bottom 0.5s ease-in-out',
+        }}
+        className="editor-table border"
+      >
+        <div className="flex justify-end">
+          <Button variant="ghost" className="p-0 w-6 h-3 cursor-pointer" onClick={e => setPopup(null)}>
+            <X />
+          </Button>
+        </div>
+        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />
+      </div>
+    );
+  }
+
 }

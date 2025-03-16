@@ -5,10 +5,10 @@ import { starHTML } from "@/lib/utils"
 
 async function sendVerificationRequest({ identifier: email, url }) {
   const urlParams = new URLSearchParams({
-    subject: "Sign into Community Maps",
+    subject: "Sign into Stargazer",
     to: email,
     name: "contributor",
-    from: "Community Maps",
+    from: "Stargazer",
     secret: process.env.EMAIL_SECRET,
     simpleBody: `<h1>Welcome to Stargazer</h1>
     ${starHTML}

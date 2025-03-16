@@ -41,7 +41,10 @@ function generateCircle(center, radius) {
 
 export function getIcon(d) {
   const icon = d.properties.icon || SVG[d.properties.type]
-  if (icon.startsWith('http')) {
+  if (!icon) {
+    console.log("WARN: no type or icon for", d.properties.type)
+  }
+  if (icon?.startsWith('http')) {
     return (
       `<svg width="20" height="20">
         <image href="${icon}" width="20" height="20" />
@@ -291,7 +294,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
 
     const locationLabel = svg
       .selectAll('.location-label')
-      .data(data.location.filter(d => important(name, d.properties) && !d.properties.crowded))
+      .data(data.location.filter(d => important(name, d.properties) && d.properties.label))
       .enter().append('text')
       .text(d => d.properties.name)
       .attr('class', d => d.properties.unofficial ? 'unofficial location-label' : 'official location-label')

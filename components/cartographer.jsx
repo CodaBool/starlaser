@@ -44,6 +44,10 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
     if (maps) {
       const localGeojson = maps[name + "-" + mapId]
       if (localGeojson?.geojson) {
+        localGeojson.geojson.features = localGeojson.geojson.features.map(feature => {
+          feature.properties.userCreated = true;
+          return feature;
+        })
         const [rawGeojson, type] = combineAndDownload("topojson", rawTopojson, localGeojson.geojson)
         const combinedData = JSON.parse(rawGeojson)
 

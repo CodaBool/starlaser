@@ -207,15 +207,17 @@ export async function POST(req) {
       // CacheControl: "STRING_VALUE",
       ContentType: "application/json",
       // Expires: new Date("TIMESTAMP"),
+      // Metadata values must be a string
       Metadata: {
         "user": user.id,
         "map": body.map,
         "alias": user.alias,
         "email": user.email,
-        "published": map.published,
+        "published": `${map.published}`,
       },
       // Tagging: "STRING_VALUE",
     })
+
     const response = await s3.send(command)
     return Response.json({ msg: "success", map })
   } catch (error) {

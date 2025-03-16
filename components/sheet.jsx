@@ -114,8 +114,8 @@ export default function SheetComponent({ setDrawerOpen, drawerOpen, locations, c
             )
             return properties.name === selected ? (
               <Link
-                href={genLink(d, name)}
-                target="_blank"
+                href={genLink(d, name, "href")}
+                target={genLink(d, name, "target")}
                 key={properties.name}
               >
                 {card}

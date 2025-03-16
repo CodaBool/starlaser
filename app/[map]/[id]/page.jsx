@@ -43,6 +43,11 @@ export default async function mapLobby({ params }) {
     if (!clientGeojson) throw 'file not found'
     geojson = JSON.parse(clientGeojson)
 
+    // add a userCreated prop for better contribute links
+    geojson.features = geojson.features.map(feature => {
+      feature.properties.userCreated = true;
+      return feature;
+    })
   }
 
   const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");

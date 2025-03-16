@@ -64,7 +64,7 @@ export default async function Location({ params, searchParams }) {
   })
 
   let viewable = location.published
-  if (!viewable && location.userId === user.id) {
+  if (!viewable && location.userId === user?.id) {
     viewable = true
   }
 
@@ -129,7 +129,7 @@ export default async function Location({ params, searchParams }) {
           <CardTitle>
             {location.name}
             {!location.published && <Badge variant="secondary" className="mx-1">Pending Review</Badge>}
-            {location.thirdParty && <Badge variant="destructive" className="mx-1">Unofficial</Badge>}
+            {location.unofficial && <Badge variant="destructive" className="mx-1">Unofficial</Badge>}
             {location.destroyed && <Badge variant="secondary" className="mx-1">Destroyed</Badge>}
             {location.capital && <Badge variant="secondary" className="mx-1">Capital</Badge>}
           </CardTitle>
