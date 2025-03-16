@@ -1,4 +1,4 @@
-export const revalidate = 600 // seconds before a MISS (600 is 10 minutes)
+export const revalidate = 60 // seconds before a MISS (600 is 10 minutes)
 import fs from "fs"
 import path from "path"
 import { feature } from 'topojson-client'

@@ -22,8 +22,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
 import * as d3 from 'd3-geo'
 import { ArrowLeft, Star, CircleX } from "lucide-react"
+import style from "../md.module.css"
 // import MiniMap from "@/components/minimap"
-import { adminIds } from "@/lib/utils"
 
 export default async function Location({ params, searchParams }) {
   // const
@@ -31,6 +31,8 @@ export default async function Location({ params, searchParams }) {
   const { id, map } = await params
   const { c: commentFormOpen } = await searchParams
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
+  const isAdmin = user.email === process.env.EMAIL
+
   const location = await db.location.findUnique({
     where: {
       id: Number(id),
@@ -60,6 +62,7 @@ export default async function Location({ params, searchParams }) {
       id: true,
       alias: true,
       email: true,
+      vip: true,
     }
   })
 
@@ -81,7 +84,15 @@ export default async function Location({ params, searchParams }) {
     }
   })
 
-  // probably not necessary but just to be safe
+
+  const vip = commenters.filter(u => u.vip).map(u => u.id)
+  const adminArray = commenters.filter(u => u.email === process.env.EMAIL).map(u => u.id)
+  let adminId
+  if (adminArray.length === 1) {
+    adminId = adminArray[0]
+  }
+
+  // strip dangerous tags
   DOMPurify.setConfig({
     FORBID_TAGS: ['img', 'svg', 'math', 'script', 'table', 'iframe'],
   })
@@ -118,7 +129,7 @@ export default async function Location({ params, searchParams }) {
   }
 
   return (
-    <div className="mx-auto my-4 flex justify-center flex-col md:container">
+    <div className="mx-auto my-4 flex justify-center flex-col md:container select-text">
       <Link href={`/contribute/${map}`} className="w-[50px] block">
         <div className="w-[50px] h-[50px] rounded-2xl border border-[#1E293B] mb-2 ml-6 md:ml-0" style={{ background: "#070a0d" }}>
           <ArrowLeft size={42} className="relative left-[3px] top-[3px]" />
@@ -134,13 +145,20 @@ export default async function Location({ params, searchParams }) {
             {location.capital && <Badge variant="secondary" className="mx-1">Capital</Badge>}
           </CardTitle>
           <div className="text-gray-400">{location.type}</div>
+          <span className="">Created: <span className="text-gray-400">
+            {new Date(location.createdAt).toISOString().split('T')[0].replace(/-/g, '/')}
+          </span></span>
           <span className="">Coordinates: <span className="text-gray-400">{Math.floor(Number(panX))} {Math.floor(panY)}</span></span>
           {location.faction && <span className="inline">Faction: <span className="text-gray-400 inline">{location.faction}</span></span>}
           {location.city && <span className="inline">City: <span className="text-gray-400 inline">{location.city}</span></span>}
           {location.alias && <span className="inline">Alias: <span className="text-gray-400 inline">{location.alias}</span></span>}
           <span className="">Source: <span className="text-gray-400">{location.source}</span></span>
         </CardHeader>
-        <CardContent className="location-description border border-gray-800 rounded-2xl pt-4 md:mx-6 bg-[#02050D]" dangerouslySetInnerHTML={{ __html: location.description }} />
+
+        <CardContent className="location-description border border-gray-800 rounded-2xl pt-4 md:mx-6 bg-[#02050D]">
+          <div className={style.markdown} dangerouslySetInnerHTML={{ __html: location.description }}></div>
+        </CardContent>
+
 
         <Accordion type="single" collapsible className="md:mx-8 mx-4">
           <AccordionItem value="item-1">
@@ -168,6 +186,14 @@ export default async function Location({ params, searchParams }) {
               return (
                 <div className="border border-gray-800 p-2 rounded mb-1" key={comment.id}>
                   <div className="flex items-center mb-1">
+                    {adminId === comment.userId &&
+                      <svg fill="gold" style={{ position: "relative", left: "23px", top: "-15px" }} width="20px" height="14px" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M220,98.865c0-12.728-10.355-23.083-23.083-23.083s-23.083,10.355-23.083,23.083c0,5.79,2.148,11.084,5.681,15.14
+	l-23.862,21.89L125.22,73.002l17.787-20.892l-32.882-38.623L77.244,52.111l16.995,19.962l-30.216,63.464l-23.527-21.544
+	c3.528-4.055,5.671-9.344,5.671-15.128c0-12.728-10.355-23.083-23.083-23.083C10.355,75.782,0,86.137,0,98.865
+	c0,11.794,8.895,21.545,20.328,22.913l7.073,84.735H192.6l7.073-84.735C211.105,120.41,220,110.659,220,98.865z"/>
+                      </svg>
+                    }
                     <Avatar
                       size={25}
                       name={comment.alias}
@@ -182,9 +208,11 @@ export default async function Location({ params, searchParams }) {
                     />
                     <h2 className="font-bold text-lg mx-2">{comment.alias}</h2>
                     {!comment.published && <Badge variant="secondary">Pending Review</Badge>}
-                    {adminIds.includes(comment.userId) && <Badge variant="secondary" className="mx-2"><Star size={12} /></Badge>}
+                    {(vip.includes(comment.userId) && (adminId !== comment.userId)) && <Badge variant="outline" className="mx-2"><Star size={12} className="mr-1" /> Valued Member</Badge>}
                   </div>
-                  <div className="location-description border border-gray-800 rounded-2xl p-3 md:mx-6 bg-[#02050D]" dangerouslySetInnerHTML={{ __html: comment.content }}></div>
+                  <div className="location-description border border-gray-800 rounded-2xl p-3 md:mx-6 bg-[#02050D]">
+                    <div className={style.markdown} dangerouslySetInnerHTML={{ __html: comment.content }}></div>
+                  </div>
                 </div>
               )
             })}

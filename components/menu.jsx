@@ -29,20 +29,20 @@ export default function Menu({ path, params }) {
               <MenubarSub>
                 <MenubarSubTrigger className="cursor-pointer"><Hexagon size={16} className="inline mr-1" /> Lancer</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <a href="/lancer">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/lancer">
                       <UserRound size={16} className="inline mr-1" /> Janederscore
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
 
-                  <a href="/lancer?variant=starwall">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/lancer?variant=starwall">
                       <UserRound size={16} className="inline mr-1" /> Starwall
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
-              <MenubarItem>
+              <MenubarItem asChild>
                 <a href="/fallout"><Settings size={16} className="inline mr-1" /> Fallout</a>
               </MenubarItem>
             </MenubarSubContent>
@@ -55,20 +55,20 @@ export default function Menu({ path, params }) {
               <MenubarSub>
                 <MenubarSubTrigger className="cursor-pointer"><Hexagon size={16} className="inline mr-1" /> Lancer</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <a href="/lancer/export">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/lancer/export">
                       <UserRound size={16} className="inline mr-1" /> Janederscore
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
 
-                  <a href="/lancer_starwall/export">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/lancer_starwall/export">
                       <UserRound size={16} className="inline mr-1" /> Starwall
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
-              <MenubarItem>
+              <MenubarItem asChild>
                 <a href="/fallout/export"><Settings size={16} className="inline mr-1" /> Fallout</a>
               </MenubarItem>
             </MenubarSubContent>
@@ -80,27 +80,27 @@ export default function Menu({ path, params }) {
               <MenubarSub>
                 <MenubarSubTrigger className="cursor-pointer"><Hexagon size={16} className="inline mr-1" /> Lancer</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <a href="/contribute/lancer">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/contribute/lancer">
                       <UserRound size={16} className="inline mr-1" /> Janederscore
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
 
-                  <a href="/contribute/lancer_starwall">
-                    <MenubarItem className="cursor-pointer">
+                  <MenubarItem className="cursor-pointer" asChild>
+                    <a href="/contribute/lancer_starwall">
                       <UserRound size={16} className="inline mr-1" /> Starwall
-                    </MenubarItem>
-                  </a>
+                    </a>
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
-              <MenubarItem>
+              <MenubarItem asChild>
                 <a href="/contribute/fallout"><Settings size={16} className="inline mr-1" /> Fallout</a>
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
 
-          <MenubarItem>
-            <a href="/"><Map size={16} className="inline mr-1" /> Other Maps</a>
+          <MenubarItem asChild>
+            <a href="/" className="cursor-pointer"><Map size={16} className="inline mr-1" /> Other Maps</a>
           </MenubarItem>
 
           {/* {(path === "/profile" || path === "/contribute") &&
@@ -117,7 +117,7 @@ export default function Menu({ path, params }) {
           } */}
 
           <a href="https://github.com/codabool/community-vtt-maps/issues" target="_blank">
-            <MenubarItem inset className="cursor-pointer  pl-2"><Bug size={16} className="inline mr-1" /> Issues</MenubarItem>
+            <MenubarItem inset className="cursor-pointer pl-2"><Bug size={16} className="inline mr-1" /> Issues</MenubarItem>
           </a>
 
         </MenubarContent>

@@ -27,8 +27,10 @@ export default async function Contribute({ params, searchParams }) {
   const { map } = await params
   const { QUOTE } = getConsts(map)
 
+
   // TODO: test if this will be a cached request for unauth requests
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
+  const isAdmin = user?.email === process.env.EMAIL
   const locations = await db.location.findMany({
     where: {
       OR: [
@@ -89,30 +91,32 @@ export default async function Contribute({ params, searchParams }) {
         </DialogContent>
       </Dialog>
 
-      {submissions.length &&
+      {(submissions.length > 0 && !isAdmin) &&
         <>
           <h1 className="text-5xl text-center">Submissions</h1>
           <hr className="my-4" />
-          {submissions.map(location => {
-            return (
-              <Card className="w-full  m-2 min-[392px]:w-[180px]" key={location.id}>
-                <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
-                  <CardContent className="p-2 m-0">
-                    <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
-                    <p className="text-center text-gray-500">{location.type}</p>
-                    <div className="flex justify-center flex-col">
-                      {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
-                      {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
-                      {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
-                      {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
-                      {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
-                      {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
-                    </div>
-                  </CardContent>
-                </Link>
-              </Card>
-            )
-          })}
+          <div className="flex flex-wrap justify-center">
+            {submissions.map(location => {
+              return (
+                <Card className="w-full  m-2 min-[392px]:w-[180px]" key={location.id}>
+                  <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
+                    <CardContent className="p-2 m-0">
+                      <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
+                      <p className="text-center text-gray-500">{location.type}</p>
+                      <div className="flex justify-center flex-col">
+                        {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+                        {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
+                        {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
+                        {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
+                        {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
+                        {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
+                      </div>
+                    </CardContent>
+                  </Link>
+                </Card>
+              )
+            })}
+          </div>
         </>
       }
 

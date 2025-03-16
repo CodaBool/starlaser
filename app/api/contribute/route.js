@@ -12,7 +12,10 @@ export async function POST(req) {
 
     // check if this user has at least 2 approved comments
     const publishedComments = await db.comment.findMany({ where: { userId: user.id, published: true } })
-    const published = publishedComments.length > 1
+    let published = publishedComments.length > 1
+    if (user.vip) {
+      published = true
+    }
 
     let response, locationId
     if (body.table === "location") {

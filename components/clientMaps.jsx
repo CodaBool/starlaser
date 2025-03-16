@@ -360,7 +360,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
               ? <>
                 <Check className="inline text-blue-300 relative top-[-3px] ms-1" />
                 {navigator.clipboard
-                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(map.id)}><Copy />Share Code</Button>
+                  ? <Button size="sm" className="cursor-pointer rounded" variant="ghost" onClick={() => navigator.clipboard.writeText(`https://starlaser.vercel.app/${map.map}/${map.id}`)}><Copy />Share Code</Button>
                   : <Input value={map.id} readOnly className="inline ms-2 w-20" />
                 }
               </>
@@ -371,7 +371,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
 
           <div className="grid grid-cols-2 gap-2">
             <Button className="cursor-pointer rounded m-2" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
-            <Button className="cursor-pointer rounded m-2" variant="outline" onClick={() => router.push(`/${map.map}?id=${map.id}`)}><Eye /> Preview</Button>
+            <Button className="cursor-pointer rounded m-2" disabled={!map.published} variant="outline" onClick={() => router.push(`/${map.map}/${map.id}`)}><Eye /> Preview</Button>
             {map.published
               ? <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><CloudOff /> Unpublish</Button>
               : <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><BookOpenCheck /> Publish</Button>
