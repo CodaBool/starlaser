@@ -39,6 +39,8 @@ export default async function Contribute({ params, searchParams }) {
     },
   })
 
+  const submissions = locations.filter(l => l.userId === user?.id) || []
+
   return (
     <div className="md:container mx-auto my-10 md:p-0 p-2">
       {openLocationForm
@@ -86,6 +88,34 @@ export default async function Contribute({ params, searchParams }) {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      {submissions.length &&
+        <>
+          <h1 className="text-5xl text-center">Submissions</h1>
+          <hr className="my-4" />
+          {submissions.map(location => {
+            return (
+              <Card className="w-full  m-2 min-[392px]:w-[180px]" key={location.id}>
+                <Link href={`/contribute/${map}/${location.id}`} className="block h-full">
+                  <CardContent className="p-2 m-0">
+                    <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
+                    <p className="text-center text-gray-500">{location.type}</p>
+                    <div className="flex justify-center flex-col">
+                      {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+                      {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
+                      {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
+                      {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
+                      {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
+                      {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
+                    </div>
+                  </CardContent>
+                </Link>
+              </Card>
+            )
+          })}
+        </>
+      }
+
       <h1 className="text-5xl text-center">Locations</h1>
       <hr className="my-4" />
       <div className="flex flex-wrap justify-center">
@@ -97,9 +127,12 @@ export default async function Contribute({ params, searchParams }) {
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
                   <p className="text-center text-gray-500">{location.type}</p>
                   <div className="flex justify-center flex-col">
-                    {location.thirParty && <Badge variant="destructive" className="mx-auto mb-2">Unofficial</Badge>}
+                    {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+                    {location.capital && <Badge variant="secondary" className="mx-auto">Capital</Badge>}
+                    {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
+                    {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
                     {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
-                    {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>}
+                    {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
                   </div>
                 </CardContent>
               </Link>
@@ -119,9 +152,11 @@ export default async function Contribute({ params, searchParams }) {
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
                   <p className="text-center text-gray-500">{location.type}</p>
                   <div className="flex justify-center flex-col">
-                    {location.thirParty && <Badge variant="destructive" className="mx-auto mb-2">Unofficial</Badge>}
+                    {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+                    {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
+                    {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
                     {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
-                    {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>}
+                    {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
                   </div>
                 </CardContent>
               </Link>
@@ -142,9 +177,12 @@ export default async function Contribute({ params, searchParams }) {
                   <p className="font-bold text-xl text-center overflow-hidden text-ellipsis">{location.name}</p>
                   <p className="text-center text-gray-500">{location.type}</p>
                   <div className="flex justify-center flex-col">
-                    {location.thirParty && <Badge variant="destructive" className="mx-auto mb-2">Unofficial</Badge>}
+                    {location.unofficial && <Badge variant="destructive" className="mx-auto">Unofficial</Badge>}
+                    {location.faction && <Badge variant="secondary" className="mx-auto">{location.faction}</Badge>}
+
+                    {location.destroyed && <Badge variant="secondary" className="mx-auto">Destroyed</Badge>}
                     {!location.published && <Badge variant="secondary" className={`mx-auto`}>Pending Review</Badge>}
-                    {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>}
+                    {/* {!location.resolved && <Badge variant="secondary" className={`mx-auto`}>Help Wanted</Badge>} */}
                   </div>
                 </CardContent>
               </Link>
@@ -152,9 +190,10 @@ export default async function Contribute({ params, searchParams }) {
           )
         })}
       </div>
-      {(!locations || locations?.length === 0) &&
+      {
+        (!locations || locations?.length === 0) &&
         <h1 className="text-2xl text-blue-100 text-center my-36">Could not fetch Location discussions at this time</h1>
       }
-    </div>
+    </div >
   )
 }

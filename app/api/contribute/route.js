@@ -14,7 +14,7 @@ export async function POST(req) {
     const publishedComments = await db.comment.findMany({ where: { userId: user.id, published: true } })
     const published = publishedComments.length > 1
 
-    let response
+    let response, locationId
     if (body.table === "location") {
       response = await db.location.create({
         data: {
@@ -34,6 +34,7 @@ export async function POST(req) {
           published,
         }
       })
+      locationId = response.id
     } else if (body.table === "comment") {
       response = await db.comment.create({
         data: {
@@ -43,6 +44,7 @@ export async function POST(req) {
           published,
         }
       })
+      locationId = body.locationId
     }
     if (!response) throw "could not create new row"
 
@@ -57,7 +59,7 @@ export async function POST(req) {
       }).toString()
 
       let html = `
-        <h1><a href="https://starlazer.vercel.app/contribute/${body.map}/${response.id}">${body.map.toUpperCase()}</a></h1>
+        <h1><a href="https://starlazer.vercel.app/contribute/${body.map}/${locationId}">${body.map.toUpperCase()}</a></h1>
         <a href="https://starlazer.vercel.app/api/contribute?type=${body.table}&id=${response.id}&secret=${process.env.EMAIL_SECRET}">approve</a>
         <h1>User</h1>
         <p><strong>userId:</strong> ${user.id}</p>
