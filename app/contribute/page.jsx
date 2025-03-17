@@ -7,8 +7,8 @@ import db from "@/lib/db"
 
 export default async function Page({ searchParams }) {
   const session = await getServerSession(authOptions)
-  if (session) redirect('/')
   const p = await searchParams
+  if (session && !p.map) redirect('/')
 
   if (p.map && p.x && p.y && p.name) {
     const location = await db.location.findMany({
@@ -18,7 +18,7 @@ export default async function Page({ searchParams }) {
         name: p.name,
       },
     })
-    console.log("params", p, "locations", location)
+    // console.log("params", p, "locations", location)
     if (location.length === 1) {
       redirect(`/contribute/${p.map}/${location[0].id}`)
       return (

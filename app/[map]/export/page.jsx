@@ -32,8 +32,10 @@ export default async function Export({ params }) {
     revalidatePath(path)
   }
 
+  console.log(cloud, user?.id, session)
+
   return (
-    <div className='text-white mx-auto md:container p-4 mt-2 md:mt-14'>
+    <div className='text-white mx-auto md:container p-4 mt-2'>
       <Link href={`/${map}`} className="w-[50px] block">
         <div className="w-[40px] h-[40px] rounded-2xl border border-[#1E293B]" style={{ background: "#070a0d" }}>
           <ArrowLeft size={32} className="relative left-[3px] top-[3px]" />
@@ -85,7 +87,7 @@ export default async function Export({ params }) {
 
       {/* TODO: should have a redirect param to this page */}
       {(user && cloud.length === 0) &&
-        <p>You have no maps saved remotely</p>
+        <p>You have no {map} maps saved remotely</p>
       }
       {!user &&
         <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
