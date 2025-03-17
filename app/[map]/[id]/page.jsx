@@ -1,8 +1,9 @@
-export const revalidate = 60 // seconds before a MISS (600 is 10 minutes)
+export const revalidate = 300 // seconds before a MISS (300 is 5 minutes)
 import fs from "fs"
 import path from "path"
 import { feature } from 'topojson-client'
 import Cartographer from "@/components/cartographer"
+import GeneratingError from "@/components/generatingError"
 import db from "@/lib/db"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { redirect } from "next/navigation"
@@ -19,6 +20,7 @@ const s3 = new S3Client({
 export default async function mapLobby({ params }) {
   const { map, id } = await params
   const skipCombine = id.length === 13
+  const isUUID = id.length === 36
 
   let geojson
   if (!skipCombine) {
@@ -26,6 +28,10 @@ export default async function mapLobby({ params }) {
     const mapDB = await db.map.findUnique({
       where: { id },
     })
+    if (isUUID && !mapDB) {
+      // probably a new map that's not in the cache yet
+      return <GeneratingError map={map} />
+    }
     if (!mapDB?.published) {
       return redirect(`/${map}`)
     }

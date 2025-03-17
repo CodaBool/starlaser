@@ -274,7 +274,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
         } else {
           setShowNameInput(null)
           revalidate(`/app/${mapName}/export`)
-          toast.success(`"${data.map.name}" successfully updated`)
+          toast.success(`"${data.map.name}" successfully updated. Changes do not take effect immediately`)
         }
       })
       .catch(error => {
