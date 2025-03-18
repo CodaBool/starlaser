@@ -59,7 +59,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
-  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN } = getConsts(name)
+  const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO } = getConsts(name)
 
   async function pan(d, locations, fit) {
     if (mini && !fit) return
@@ -165,6 +165,18 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     if (!map) return
     if (svg) svg.remove()
 
+    // keep user features on top, also create a layering based on importance
+    data.territory.sort((a, b) => {
+      const aTypeIndex = LAYER_PRIO.indexOf(a.properties.type);
+      const bTypeIndex = LAYER_PRIO.indexOf(b.properties.type);
+      if (aTypeIndex === bTypeIndex) {
+        if (a.properties.userCreated && !b.properties.userCreated) return 1;
+        if (!a.properties.userCreated && b.properties.userCreated) return -1;
+        return 0;
+      }
+      return aTypeIndex - bTypeIndex;
+    });
+
     projection = geoMercator()
     function projectPoint(lon, lat) {
       let point = map.project(new maplibregl.LngLat(lon, lat))
@@ -207,7 +219,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       .selectAll('path')
       .data(data.territory)
       .enter().append('path')
-      .attr('class', d => `${d.properties.unofficial ? 'unofficial territory' : 'territory'} ${(d.properties.type === "faction" || d.properties.type === "region") ? 'raise' : ''}`)
+      .attr('class', d => `territory ${d.properties.unofficial && 'unofficial'} territory-${d.properties.type}`)
       .attr('stroke-width', 2.5)
       .attr('fill', d => color(name, d.properties, "fill", d.geometry.type))
       .attr('stroke', d => color(name, d.properties, "stroke", d.geometry.type))

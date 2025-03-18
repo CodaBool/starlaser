@@ -23,6 +23,7 @@ model Location {
   id          Int       @id @default(autoincrement())
   name        String    @db.VarChar(80)
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @default(now()) @updatedAt
   description String    @db.VarChar(3000)
   city        String    @db.VarChar(100)
   type        String    @db.VarChar(25)

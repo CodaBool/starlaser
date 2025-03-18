@@ -143,13 +143,16 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
   }
 
   if (!Object.entries(maps || {}).length) return (
-    <p>You have no maps saved locally. <Link href={`/${map}?new=1`} className="text-blue-300">Create a new map</Link></p>
+    <p>You have no {map} maps saved locally. <Link href={`/${map}?new=1`} className="text-blue-300">Create a new map</Link></p>
   )
+
 
   return (
     <div className="flex items-center my-2 flex-wrap">
       {Object.entries(maps || {}).map(([key, data]) => {
         const [name, dateId] = key.split('-')
+        const remote = cloudMaps.filter(m => m.name.trim() === data.name.trim())
+
         return (
           <div key={key} className="bg-gray-800 p-4 m-2 rounded w-full md:w-[440px]">
             {showNameInput === key
@@ -198,29 +201,34 @@ export default function ClientMaps({ map, revalidate, cloudMaps, session }) {
                   <DialogClose asChild>
                     <Button size="lg" className="cursor-pointer rounded" onClick={() => uploadMap(key, data.name)}><CloudUpload /> Upload as a New Map</Button>
                   </DialogClose>
-                  <hr className="mt-2" />
-                  <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
-                  <p className="text-gray-600">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
-                  {cloudMaps.filter(m => m.name.trim() === data.name.trim()).map(cloudMap => (
-                    <DialogClose asChild key={cloudMap.id} >
-                      <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
-                        <CardHeader>
-                          <CardTitle>{cloudMap.name}</CardTitle>
-                          <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
-                            hour: "numeric",
-                            minute: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
-                          <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
-                          <p className="text-gray-400">Guides: {cloudMap.guides}</p>
-                        </CardContent>
-                      </Card>
-                    </DialogClose>
-                  ))}
+
+                  {remote.length > 0 &&
+                    <>
+                      <hr className="mt-2" />
+                      <div className="flex justify-center"><Replace className="mr-2 mt-1" size={20} /> <span className="font-bold">Replace an existing Remote Map</span></div>
+                      <p className="text-gray-400">Available Cloud Maps for replacement are shown below. Click on one to replace the remote data with your local data. To prevent data loss, you can only replace remote maps of the same name</p>
+                      {remote.map(cloudMap => (
+                        <DialogClose asChild key={cloudMap.id} >
+                          <Card onClick={() => replaceRemoteMap(cloudMap.id, data)} className="cursor-pointer hover-grow">
+                            <CardHeader>
+                              <CardTitle>{cloudMap.name}</CardTitle>
+                              <CardDescription>{new Date(cloudMap.updatedAt).toLocaleDateString("en-US", {
+                                hour: "numeric",
+                                minute: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-gray-400 ">Locations: {cloudMap.locations}</p>
+                              <p className="text-gray-400 ">Territories: {cloudMap.territories}</p>
+                              <p className="text-gray-400">Guides: {cloudMap.guides}</p>
+                            </CardContent>
+                          </Card>
+                        </DialogClose>
+                      ))}
+                    </>
+                  }
                 </DialogContent>
               </Dialog>
 
@@ -371,7 +379,7 @@ export function CloudMaps({ maps, revalidate, mapName }) {
 
           <div className="grid grid-cols-2 gap-2">
             <Button className="cursor-pointer rounded m-2" onClick={() => saveLocally(map.id)} variant="outline"><CloudDownload /> Save Locally</Button>
-            <Button className="cursor-pointer rounded m-2" disabled={!map.published} variant="outline" onClick={() => router.push(`/${map.map}/${map.id}`)}><Eye /> Preview</Button>
+            <Button className="cursor-pointer rounded m-2" disabled={!map.published} variant="outline" onClick={() => router.push(`/${map.map}/${map.id}`)}><Eye /> View</Button>
             {map.published
               ? <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><CloudOff /> Unpublish</Button>
               : <Button className="cursor-pointer rounded mr-2 m-2" onClick={() => putMap({ published: !map.published, id: map.id })}><BookOpenCheck /> Publish</Button>

@@ -31,7 +31,7 @@ export default async function Location({ params, searchParams }) {
   const { id, map } = await params
   const { c: commentFormOpen } = await searchParams
   const user = session ? await db.user.findUnique({ where: { email: session.user.email } }) : null
-  const isAdmin = user.email === process.env.EMAIL
+  const isAdmin = user?.email === process.env.EMAIL
 
   const location = await db.location.findUnique({
     where: {
@@ -51,7 +51,7 @@ export default async function Location({ params, searchParams }) {
   })
 
   // seems like an expensive operation
-  const commenterIds = location.comments.map(c => c.userId)
+  const commenterIds = location?.comments.map(c => c.userId)
   const commenters = await db.user.findMany({
     where: {
       id: {
@@ -66,8 +66,8 @@ export default async function Location({ params, searchParams }) {
     }
   })
 
-  let viewable = location.published
-  if (!viewable && location.userId === user?.id) {
+  let viewable = location?.published
+  if (!viewable && location?.userId === user?.id) {
     viewable = true
   }
 
@@ -110,6 +110,7 @@ export default async function Location({ params, searchParams }) {
   let panX = "wow such NaN"
   let panY = "wow such NaN"
   let type = "location"
+  let coordPretty = "complex, see map"
   if (location.coordinates.includes(",")) {
     // console.log("coord setup", location.coordinates)
     panX = Number(location.coordinates.split(",")[0].trim())
@@ -118,13 +119,8 @@ export default async function Location({ params, searchParams }) {
       type = "territory"
     } else if (location.geometry === "LineString") {
       type = "guide"
-    }
-
-    if (type !== "location") {
-      const centroid = d3.geoPath().centroid(location)
-      console.log("centroid", centroid)
-      let coord = centroid.join(",")
-      console.log("centroid coord", coord)
+    } else {
+      coordPretty = Math.floor(Number(panX)) + " " + Math.floor(panY)
     }
   }
 
@@ -145,14 +141,14 @@ export default async function Location({ params, searchParams }) {
             {location.capital && <Badge variant="secondary" className="mx-1">Capital</Badge>}
           </CardTitle>
           <div className="text-gray-400">{location.type}</div>
-          <span className="">Created: <span className="text-gray-400">
-            {new Date(location.createdAt).toISOString().split('T')[0].replace(/-/g, '/')}
+          <span className="">Updated: <span className="text-gray-400">
+            {new Date(location.updatedAt).toISOString().split('T')[0].replace(/-/g, '/')}
           </span></span>
-          <span className="">Coordinates: <span className="text-gray-400">{Math.floor(Number(panX))} {Math.floor(panY)}</span></span>
+          <span className="">Coordinates: <span className="text-gray-400">{coordPretty}</span></span>
           {location.faction && <span className="inline">Faction: <span className="text-gray-400 inline">{location.faction}</span></span>}
           {location.city && <span className="inline">City: <span className="text-gray-400 inline">{location.city}</span></span>}
           {location.alias && <span className="inline">Alias: <span className="text-gray-400 inline">{location.alias}</span></span>}
-          <span className="">Source: <span className="text-gray-400">{location.source}</span></span>
+          {location.source && <span className="">Source: <span className="text-gray-400">{location.source}</span></span>}
         </CardHeader>
 
         <CardContent className="location-description border border-gray-800 rounded-2xl pt-4 md:mx-6 bg-[#02050D]">
