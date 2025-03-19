@@ -7,7 +7,8 @@ export async function GET(req) {
     const map = await db.map.findUnique({
       where: { id },
     })
-    if (!map.published) throw "unauthorized"
+    if (!map) return Response.json({ exists: false })
+    if (!map.published) return Response.json({ exists: false, published: false })
     return Response.json({ exists: true })
   } catch (error) {
     console.error(error)
