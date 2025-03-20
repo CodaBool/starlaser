@@ -50,12 +50,14 @@ export async function GET(req) {
     });
 
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-
+    
     // Wait for the map canvas to be ready
     await page.waitForSelector('canvas.maplibregl-canvas', { visible: true });
 
     // Capture the screenshot
-    const screenshotBuffer = await page.screenshot({ type: 'webp' });
+    // optimizeForSpeed: true
+    // quality: 0-100
+    const screenshotBuffer = await page.screenshot({ type: 'webp', optimizeForSpeed: true, quality: 60 });
 
     // Convert to WebP
     // const webpBuffer = await sharp(screenshotBuffer).webp({ quality: 80 }).toBuffer();
