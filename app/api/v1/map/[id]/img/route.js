@@ -23,7 +23,7 @@ export async function GET(req) {
 
     // Create a URL object
     // const url = new URL(`http://localhost:3000/${map.map}/${id}`);
-    const url = new URL(`/${map.map}/${id}`);
+    const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
 
     // Set search parameters
     if (z) url.searchParams.set('z', z)
