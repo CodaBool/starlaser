@@ -2,8 +2,7 @@ import db from "@/lib/db"
 import puppeteer from 'puppeteer'
 import sharp from 'sharp'
 
-let browser;
-
+let browser
 
 export async function GET(req) {
   try {
@@ -60,9 +59,6 @@ export async function GET(req) {
         status: 200,
         headers: { 'Content-Type': 'image/webp' }
     })
-    // return Response.json({ exists: false, published: false })
-
-    
   } catch (error) {
     if (browser) await browser.close()
     console.error(error)
