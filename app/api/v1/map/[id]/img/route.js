@@ -22,8 +22,8 @@ export async function GET(req) {
     const z = parseFloat(searchParams.get('z'))
 
     // Create a URL object
-    const url = new URL(`http://localhost:3000/${map.map}/${id}`);
-    // const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
+    // const url = new URL(`http://localhost:3000/${map.map}/${id}`);
+    const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
 
     // Set search parameters
     if (z) url.searchParams.set('z', z)
@@ -37,7 +37,7 @@ export async function GET(req) {
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: process.env.CHROME_EXEC_PATH || await chromium.executablePath(),
+      executablePath: await chromium.executablePath(),
       // executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
