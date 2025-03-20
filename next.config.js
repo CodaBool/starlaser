@@ -25,7 +25,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/[map]/:path*",
+        source: "/:path*",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
