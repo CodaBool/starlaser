@@ -3,6 +3,7 @@ import path from "path"
 
 
 const nextConfig = {
+  // serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   async headers() {
     return [
       {
