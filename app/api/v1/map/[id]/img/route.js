@@ -1,7 +1,8 @@
 export const maxDuration = 60;
 import db from "@/lib/db"
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
+// import chromium from '@sparticuz/chromium';
+// import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 // import sharp from 'sharp'
 
 let browser
@@ -34,14 +35,29 @@ export async function GET(req) {
     console.log("sending req to", url.toString())
     // console.log("exec path", await chromium.executablePath())
 
+    // browser = await puppeteer.launch({
+    //   args: puppeteer.defaultArgs(),
+    //   defaultViewport: chromium.defaultViewport,
+    //   executablePath: await chromium.executablePath(),
+    //   // executablePath: process.env.CHROME_EXEC_PATH || await chromium.executablePath(path.join(CHROMIUM_DIR, chromiumBinary)),
+    //   headless: chromium.headless,
+    //   ignoreHTTPSErrors: true,
+    // })
+
+
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      // executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    })
+        headless: 'new', // Adjust if needed
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    // browser = await puppeteer.launch({
+    //   args: chromium.args,
+    //   defaultViewport: chromium.defaultViewport,
+    //   executablePath: await chromium.executablePath(),
+    //   // executablePath: await chromium.executablePath(),
+    //   headless: chromium.headless,
+    //   ignoreHTTPSErrors: true,
+    // })
 
     const page = await browser.newPage();
     await page.setViewport({
