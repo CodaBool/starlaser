@@ -1,5 +1,5 @@
 import db from "@/lib/db"
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 import sharp from 'sharp'
 
