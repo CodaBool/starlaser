@@ -2,8 +2,13 @@ export const maxDuration = 60;
 import db from "@/lib/db"
 // import chromium from '@sparticuz/chromium';
 // import puppeteer from 'puppeteer-core';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
 // import sharp from 'sharp'
+
+import edgeChromium from 'chrome-aws-lambda'
+import puppeteer from 'puppeteer-core'
+// const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+
 
 let browser
 
@@ -45,16 +50,18 @@ export async function GET(req) {
     // })
 
 
+    const executablePath = await edgeChromium.executablePath
+  
     browser = await puppeteer.launch({
-        headless: 'new', // Adjust if needed
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
+      executablePath,
+      args: edgeChromium.args,
+      headless: false,
+    })
+    
     // browser = await puppeteer.launch({
     //   args: chromium.args,
     //   defaultViewport: chromium.defaultViewport,
     //   executablePath: await chromium.executablePath(),
-    //   // executablePath: await chromium.executablePath(),
     //   headless: chromium.headless,
     //   ignoreHTTPSErrors: true,
     // })
@@ -97,3 +104,14 @@ export async function GET(req) {
     }
   }
 }
+
+
+/*
+========= working when done locally ============
+
+import puppeteer from 'puppeteer';
+browser = await puppeteer.launch({
+    headless: 'new', // Adjust if needed
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
+*/
