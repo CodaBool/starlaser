@@ -22,16 +22,16 @@ export async function GET(req) {
 
     // Create a URL object
     // const url = new URL(`http://localhost:3000/${map.map}/${id}`);
-    const url = new URL(`/${map.map}/${id}`);
+    // const url = new URL(`/${map.map}/${id}`);
 
     // Set search parameters
-    if (z) url.searchParams.set('z', z)
-    if (lng) url.searchParams.set('lng', lng)
-    if (lat) url.searchParams.set('lat', lat)
-    url.searchParams.set('mini', 1)
-    // Get the final encoded URL
-    console.log("sending req to", url.toString())
-    console.log("exec path", await chromium.executablePath())
+    // if (z) url.searchParams.set('z', z)
+    // if (lng) url.searchParams.set('lng', lng)
+    // if (lat) url.searchParams.set('lat', lat)
+    // url.searchParams.set('mini', 1)
+    // // Get the final encoded URL
+    // console.log("sending req to", url.toString())
+    // // console.log("exec path", await chromium.executablePath())
 
     browser = await puppeteer.launch({
       args: chromium.args,
@@ -48,20 +48,20 @@ export async function GET(req) {
       deviceScaleFactor: 2 // Increase rendering scale
     });
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(`/${map.map}/${id}?mini=1&z=${z}`, { waitUntil: 'networkidle2', timeout: 30000 });
 
     // Wait for the map canvas to be ready
     await page.waitForSelector('canvas.maplibregl-canvas', { visible: true });
 
     // Capture the screenshot
-    const screenshotBuffer = await page.screenshot({ type: 'png' });
+    const screenshotBuffer = await page.screenshot({ type: 'webp' });
 
     // Convert to WebP
-    const webpBuffer = await sharp(screenshotBuffer).webp({ quality: 80 }).toBuffer();
+    // const webpBuffer = await sharp(screenshotBuffer).webp({ quality: 80 }).toBuffer();
 
     await browser.close();
 
-    return new Response(webpBuffer, {
+    return new Response(screenshotBuffer, {
         status: 200,
         headers: { 'Content-Type': 'image/webp' }
     })
