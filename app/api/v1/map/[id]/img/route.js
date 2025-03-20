@@ -1,11 +1,50 @@
 import db from "@/lib/db"
-import puppeteer from 'puppeteer'
+import chromium from '@sparticuz/chromium-min';
+import puppeteer from 'puppeteer-core';
 import sharp from 'sharp'
+// import fetch from 'node-fetch'
+// import fs from 'fs'
+// import path from 'path'
+// import * as tar from 'tar'
+// import * as os from 'os'
+
+// TODO: would be nice if this didn't pin to a version and instead used latest
+// const CHROMIUM_URL = 'https://github.com/Sparticuz/chromium/releases/latest/download/chromium-v133.0.0-pack.tar'
+// const CHROMIUM_DIR = '/tmp/chromium';
+
+// http://localhost:3000/api/v1/map/0195ab1b-46ac-7ab3-a617-f632417e1cda/img?z=5.5
 
 let browser
 
 export async function GET(req) {
   try {
+    // const isLocal = !!process.env.CHROME_EXEC_PATH
+    // // Temporary directory to store the tar package and unzipped contents
+    // const tmpDir = path.join(os.tmpdir(), 'chromium');
+    // const chromiumTarPath = path.join(tmpDir, 'chromium-v133.0.0-pack.tar');
+  
+    // // Ensure the tmpDir exists
+    // fs.mkdirSync(tmpDir, { recursive: true });
+  
+    // // Download the tar file from the URL
+    // const response = await fetch(CHROMIUM_URL);
+    // const arrayBuffer = await response.arrayBuffer();
+    // const buffer = Buffer.from(arrayBuffer);
+  
+    // // Save the tar file to the temp directory
+    // fs.writeFileSync(chromiumTarPath, buffer)
+  
+    // // Extract the tar package
+    // await tar.x({
+    //   file: chromiumTarPath,
+    //   cwd: tmpDir,
+    // })
+
+    // const chromiumExecutablePath = path.join(tmpDir, 'chromium-v133.0.0-pack', 'chrome-linux', 'chrome');
+
+    // console.log("path", chromiumExecutablePath)
+
+
     const id = req.nextUrl.pathname.split('/')[4]
     console.log("split", id)
     const map = await db.map.findUnique({
@@ -19,6 +58,7 @@ export async function GET(req) {
     const z = parseFloat(searchParams.get('z'))
 
     // Create a URL object
+    // const url = new URL(`http://localhost:3000/${map.map}/${id}`);
     const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
 
     // Set search parameters
@@ -30,10 +70,28 @@ export async function GET(req) {
     console.log("sending req to", url.toString())
 
 
+    // https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar
+
+
     browser = await puppeteer.launch({
-        headless: 'new', // Adjust if needed
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
     });
+
+    // const browser = await puppeteer.launch({
+    //   args: isLocal ? puppeteer.defaultArgs() : chromium.args,
+    //   defaultViewport: chromium.defaultViewport,
+    //   executablePath: await chromium.executablePath(chromiumExecutablePath),
+    //   headless: chromium.headless,
+    // });
+
+    // browser = await puppeteer.launch({
+    //     headless: 'new', // Adjust if needed
+    //     args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // });
 
     const page = await browser.newPage();
     await page.setViewport({
