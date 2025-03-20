@@ -13,12 +13,22 @@ export async function GET(req) {
       where: { id },
     })
 
+    const { searchParams } = new URL(req.url);
 
-    // const { searchParams } = new URL(req.url);
-    // const url = searchParams.get('url');
+    const lng = parseInt(searchParams.get('lng'))
+    const lat = parseInt(searchParams.get('lat'))
+    const z = parseFloat(searchParams.get('z'))
 
-    // if (!url) throw "no URL given"
-    const url = `https://starlazer.vercel.app/${map.map}/${id}`
+    // Create a URL object
+    const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
+
+    // Set search parameters
+    if (z) url.searchParams.set('z', z)
+    if (lng) url.searchParams.set('lng', lng)
+    if (lat) url.searchParams.set('lat', lat)
+    url.searchParams.set('mini', 1)
+    // Get the final encoded URL
+    console.log("sending req to", url.toString())
 
 
     browser = await puppeteer.launch({
