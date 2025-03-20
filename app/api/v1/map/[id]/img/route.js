@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import db from "@/lib/db"
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
