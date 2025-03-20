@@ -123,5 +123,6 @@ browser = await puppeteer.launch({
 
 /*
 the issue is with memory. I'm hitting the max memory of 1Gb easily
+ended up using 1.6Gb of memory
 try again with 3Gb
 */
