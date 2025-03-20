@@ -22,6 +22,12 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
   const params = useSearchParams()
   const router = useRouter()
   const mini = params.get("mini") === "1"
+  if (params.get("z")) {
+    VIEW.longitude = params.get("lng") || VIEW.longitude
+    VIEW.latitude = params.get("lat") || VIEW.latitude
+    VIEW.zoom = params.get("z") || VIEW.zoom
+  }
+
   let loading = false
 
   useEffect(() => {

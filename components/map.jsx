@@ -362,6 +362,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       const x = parseFloat(params.get("x"))
       const y = parseFloat(params.get("y"))
       const geometry = params.get("type")
+      if (!geometry || !x || !y || !featName) return
       const d = data[geometry].find(f => {
         if (geometry === "location") {
           return f.properties.name === featName && f.geometry.coordinates[0] === x && f.geometry.coordinates[1] === y
