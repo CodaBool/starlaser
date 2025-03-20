@@ -22,8 +22,8 @@ export async function GET(req) {
     const z = parseFloat(searchParams.get('z'))
 
     // Create a URL object
-    // const url = new URL(`http://localhost:3000/${map.map}/${id}`);
-    const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
+    const url = new URL(`http://localhost:3000/${map.map}/${id}`);
+    // const url = new URL(`https://starlazer.vercel.app/${map.map}/${id}`);
 
     // Set search parameters
     if (z) url.searchParams.set('z', z)
@@ -37,7 +37,8 @@ export async function GET(req) {
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
+      executablePath: process.env.CHROME_EXEC_PATH || await chromium.executablePath(),
+      // executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
     })
@@ -47,10 +48,10 @@ export async function GET(req) {
       width: 3840,  // 4K Width
       height: 2160, // 4K Height (16:9 aspect ratio)
       deviceScaleFactor: 2 // Increase rendering scale
-    });
+    })
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    
+    await page.goto(url.toString(), { waitUntil: 'networkidle2', timeout: 30000 });
+
     // Wait for the map canvas to be ready
     await page.waitForSelector('canvas.maplibregl-canvas', { visible: true });
 
