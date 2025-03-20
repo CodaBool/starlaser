@@ -119,3 +119,9 @@ browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
 });
 */
+
+
+/*
+the issue is with memory. I'm hitting the max memory of 1Gb easily
+try again with 3Gb
+*/
