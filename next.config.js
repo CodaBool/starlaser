@@ -3,8 +3,8 @@
 
 
 const nextConfig = {
-  serverExternalPackages: ['puppeteer'],
-  // serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+  // serverExternalPackages: ['puppeteer'],
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   async headers() {
     return [
       {

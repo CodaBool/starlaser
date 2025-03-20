@@ -1,12 +1,17 @@
-export const maxDuration = 60;
+export const maxDuration = 60
+export const dynamic = "force-dynamic"
 import db from "@/lib/db"
 // import chromium from '@sparticuz/chromium';
 // import puppeteer from 'puppeteer-core';
 // import puppeteer from 'puppeteer';
 // import sharp from 'sharp'
 
-import edgeChromium from 'chrome-aws-lambda'
-import puppeteer from 'puppeteer-core'
+import puppeteerCore from "puppeteer-core"
+import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium"
+
+// import edgeChromium from 'chrome-aws-lambda'
+// import puppeteer from 'puppeteer-core'
 // const LOCAL_CHROME_EXECUTABLE = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
 
@@ -50,13 +55,12 @@ export async function GET(req) {
     // })
 
 
-    const executablePath = await edgeChromium.executablePath
-  
-    browser = await puppeteer.launch({
-      executablePath,
-      args: edgeChromium.args,
-      headless: false,
-    })
+    const browser = await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
     
     // browser = await puppeteer.launch({
     //   args: chromium.args,
