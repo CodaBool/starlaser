@@ -28,7 +28,6 @@
     "@sparticuz/chromium": "^133.0.0",
     "@turf/turf": "^7.2.0",
     "boring-avatars": "^1.11.2",
-    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
