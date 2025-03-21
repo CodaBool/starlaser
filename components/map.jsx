@@ -16,6 +16,7 @@ import Hamburger from './hamburger'
 import Toolbox from './toolbox'
 import * as SVG from './svg.js'
 import turfCentroid from '@turf/centroid'
+import { domToPng } from 'modern-screenshot'
 import * as turf from '@turf/turf'
 import SearchBar from './searchbar'
 
@@ -350,6 +351,37 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       location
         .attr("x", d => path.centroid(d)[0])
         .attr("y", d => path.centroid(d)[1])
+    }
+
+    // capture a webp screenshot
+    if (params.get("img")) {
+      map.on('load', () => {
+        domToPng(document.querySelector('#map'), {}).then((pngDataUrl) => {
+          const img1 = new Image();
+          const img2 = new Image();
+          img1.src = map.getCanvas().toDataURL("image/webp")
+          img2.src = pngDataUrl
+          img1.onload = () => {
+            img2.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+
+              // Set canvas size based on the images (they are expected to be the same size)
+              canvas.width = img1.width;
+              canvas.height = img1.height;
+              ctx.drawImage(img1, 0, 0);
+              ctx.drawImage(img2, 0, 0);
+
+              // Create a download link for the combined image
+              const combinedImageDataUrl = canvas.toDataURL('image/webp');
+              const link = document.createElement('a');
+              link.href = combinedImageDataUrl;
+              link.download = 'combined-image.webp';
+              link.click();
+            };
+          };
+        });
+      });
     }
 
     map.on("viewreset", render)

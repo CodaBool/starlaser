@@ -131,3 +131,52 @@ mouseMove
 - button to copy share ID, which will upload topojson to R2. Provide an ID and give a notice that after 90 days it will be deleted unless claimed by an account
 - export geojson to local file (can toggle source + user)
 - store multiple maps, have a selection screen if a local storage is found
+
+
+# this is probably garbage but if i ever want provide a feature for screenshots
+```
+diff --git a/node_modules/@watergis/maplibre-gl-export/dist/index-DQ_VcdFV.js b/node_modules/@watergis/maplibre-gl-export/dist/index-DQ_VcdFV.js
+index 794c569..3f0be94 100644
+--- a/node_modules/@watergis/maplibre-gl-export/dist/index-DQ_VcdFV.js
++++ b/node_modules/@watergis/maplibre-gl-export/dist/index-DQ_VcdFV.js
+@@ -8458,18 +8458,19 @@ class Zc {
+     }
+     let l = this.getRenderedMap(o, s);
+     l.on("load", () => {
+-      this.addNorthIconToMap(l).then(() => {
+-        l.once("idle", () => {
+-          this.addAttributions(l) ? l.once("idle", () => {
+-            l = this.renderMapPost(l), this.getMarkers().length === 0 ? this.exportImage(l, i, r) : (l = this.renderMarkers(l), l.once("idle", () => {
+-              this.exportImage(l, i, r);
+-            }));
+-          }) : (l = this.renderMapPost(l), this.getMarkers().length === 0 ? this.exportImage(l, i, r) : (l = this.renderMarkers(l), l.once("idle", () => {
++      l.once("idle", () => {
++        l = this.renderMapPost(l);
++        if (this.getMarkers().length === 0) {
++          this.exportImage(l, i, r);
++        } else {
++          l = this.renderMarkers(l);
++          l.once("idle", () => {
+             this.exportImage(l, i, r);
+-          })));
+-        });
++          });
++        }
+       });
+     });
++
+   }
+   stripHtml(e) {
+     const r = document.createElement("div");
+@@ -8677,7 +8678,8 @@ class Zc {
+    * @param fileName file name
+    */
+   toJPEG(e, r) {
+-    const i = e.toDataURL("image/jpeg", 0.85), o = document.createElement("a");
++    const i = e.toDataURL("image/jpeg", 0.85), o = document.createElement("a")
++    console.log("dataURL", i)
+     o.href = i, o.download = r, o.click(), o.remove();
+   }
+   /**
+
+```

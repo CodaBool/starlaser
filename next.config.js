@@ -3,8 +3,6 @@
 
 
 const nextConfig = {
-  // serverExternalPackages: ['puppeteer'],
-  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   async headers() {
     return [
       {
@@ -23,28 +21,9 @@ const nextConfig = {
             value: "Content-Type, Authorization",
           },
         ],
-      },
-      {
-        source: "/:path*",
-        headers: [
-          {
-            key: "Access-Control-Allow-Origin",
-            value: "*",
-          },
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, OPTIONS",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization",
-          },
-        ],
       }
     ]
   },
-
-
   // reactStrictMode: false,
   // experimental: {
   //   // outputFileTracingRoot: path.join(__dirname),
