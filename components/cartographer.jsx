@@ -31,10 +31,15 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
   let loading = false
 
   useEffect(() => {
-    const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
-    window.addEventListener('resize', handleResize)
-    setSize({ width: window.innerWidth, height: window.innerHeight })
-    return () => window.removeEventListener('resize', handleResize)
+    setSize({ width: Number(params.get("width")) || window.innerWidth, height: Number(params.get("height")) || window.innerHeight })
+    if (params.get("width") && params.get("height")) {
+      setSize({ width: Number(params.get("width")), height: Number(params.get("height")) })
+    } else {
+      setSize({ width: window.innerWidth, height: window.innerHeight })
+      const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight })
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   if (rawTopojson) {

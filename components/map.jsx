@@ -356,28 +356,38 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     // capture a webp screenshot
     if (params.get("img")) {
       map.on('load', () => {
-        domToPng(document.querySelector('#map'), {}).then((pngDataUrl) => {
+        domToPng(document.querySelector('#map'), { scale: 2 }).then((pngDataUrl) => {
           const img1 = new Image();
           const img2 = new Image();
-          img1.src = map.getCanvas().toDataURL("image/webp")
+          img1.src = map.getCanvas().toDataURL()
           img2.src = pngDataUrl
           img1.onload = () => {
             img2.onload = () => {
               const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
+              const ctx = canvas.getContext('2d')
+
+              // Scale up canvas size
+              const scale = 2;
+              canvas.width = width * scale;
+              canvas.height = height * scale;
+
+              console.log("canvas size", canvas.width, canvas.height)
+
+              // Optionally, apply higher-quality rendering
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
 
               // Set canvas size based on the images (they are expected to be the same size)
-              canvas.width = img1.width;
-              canvas.height = img1.height;
-              ctx.drawImage(img1, 0, 0);
-              ctx.drawImage(img2, 0, 0);
+              ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
 
               // Create a download link for the combined image
-              const combinedImageDataUrl = canvas.toDataURL('image/webp');
-              const link = document.createElement('a');
-              link.href = combinedImageDataUrl;
-              link.download = 'combined-image.webp';
-              link.click();
+              const webpImage = canvas.toDataURL('image/webp', .98)
+              // console.log("screenshot", webpImage)
+              window.parent.postMessage({
+                type: 'webpImage',
+                webpImage,
+              }, '*')
             };
           };
         });
