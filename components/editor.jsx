@@ -4,10 +4,15 @@ import { useMap } from "react-map-gl/maplibre";
 import EditorForm from "./forms/editor";
 import randomName from "@scaleway/random-name";
 import { X } from "lucide-react";
+import { getConsts } from "@/lib/utils";
+import { getIcon } from "./map";
+import { useStore } from "./cartographer";
 
 export default function Editor({ draw, mapName, mapId }) {
   const { map } = useMap()
   const [popup, setPopup] = useState()
+  const { TYPES } = getConsts(mapName)
+  const { setEditorTable } = useStore()
 
   function handleClick(e) {
     if (!draw.getSelected().features.length) return
@@ -22,6 +27,14 @@ export default function Editor({ draw, mapName, mapId }) {
     map.on('click', handleClick)
     return () => map.off('click', handleClick)
   }, [map, draw])
+
+  useEffect(() => {
+    if (!popup) setEditorTable(null)
+  }, [popup])
+
+  useEffect(() => {
+    setEditorTable(null)
+  }, [])
 
   useEffect(() => {
     if (!popup || !draw) return
@@ -60,7 +73,7 @@ export default function Editor({ draw, mapName, mapId }) {
             <X />
           </Button>
         </div>
-        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} />
+        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} />
       </div>
     );
   }

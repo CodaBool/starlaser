@@ -41,12 +41,18 @@ function generateCircle(center, radius) {
   }
 }
 
-export function getIcon(d) {
+export function getIcon(d, fill) {
   const icon = d.properties.icon || SVG[d.properties.type]
+  if (fill) {
+    const fillAttribute = `fill="${fill}"`;
+    const iconWithFill = icon.replace(/<svg /, `<svg ${fillAttribute} `);
+    return iconWithFill;
+  }
   if (!icon) {
     console.log("WARN: no type or icon for", d.properties.type)
   }
   if (icon?.startsWith('http')) {
+    // ${fill ? "fill='" + fill + "'" : ""}
     return (
       `<svg width="20" height="20">
         <image href="${icon}" width="20" height="20" />
@@ -361,17 +367,8 @@ export default function Map({ width, height, data, name, mobile, mini, params })
         const userMadeLocations = data.location.filter(d => d.properties.userCreated && map.getBounds().contains(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1])))
         // console.log("User made locations currently on screen:", userMadeLocations)
 
-        window.parent.postMessage({
-          type: 'log',
-          message: userMadeLocations,
-        }, '*')
-
         const userMadeLocationsWithPixels = userMadeLocations.map(location => {
           const point = map.project(new maplibregl.LngLat(location.geometry.coordinates[0], location.geometry.coordinates[1]))
-          window.parent.postMessage({
-            type: 'log',
-            message: point,
-          }, '*')
           return {
             ...location,
             pixelCoordinates: {
@@ -381,10 +378,6 @@ export default function Map({ width, height, data, name, mobile, mini, params })
           };
         });
 
-        window.parent.postMessage({
-          type: 'log',
-          message: userMadeLocationsWithPixels,
-        }, '*')
         window.parent.postMessage({
           type: 'featureData',
           featureData: userMadeLocationsWithPixels,
@@ -405,7 +398,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
               canvas.width = width * scale;
               canvas.height = height * scale;
 
-              console.log("canvas size", canvas.width, canvas.height)
+              console.log("screenshot size", canvas.width, canvas.height)
 
               // Optionally, apply higher-quality rendering
               ctx.imageSmoothingEnabled = true;
@@ -417,7 +410,6 @@ export default function Map({ width, height, data, name, mobile, mini, params })
 
               // Create a download link for the combined image
               const webpImage = canvas.toDataURL('image/webp', .98)
-              // console.log("screenshot", webpImage)
               window.parent.postMessage({
                 type: 'webpImage',
                 webpImage,

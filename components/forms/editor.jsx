@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { RgbaColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -27,10 +28,16 @@ import { CircleHelp, Pencil, Plus, Save, Trash2 } from "lucide-react"
 import { AVAILABLE_PROPERTIES, getConsts } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useStore } from "../cartographer"
+import { getIcon } from "../map"
 
-export default function EditorForm({ feature, draw, setPopup, mapName }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup }) {
   const { editorTable, setEditorTable } = useStore()
   const [isAddingRow, setIsAddingRow] = useState(false)
+  const [stroke, setStroke] = useState(rgbaToObj(popup?.properties.stroke))
+  const [fill, setFill] = useState(rgbaToObj(popup?.properties.fill))
+  const [errorStroke, setErrorStroke] = useState()
+  const [errorFill, setErrorFill] = useState()
+
   const { TYPES } = getConsts(mapName)
   const [newRow, setNewRow] = useState({
     key: "",
@@ -79,6 +86,12 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
       // Switch back to "Add Row" mode
       setIsAddingRow(false)
     } else {
+      if (stroke) {
+        editProp(objToRgba(stroke), "stroke")
+      }
+      if (fill) {
+        editProp(objToRgba(fill), "fill")
+      }
       setEditorTable(null)
     }
   }
@@ -97,8 +110,68 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
     setEditorTable(newFeature.properties)
   }
 
+  // error messages
+  useEffect(() => {
+    if (popup.properties.fill !== objToRgba(fill)) {
+      console.log("new popup and fill don't match", popup.properties.fill, "vs", objToRgba(fill))
+      setFill(popup.properties.fill)
+    }
+    if (popup.properties.stroke !== objToRgba(stroke)) {
+      console.log("new popup and stroke don't match", popup.properties.fill, "vs", objToRgba(stroke))
+      setStroke(popup.properties.stroke)
+    }
+    if (feature.geometry.type === "Polygon" || feature.geometry.type === "Point") {
+      if (!feature.properties.fill) {
+        setErrorFill(true)
+      } else {
+        setErrorFill(null)
+      }
+    }
+    if (feature.geometry.type === "LineString" || feature.geometry.type === "Polygon") {
+      if (!feature.properties.stroke) {
+        setErrorStroke(true)
+      } else {
+        setErrorStroke(null)
+      }
+    }
+  }, [popup])
+
+  // useEffect(() => {
+  //   if (!stroke) return
+  //   console.log("setting stroke", stroke)
+
+  // }, [stroke])
+  // useEffect(() => {
+  //   if (!fill) return
+  //   console.log("setting stroke", fill)
+  //   editProp(objToRgba(fill), "fill")
+  // }, [fill])
+
+  useEffect(() => {
+    setEditorTable(null)
+  }, [])
+
+  console.log("fill", feature.properties.fill, "stroke", feature.properties.stroke)
+
   return (
     <div className="space-y-4 font-mono select-text">
+      {popup.geometry.type === 'Point' && (
+        <div dangerouslySetInnerHTML={{ __html: getIcon(popup, objToRgba(fill)) }}></div>
+      )}
+      {popup.geometry.type === 'Polygon' && (
+        <div className="popup-preview">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <rect x="4" y="4" width="19" height="19" fill={objToRgba(fill)} stroke={objToRgba(stroke)} strokeWidth="3" />
+          </svg>
+        </div>
+      )}
+      {popup.geometry.type === 'LineString' && (
+        <div className="popup-preview">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <line x1="4" y1="4" x2="20" y2="20" stroke={objToRgba(stroke)} strokeWidth="2" />
+          </svg>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow className="text-center">
@@ -111,7 +184,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
           {editorTable && (
             Object.entries(feature.properties).map((arr, i) => {
               return (
-                <TableRow key={i} >
+                <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
                   <TableCell>
                     {arr[0] === "type"
@@ -127,19 +200,24 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
                           ))}
                         </SelectContent>
                       </Select >
-                      : <Input value={editorTable[arr[0]]} onChange={e => editProp(e.target.value, arr[0])} className="h-8"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleSave()
-                          }
-                        }}
-                      />
+                      : (arr[0] === "stroke" || arr[0] === "fill")
+                        ? arr[0] === "stroke"
+                          ? <PopoverPicker color={stroke} onChange={setStroke} editProp={editProp} />
+                          : <PopoverPicker color={fill} onChange={setFill} editProp={editProp} />
+                        : <Input value={editorTable[arr[0]]} onChange={e => editProp(e.target.value, arr[0])} className="h-8"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSave()
+                            }
+                          }}
+                        />
                     }
                   </TableCell>
                 </TableRow>
               )
             })
           )}
+
           {!editorTable && (
             Object.entries(feature.properties).map((arr, i) => (
               <TableRow key={i} >
@@ -153,7 +231,18 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
                 }
                 {arr[1].startsWith("rgba") &&
                   <TableCell>
-                    <div style={{ width: '20px', height: '20px', backgroundColor: arr[1] }}></div>
+                    {arr[0] === "stroke"
+                      ?
+                      <div
+                        className="swatch w-5 h-5 border border-white"
+                        style={{ backgroundColor: objToRgba(stroke) }}
+                      />
+                      :
+                      <div
+                        className="swatch w-5 h-5 border border-white"
+                        style={{ backgroundColor: objToRgba(fill) }}
+                      />
+                    }
                   </TableCell>
                 }
                 {(!arr[1].startsWith("rgba") && !arr[1].startsWith("http")) && <TableCell>{arr[1]}</TableCell>}
@@ -193,6 +282,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
               </TableRow>
             ))
           )}
+
           {isAddingRow && (
             <TableRow>
               <TableCell>
@@ -227,6 +317,10 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
           )}
         </TableBody>
       </Table>
+      <div className="text-center m-1">
+        {errorStroke && <p className="text-red-500">Missing 'stroke' color</p>}
+        {errorFill && <p className="text-red-500">Missing 'fill' color</p>}
+      </div>
       <Dialog>
         <DialogTrigger asChild >
           <Button size="sm" className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
@@ -286,3 +380,67 @@ export default function EditorForm({ feature, draw, setPopup, mapName }) {
     </div >
   )
 }
+
+// Simple always open version
+// export const PopoverPicker = ({ color, onChange, editProp }) => {
+//   const popover = useRef();
+//   return (
+//     <div className="popover" ref={popover}>
+//       <RgbaColorPicker color={rgbaToObj(color)} onChange={onChange} />
+//     </div>
+//   );
+// };
+
+export const PopoverPicker = ({ color, onChange, editProp }) => {
+  const popover = useRef();
+  const [isOpen, toggle] = useState(false)
+  const close = useCallback(() => toggle(false), []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (popover.current && !popover.current.contains(event.target)) {
+        close()
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [popover, close]);
+
+  return (
+    <>
+      {isOpen
+        ? <div className="popover" ref={popover}>
+          <RgbaColorPicker color={rgbaToObj(color)} onChange={onChange} />
+        </div>
+        : <div
+          className="swatch w-5 h-5 cursor-pointer border border-white"
+          style={{ backgroundColor: objToRgba(color) }}
+          onClick={() => toggle(true)}
+        />
+      }
+    </>
+  );
+};
+
+const rgbaToObj = (rgba) => {
+  if (!rgba) return
+  if (typeof rgba === "object") return rgba
+  const rgbaRegex = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d*\.?\d+)\s*\)/;
+  const result = rgba?.match(rgbaRegex);
+  // const result = rgba?.match(/rgba?\((\d+), (\d+), (\d+), (\d+\.?\d*)\)/);
+  // console.log("result", result, rgba)
+  return result ? {
+    r: parseInt(result[1], 10),
+    g: parseInt(result[2], 10),
+    b: parseInt(result[3], 10),
+    a: parseFloat(result[4])
+  } : undefined;
+}
+
+const objToRgba = (rgba) => {
+  if (!rgba) return
+  if (typeof rgba !== "object") return rgba
+  return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`
+};

@@ -4,7 +4,7 @@ import MapboxDraw from "@hyvilo/maplibre-gl-draw"
 import { useCallback, useEffect, useState } from 'react'
 import randomName from '@scaleway/random-name'
 import { useRouter } from 'next/navigation'
-import { getConsts } from '@/lib/utils'
+import { getConsts, accent } from '@/lib/utils'
 
 export default function Controls({ name, setDraw, draw, params, setSize }) {
   const [saveTrigger, setSaveTrigger] = useState()
@@ -27,6 +27,14 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
       if (!f.properties.type) {
         // console.log("found missing type for feature", f, "adding", availableTypes[0])
         f.properties.type = availableTypes[0] || "placeholder"
+        draw.add(f)
+      }
+      if ((f.geometry.type === "Point" || f.geometry.type.includes("Poly")) && !f.properties.fill) {
+        f.properties.fill = accent(name, 1)
+        draw.add(f)
+      }
+      if ((f.geometry.type === "LineString" || f.geometry.type.includes("Poly")) && !f.properties.stroke) {
+        f.properties.stroke = accent(name, .5)
         draw.add(f)
       }
     })

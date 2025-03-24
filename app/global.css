@@ -188,3 +188,7 @@ body {
 .maplibregl-ctrl-top-right {
   z-index: 5 !important;
 }
+
+.react-colorful {
+  height: 140px !important;
+}
