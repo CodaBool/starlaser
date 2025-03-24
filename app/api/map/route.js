@@ -85,19 +85,6 @@ export async function PUT(req) {
       updates.published = body.published
     }
 
-    console.log("sending update with", {
-      where: { id: body.id },
-      data: {
-        name: updates.name,
-        published: updates.published,
-        guides: updates.guides,
-        locations: updates.locations,
-        territories: updates.territories,
-        hash: updates.hash,
-      }
-    })
-
-
     await db.map.update({
       where: { id: body.id },
       data: {
@@ -112,21 +99,6 @@ export async function PUT(req) {
 
     // only put R2 if the geojson has changed
     if (geojsonChange) {
-      console.log("updated postgres, now updating R2", {
-        Body: JSON.stringify(body.geojson),
-        Bucket: "maps",
-        Key: map.id,
-        // CacheControl: "STRING_VALUE",
-        ContentType: "application/json",
-        // Expires: new Date("TIMESTAMP"),
-        Metadata: {
-          "user": user.id,
-          "map": map.map,
-          "alias": user.alias,
-          "email": user.email,
-          "published": map.published,
-        },
-      })
       const command = new PutObjectCommand({
         Body: JSON.stringify(body.geojson),
         Bucket: "maps",
@@ -135,20 +107,14 @@ export async function PUT(req) {
         ContentType: "application/json",
         // Expires: new Date("TIMESTAMP"),
         Metadata: {
-          "user": user.id,
-          "map": map.map,
-          "alias": user.alias,
-          "email": user.email,
-          "published": map.published,
+          "user": `${user.id}`,
+          "map": `${map.map}`,
+          "alias": `${user.alias}`,
+          "email": `${user.email}`,
+          "published": `${map.published}`,
         },
       })
-      console.log("R2 command", command)
-
       const response = await s3.send(command)
-
-      console.log("R2 response", response)
-
-
     }
 
     return Response.json({ msg: "success", map })
@@ -245,10 +211,10 @@ export async function POST(req) {
       // Expires: new Date("TIMESTAMP"),
       // Metadata values must be a string
       Metadata: {
-        "user": user.id,
-        "map": body.map,
-        "alias": user.alias,
-        "email": user.email,
+        "user": `${user.id}`,
+        "map": `${body.map}`,
+        "alias": `${user.alias}`,
+        "email": `${user.email}`,
         "published": `${map.published}`,
       },
       // Tagging: "STRING_VALUE",
