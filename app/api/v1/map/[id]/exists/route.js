@@ -9,7 +9,7 @@ export async function GET(req) {
     })
     if (!map) return Response.json({ exists: false })
     if (!map.published) return Response.json({ exists: false, published: false })
-    return Response.json({ exists: true })
+    return Response.json({ exists: true, map: map.map, name: map.name })
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {

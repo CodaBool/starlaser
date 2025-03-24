@@ -19,6 +19,7 @@ import turfCentroid from '@turf/centroid'
 import { domToPng } from 'modern-screenshot'
 import * as turf from '@turf/turf'
 import SearchBar from './searchbar'
+import Calibrate from './calibrate'
 
 let projection, svg, zoom, path, g, tooling, clickCir, guideLabel, mode = new Set([])
 
@@ -356,6 +357,39 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     // capture a webp screenshot
     if (params.get("img")) {
       map.on('load', () => {
+
+        const userMadeLocations = data.location.filter(d => d.properties.userCreated && map.getBounds().contains(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1])))
+        // console.log("User made locations currently on screen:", userMadeLocations)
+
+        window.parent.postMessage({
+          type: 'log',
+          message: userMadeLocations,
+        }, '*')
+
+        const userMadeLocationsWithPixels = userMadeLocations.map(location => {
+          const point = map.project(new maplibregl.LngLat(location.geometry.coordinates[0], location.geometry.coordinates[1]))
+          window.parent.postMessage({
+            type: 'log',
+            message: point,
+          }, '*')
+          return {
+            ...location,
+            pixelCoordinates: {
+              top: point.y,
+              left: point.x
+            }
+          };
+        });
+
+        window.parent.postMessage({
+          type: 'log',
+          message: userMadeLocationsWithPixels,
+        }, '*')
+        window.parent.postMessage({
+          type: 'featureData',
+          featureData: userMadeLocationsWithPixels,
+        }, '*')
+
         domToPng(document.querySelector('#map'), { scale: 2 }).then((pngDataUrl) => {
           const img1 = new Image();
           const img2 = new Image();
@@ -430,6 +464,12 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   }, [map])
 
   if (mini) return (<Tooltip {...tooltip} mobile={mobile} />)
+  if (params.get("calibrate")) return (
+    <>
+      <Calibrate mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
+      <Tooltip {...tooltip} mobile={mobile} />
+    </>
+  )
 
   return (
     <>

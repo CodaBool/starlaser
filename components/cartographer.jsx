@@ -22,16 +22,14 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
   const params = useSearchParams()
   const router = useRouter()
   const mini = params.get("mini") === "1"
-  if (params.get("z")) {
-    VIEW.longitude = params.get("lng") || VIEW.longitude
-    VIEW.latitude = params.get("lat") || VIEW.latitude
-    VIEW.zoom = params.get("z") || VIEW.zoom
-  }
+  VIEW.zoom = params.get("z") || VIEW.zoom
+  VIEW.longitude = params.get("lng") || VIEW.longitude
+  VIEW.latitude = params.get("lat") || VIEW.latitude
+  if (params.get("calibrate")) stargazer = true
 
   let loading = false
 
   useEffect(() => {
-    setSize({ width: Number(params.get("width")) || window.innerWidth, height: Number(params.get("height")) || window.innerHeight })
     if (params.get("width") && params.get("height")) {
       setSize({ width: Number(params.get("width")), height: Number(params.get("height")) })
     } else {
