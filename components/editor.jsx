@@ -8,7 +8,7 @@ import { getConsts } from "@/lib/utils";
 import { getIcon } from "./map";
 import { useStore } from "./cartographer";
 
-export default function Editor({ draw, mapName, mapId }) {
+export default function Editor({ draw, mapName, mapId, svgs }) {
   const { map } = useMap()
   const [popup, setPopup] = useState()
   const { TYPES } = getConsts(mapName)

@@ -19,10 +19,16 @@ export default async function mapLobby({ params }) {
   path.resolve(`app/[map]/topojson/fallout.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+  path.resolve(`public/svg`)
   // const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}.json`), 'utf8')
   // const content = await fs.promises.readFile(process.cwd() + '/app/fallout/fallout.json', 'utf8')
   // const content = fs.readFileSync(filePath, 'utf-8')
   const topojson = JSON.parse(content)
+
+  const svgDir = path.join(process.cwd(), "public/svg");
+  const svgFiles = await fs.promises.readdir(svgDir);
+  const svgList = svgFiles.filter(file => path.extname(file) === '.svg')
+  // console.log("svgs", svgList)
 
   // TODO: the layer name here will be different for each map
   const layers = Object.keys(topojson.objects)
@@ -30,11 +36,11 @@ export default async function mapLobby({ params }) {
     acc[layer] = feature(topojson, topojson.objects[layer]).features
     return acc
   }, {})
-  return <Cartographer data={layerObjects} name={map} />
+  return <Cartographer data={layerObjects} name={map} svgs={svgList} />
 }
 
 export async function generateStaticParams() {
-  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
+  const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson")
   const files = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)))
   return files.map(file => ({ slug: file }))
 }

@@ -64,7 +64,7 @@ export default async function Contribute({ params, searchParams }) {
               <br /><br />
               <span className="text-gray-200">- name</span>
               <br />
-              <span className="text-gray-200">- type of location (i.e. station)</span>
+              <span className="text-gray-200">- type of location (e.g. station)</span>
               <br />
               <span className="text-gray-200">- coordinates</span>
               <br /><br />

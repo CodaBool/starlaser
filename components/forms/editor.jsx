@@ -24,13 +24,14 @@ import { RgbaColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { CircleHelp, Pencil, Plus, Save, Trash2 } from "lucide-react"
+import { CircleHelp, Image, Pencil, Plus, Save, Trash2 } from "lucide-react"
 import { AVAILABLE_PROPERTIES, getConsts } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useStore } from "../cartographer"
 import { getIcon } from "../map"
+import IconSelector from "../iconSelector"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup, svgs }) {
   const { editorTable, setEditorTable } = useStore()
   const [isAddingRow, setIsAddingRow] = useState(false)
   const [stroke, setStroke] = useState(rgbaToObj(popup?.properties.stroke))
@@ -110,6 +111,17 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup }) 
     setEditorTable(newFeature.properties)
   }
 
+  function handleIcon() {
+
+    const newProperties = { ...feature.properties }
+    newProperties[key] = newVal
+    const latestFeature = draw.get(feature.id)
+    const newFeature = { ...latestFeature, properties: newProperties }
+    draw.add(newFeature)
+    setPopup(newFeature)
+    setEditorTable(newFeature.properties)
+  }
+
   // error messages
   useEffect(() => {
     if (popup.properties.fill !== objToRgba(fill)) {
@@ -151,7 +163,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup }) 
     setEditorTable(null)
   }, [])
 
-  console.log("fill", feature.properties.fill, "stroke", feature.properties.stroke)
+  // console.log("fill", feature.properties.fill, "stroke", feature.properties.stroke)
 
   return (
     <div className="space-y-4 font-mono select-text">
@@ -366,10 +378,14 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup }) 
             <Plus className="mr-2 h-4 w-4" />
             Add Data
           </Button>
-          <Button size="sm" onClick={handleEdit} className="cursor-pointer w-full h-[30px]" variant="secondary">
+          <Button size="sm" onClick={handleEdit} className="cursor-pointer w-full h-[30px] mb-2" variant="secondary">
             <Pencil className="mr-2 h-4 w-4" />
             Edit Data
           </Button>
+
+
+          <IconSelector mapName={mapName} onSelect={() => window.alert("i haven't coded this yet")} />
+
         </>
         :
         <Button size="sm" onClick={handleSave} className="cursor-pointer w-full h-[30px]">
@@ -390,6 +406,30 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup }) 
 //     </div>
 //   );
 // };
+
+// function IconPicker() {
+//   const [input, setInput] = useState(false)
+
+//   return (
+//     <div>
+//       <h2>Sear</h2>
+
+//       <Input value={input} onChange={e => setInput(e.target.value)} />
+//       <p>Search https://fontawesome.com/search?ic=free</p>
+//       {/* <div className="flex flex-wrap max-h-60 overflow-auto">
+//         {svgs.map((filename, i) => (
+//           <img
+//             key={filename}
+//             src={`/svg/${filename}`}
+//             className="hover-grow w-8 h-8 cursor-pointer m-2"
+//             onClick={() => console.log(`Clicked FontAwesome icon-${i}`)}
+//             alt={filename}
+//           />
+//         ))}
+//       </div> */}
+//     </div>
+//   )
+// }
 
 export const PopoverPicker = ({ color, onChange, editProp }) => {
   const popover = useRef();

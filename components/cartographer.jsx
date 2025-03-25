@@ -14,7 +14,7 @@ export const useStore = create((set) => ({
   setEditorTable: editorTable => set({ editorTable }),
 }))
 
-export default function Cartographer({ name, data, stargazer, rawTopojson, mapId }) {
+export default function Cartographer({ name, data, stargazer, rawTopojson, mapId, svgs }) {
   const { SCALE, CENTER, STYLE, VIEW, MAX_ZOOM, MIN_ZOOM, BOUNDS, BG } = getConsts(name)
   const [size, setSize] = useState()
   const mobile = isMobile()
@@ -106,7 +106,7 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
         {(!mobile && !mini && !stargazer && !rawTopojson) && <Controls setDraw={setDraw} draw={draw} name={name} params={params} setSize={setSize} />}
         <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} mini={mini} params={params} stargazer={stargazer} />
       </Map>
-      {(!mini && !stargazer && !rawTopojson) && <Editor draw={draw} mapName={name} />}
+      {(!mini && !stargazer && !rawTopojson) && <Editor draw={draw} mapName={name} svgs={svgs} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

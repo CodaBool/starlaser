@@ -2,7 +2,8 @@
   "name": "data-scripts",
   "type": "module",
   "scripts": {
-    "start": "node --env-file=../.env upload.js"
+    "start": "node --env-file=../.env upload.js",
+    "svg": "node svg.js"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
