@@ -116,8 +116,8 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
     // TODO: update url to stargazer
     let url = icon
     if (typeof icon === "object") {
-      // url = `https://raw.githubusercontent.com/CodaBool/starlaser/refs/heads/main/public/svg/${icon.folder}/${icon.name}.svg`
-      url = `http://192.168.0.16:3000/svg/${icon.folder}/${icon.name}.svg`
+      url = `https://raw.githubusercontent.com/CodaBool/starlaser/refs/heads/main/public/svg/${icon.folder}/${icon.name}.svg`
+      // url = `http://192.168.0.16:3000/svg/${icon.folder}/${icon.name}.svg`
     }
     // console.log("icon", icon, " | remote =", url)
     editProp(url, "icon")
