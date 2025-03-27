@@ -1,14 +1,5 @@
-<svg            
-  xmlns="http://www.w3.org/2000/svg"
-  
-  
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="white"
-stroke-linecap="round"
-  stroke-linejoin="round"
-           width="20" height="20">
-  <path stroke="white" d="M9 2h6l3 7H6l3-7Z" />
-  <path stroke="white" d="M12 9v13" />
-  <path stroke="white" d="M9 22h6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="white">
+  <path d="M9 2h6l3 7H6l3-7Z"/>
+  <path d="M12 9v13"/>
+  <path d="M9 22h6"/>
 </svg>

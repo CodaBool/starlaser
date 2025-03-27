@@ -4,3 +4,6 @@ build/
 .next/
 .env
 junk.*
+/public/svg/fontawesome
+/public/svg/foundry
+/public/svg/lucide
