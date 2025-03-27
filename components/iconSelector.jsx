@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -12,9 +13,9 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Image } from 'lucide-react'
+import { Image, X } from 'lucide-react'
 
-export default function IconSelector({ onSelect, mapName }) {
+export default function IconSelector({ onSelect, mapName, show }) {
   const [search, setSearch] = useState('')
   const [commonIcons, setCommonIcons] = useState([])
   const [mainIcons, setMainIcons] = useState([])
@@ -37,11 +38,11 @@ export default function IconSelector({ onSelect, mapName }) {
   }, [mapName])
 
   useEffect(() => {
-    if (!search) return setFilteredMain(mainIcons.slice(0, 20))
+    if (!search) return setFilteredMain(mainIcons.slice(0, 22))
     const filtered = mainIcons.filter(name =>
       name.toLowerCase().includes(search.toLowerCase())
     )
-    setFilteredMain(filtered.slice(0, 20))
+    setFilteredMain(filtered.slice(0, 22))
   }, [search, mainIcons])
 
 
@@ -60,12 +61,12 @@ export default function IconSelector({ onSelect, mapName }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="cursor-pointer w-full h-[30px]" variant="secondary">
+        <Button size="sm" className="cursor-pointer w-full h-[30px] icon-dialog-open" variant="secondary" hidden={!show}>
           <Image className="mr-2 h-4 w-4" />
-          Use Icon
+          Customize Icon
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg h-[650px]">
+      <DialogContent className="max-w-lg h-[650px] icon-dialog">
         <DialogHeader>
           <DialogTitle>Select an Icon</DialogTitle>
         </DialogHeader>
@@ -102,6 +103,7 @@ export default function IconSelector({ onSelect, mapName }) {
                   return renderIcon(icon, 'main')
                 })}
               </div>
+              <p className='text-sm mt-4 ml-2 text-muted-foreground'>Not all icons shown, use search to find an icon</p>
             </TabsContent>
 
             {mapIcons.length > 0 && (
@@ -135,7 +137,7 @@ export default function IconSelector({ onSelect, mapName }) {
                       size="sm"
                       variant="secondary"
                       className="cursor-pointer w-full"
-                      onClick={() => onSelect({ name: urlInput, folder: 'url' })}
+                      onClick={() => onSelect(urlInput)}
                     >
                       Use Icon
                     </Button>
@@ -150,7 +152,7 @@ export default function IconSelector({ onSelect, mapName }) {
           {/* Accordion Help */}
           <Accordion type="single" collapsible className="text-sm overflow-hidden">
             <AccordionItem value="instructions">
-              <AccordionTrigger className="text-left">
+              <AccordionTrigger className="text-left cursor-pointer">
                 Need help finding your icon?
               </AccordionTrigger>
               <AccordionContent>
@@ -182,7 +184,7 @@ export default function IconSelector({ onSelect, mapName }) {
                     </li>
                   )}
                   <li>
-                    Sometimes icon's are named different than you'd guess, try searching on {' '}
+                    Sometimes icon's are named different than you'd guess. More robust search alogrithms are on the source websites. Try searching on {' '}
                     <a
                       href="https://fontawesome.com/search"
                       target="_blank"
@@ -200,7 +202,7 @@ export default function IconSelector({ onSelect, mapName }) {
                     >
                       Lucide
                     </a>
-                    , to find the correct name and pasting it here.
+                    , to find its name and paste it into the search here.
                   </li>
                 </ul>
               </AccordionContent>

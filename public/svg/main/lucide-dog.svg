@@ -1,14 +1,13 @@
-<svg
+<svg  
   xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
+
+
   viewBox="0 0 24 24"
   fill="none"
   stroke="white"
-  stroke-width="2"
-  stroke-linecap="round"
+stroke-linecap="round"
   stroke-linejoin="round"
->
+           width="20" height="20">
   <path stroke="white" d="M11.25 16.25h1.5L12 17z" />
   <path stroke="white" d="M16 14v.5" />
   <path stroke="white" d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309" />

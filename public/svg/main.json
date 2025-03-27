@@ -1401,6 +1401,7 @@
   "fontawesome-yen-sign",
   "fontawesome-yin-yang",
   "fontawesome-z",
+  "fontawesome",
   "foundry-acid",
   "foundry-anchor",
   "foundry-angel",
@@ -1509,6 +1510,7 @@
   "foundry-windmill",
   "foundry-wing",
   "foundry-wingfoot",
+  "foundry",
   "lucide-a-arrow-down",
   "lucide-a-arrow-up",
   "lucide-a-large-small",
@@ -3069,5 +3071,6 @@
   "lucide-zap-off",
   "lucide-zap",
   "lucide-zoom-in",
-  "lucide-zoom-out"
+  "lucide-zoom-out",
+  "lucide"
 ]

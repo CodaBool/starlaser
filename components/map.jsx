@@ -41,26 +41,44 @@ function generateCircle(center, radius) {
   }
 }
 
-export function getIcon(d, fill) {
-  const icon = d.properties.icon || SVG[d.properties.type]
-  if (fill) {
-    const fillAttribute = `fill="${fill}"`;
-    const iconWithFill = icon.replace(/<svg /, `<svg ${fillAttribute} `);
-    return iconWithFill;
+export async function getIcon(d, fillRGBA) {
+  const icon = d.properties.icon || SVG[d.properties.type];
+  const fill = fillRGBA || d.properties.fill
+  const stroke = d.properties.stroke
+
+  // Apply to all <path>, <circle>, <rect>, etc.
+  const forceAttrs = (svg, fill, stroke) => {
+    if (fill) {
+      svg = svg.replace(/(<(path|circle|rect|polygon|g)[^>]*?)\s*(fill=".*?")?/gi, (match, before) => {
+        return `${before} fill="${fill}" `;
+      });
+    }
+    if (stroke) {
+      svg = svg.replace(/(<(path|circle|rect|polygon|g)[^>]*?)\s*(stroke=".*?")?/gi, (match, before) => {
+        return `${before} stroke="${stroke}" `;
+      });
+    }
+    return svg;
+  };
+
+  if (icon && !icon.startsWith("http")) {
+    return forceAttrs(icon, fill, stroke);
   }
-  if (!icon) {
-    console.log("WARN: no type or icon for", d.properties.type)
+
+  if (icon?.startsWith("http")) {
+    try {
+      const res = await fetch(icon)
+      let remoteSvg = await res.text();
+      return forceAttrs(remoteSvg, fill, stroke);
+    } catch (e) {
+      console.log(`WARN: failed to fetch icon: ${icon}`, e);
+      return null;
+    }
   }
-  if (icon?.startsWith('http')) {
-    // ${fill ? "fill='" + fill + "'" : ""}
-    return (
-      `<svg width="20" height="20">
-        <image href="${icon}" width="20" height="20" />
-      </svg>`
-    )
-  }
-  return icon ? icon : null
+
+  return null;
 }
+
 
 export default function Map({ width, height, data, name, mobile, mini, params }) {
   const { map } = useMap()
@@ -325,6 +343,24 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       .attr('dy', '-.8em')
       .attr('dx', '.7em')
       .style('pointer-events', 'none')
+
+
+    // Now fetch icons asynchronously and inject them
+    data.location.forEach(async (d, i) => {
+      if (d.properties.name === "Cressidium") {
+        console.log(d, i)
+      }
+      if (d.properties.icon) console.log("fetching icon", d.properties.name)
+      const iconMarkup = await getIcon(d)
+      if (d.properties.icon) {
+
+        console.log("finished fetch for icon", d.properties.name, " |result =", iconMarkup)
+      }
+
+      if (iconMarkup) {
+        location._groups[0][i].innerHTML = iconMarkup;
+      }
+    });
 
     function render() {
 

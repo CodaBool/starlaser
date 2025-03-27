@@ -38,6 +38,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
   const [fill, setFill] = useState(rgbaToObj(popup?.properties.fill))
   const [errorStroke, setErrorStroke] = useState()
   const [errorFill, setErrorFill] = useState()
+  const [iconHTML, setIconHTML] = useState(null);
 
   const { TYPES } = getConsts(mapName)
   const [newRow, setNewRow] = useState({
@@ -111,19 +112,23 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
     setEditorTable(newFeature.properties)
   }
 
-  function handleIcon() {
-
-    const newProperties = { ...feature.properties }
-    newProperties[key] = newVal
-    const latestFeature = draw.get(feature.id)
-    const newFeature = { ...latestFeature, properties: newProperties }
-    draw.add(newFeature)
-    setPopup(newFeature)
-    setEditorTable(newFeature.properties)
+  function selectIcon(icon) {
+    // TODO: update url to stargazer
+    let url = icon
+    if (typeof icon === "object") {
+      // url = `https://raw.githubusercontent.com/CodaBool/starlaser/refs/heads/main/public/svg/${icon.folder}/${icon.name}.svg`
+      url = `http://192.168.0.16:3000/svg/${icon.folder}/${icon.name}.svg`
+    }
+    // console.log("icon", icon, " | remote =", url)
+    editProp(url, "icon")
+    // close dialog
+    // console.log("clicking button", document.querySelector('.icon-dialog').childNodes[2])
+    document.querySelector('.icon-dialog').childNodes[2].click()
   }
 
-  // error messages
   useEffect(() => {
+
+    // error messages
     if (popup.properties.fill !== objToRgba(fill)) {
       console.log("new popup and fill don't match", popup.properties.fill, "vs", objToRgba(fill))
       setFill(popup.properties.fill)
@@ -146,29 +151,24 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
         setErrorStroke(null)
       }
     }
+
+    // fetch icon, could be a promise
+    if (popup.geometry.type === 'Point') {
+      getIcon(popup, objToRgba(fill)).then(r => {
+        setIconHTML(r)
+      })
+    }
   }, [popup])
-
-  // useEffect(() => {
-  //   if (!stroke) return
-  //   console.log("setting stroke", stroke)
-
-  // }, [stroke])
-  // useEffect(() => {
-  //   if (!fill) return
-  //   console.log("setting stroke", fill)
-  //   editProp(objToRgba(fill), "fill")
-  // }, [fill])
 
   useEffect(() => {
     setEditorTable(null)
   }, [])
 
-  // console.log("fill", feature.properties.fill, "stroke", feature.properties.stroke)
 
   return (
     <div className="space-y-4 font-mono select-text">
-      {popup.geometry.type === 'Point' && (
-        <div dangerouslySetInnerHTML={{ __html: getIcon(popup, objToRgba(fill)) }}></div>
+      {popup.geometry.type === 'Point' && iconHTML && (
+        <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5"></div>
       )}
       {popup.geometry.type === 'Polygon' && (
         <div className="popup-preview">
@@ -199,30 +199,34 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
                 <TableRow key={i}>
                   <TableCell className="font-medium">{arr[0]}</TableCell>
                   <TableCell>
-                    {arr[0] === "type"
-                      ? <Select onValueChange={e => editProp(e, arr[0])} defaultValue={editorTable[arr[0]]}>
-                        <SelectTrigger className="w-full cursor-pointer">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableTypes.map((type, index) => (
-                            <SelectItem key={index} value={type} className="cursor-pointer">
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select >
-                      : (arr[0] === "stroke" || arr[0] === "fill")
-                        ? arr[0] === "stroke"
-                          ? <PopoverPicker color={stroke} onChange={setStroke} editProp={editProp} />
-                          : <PopoverPicker color={fill} onChange={setFill} editProp={editProp} />
-                        : <Input value={editorTable[arr[0]]} onChange={e => editProp(e.target.value, arr[0])} className="h-8"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSave()
-                            }
-                          }}
-                        />
+                    {arr[0] === "type" && <Select onValueChange={e => editProp(e, arr[0])} defaultValue={editorTable[arr[0]]}>
+                      <SelectTrigger className="w-full cursor-pointer">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTypes.map((type, index) => (
+                          <SelectItem key={index} value={type} className="cursor-pointer">
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select >}
+                    {arr[0] === "stroke" && <PopoverPicker color={stroke} onChange={setStroke} editProp={editProp} />}
+                    {arr[0] === "fill" && <PopoverPicker color={fill} onChange={setFill} editProp={editProp} />}
+                    {arr[0] === "icon" && <img
+                      src={arr[1]}
+                      alt="Custom icon"
+                      className="w-5 h-5 object-contain cursor-pointer"
+                      onClick={() => document.querySelector(".icon-dialog-open").click()}
+                    />}
+                    {arr[0] !== "type" && arr[0] !== "stroke" && arr[0] !== "fill" && arr[0] !== "icon" &&
+                      <Input value={editorTable[arr[0]]} onChange={e => editProp(e.target.value, arr[0])} className="h-8"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSave()
+                          }
+                        }}
+                      />
                     }
                   </TableCell>
                 </TableRow>
@@ -383,9 +387,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
             Edit Data
           </Button>
 
-
-          <IconSelector mapName={mapName} onSelect={() => window.alert("i haven't coded this yet")} />
-
         </>
         :
         <Button size="sm" onClick={handleSave} className="cursor-pointer w-full h-[30px]">
@@ -393,6 +394,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
           Save
         </Button>
       }
+      <IconSelector mapName={mapName} onSelect={selectIcon} show={(!isAddingRow && !editorTable && !feature.properties.icon)} />
     </div >
   )
 }
