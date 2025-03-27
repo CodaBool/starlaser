@@ -31,11 +31,9 @@ import { useStore } from "../cartographer"
 import { getIcon } from "../map"
 import IconSelector from "../iconSelector"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup, svgs }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup }) {
   const { editorTable, setEditorTable } = useStore()
   const [isAddingRow, setIsAddingRow] = useState(false)
-  const [stroke, setStroke] = useState(rgbaToObj(popup?.properties.stroke))
-  const [fill, setFill] = useState(rgbaToObj(popup?.properties.fill))
   const [errorStroke, setErrorStroke] = useState()
   const [errorFill, setErrorFill] = useState()
   const [iconHTML, setIconHTML] = useState(null);
@@ -88,12 +86,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
       // Switch back to "Add Row" mode
       setIsAddingRow(false)
     } else {
-      if (stroke) {
-        editProp(objToRgba(stroke), "stroke")
-      }
-      if (fill) {
-        editProp(objToRgba(fill), "fill")
-      }
       setEditorTable(null)
     }
   }
@@ -127,16 +119,7 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
   }
 
   useEffect(() => {
-
     // error messages
-    if (popup.properties.fill !== objToRgba(fill)) {
-      console.log("new popup and fill don't match", popup.properties.fill, "vs", objToRgba(fill))
-      setFill(popup.properties.fill)
-    }
-    if (popup.properties.stroke !== objToRgba(stroke)) {
-      console.log("new popup and stroke don't match", popup.properties.fill, "vs", objToRgba(stroke))
-      setStroke(popup.properties.stroke)
-    }
     if (feature.geometry.type === "Polygon" || feature.geometry.type === "Point") {
       if (!feature.properties.fill) {
         setErrorFill(true)
@@ -154,33 +137,39 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
 
     // fetch icon, could be a promise
     if (popup.geometry.type === 'Point') {
-      getIcon(popup, objToRgba(fill)).then(r => {
+      getIcon(popup).then(r => {
         setIconHTML(r)
       })
     }
   }, [popup])
 
+  function handleFillOrStroke(type, newVal) {
+    if (type === "fill") {
+      editProp(objToRgba(newVal), type)
+    } else if (type === "stroke") {
+      editProp(objToRgba(newVal), type)
+    }
+  }
   useEffect(() => {
     setEditorTable(null)
   }, [])
 
-
   return (
     <div className="space-y-4 font-mono select-text">
       {popup.geometry.type === 'Point' && iconHTML && (
-        <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5"></div>
+        <div dangerouslySetInnerHTML={{ __html: iconHTML }} className="w-5 h-5 popup-preview"></div>
       )}
       {popup.geometry.type === 'Polygon' && (
         <div className="popup-preview">
-          <svg width="24" height="24" viewBox="0 0 24 24">
-            <rect x="4" y="4" width="19" height="19" fill={objToRgba(fill)} stroke={objToRgba(stroke)} strokeWidth="3" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill={popup.properties.fill} stroke={popup.properties.stroke}>
+            <rect x="4" y="4" width="19" height="19" strokeWidth="3" />
           </svg>
         </div>
       )}
       {popup.geometry.type === 'LineString' && (
         <div className="popup-preview">
-          <svg width="24" height="24" viewBox="0 0 24 24">
-            <line x1="4" y1="4" x2="20" y2="20" stroke={objToRgba(stroke)} strokeWidth="2" />
+          <svg width="24" height="24" viewBox="0 0 24 24" stroke={popup.properties.stroke}>
+            <line x1="4" y1="4" x2="20" y2="20" strokeWidth="2" />
           </svg>
         </div>
       )}
@@ -211,8 +200,8 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
                         ))}
                       </SelectContent>
                     </Select >}
-                    {arr[0] === "stroke" && <PopoverPicker color={stroke} onChange={setStroke} editProp={editProp} />}
-                    {arr[0] === "fill" && <PopoverPicker color={fill} onChange={setFill} editProp={editProp} />}
+                    {arr[0] === "stroke" && <PopoverPicker color={popup.properties.stroke} onChange={newVal => handleFillOrStroke("stroke", newVal)} />}
+                    {arr[0] === "fill" && <PopoverPicker color={popup.properties.fill} onChange={newVal => handleFillOrStroke("fill", newVal)} />}
                     {arr[0] === "icon" && <img
                       src={arr[1]}
                       alt="Custom icon"
@@ -251,12 +240,12 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
                       ?
                       <div
                         className="swatch w-5 h-5 border border-white"
-                        style={{ backgroundColor: objToRgba(stroke) }}
+                        style={{ backgroundColor: popup.properties.stroke }}
                       />
                       :
                       <div
                         className="swatch w-5 h-5 border border-white"
-                        style={{ backgroundColor: objToRgba(fill) }}
+                        style={{ backgroundColor: popup.properties.fill }}
                       />
                     }
                   </TableCell>
@@ -270,14 +259,14 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
                         <Trash2 className="cursor-pointer stroke-gray-400" size={14} />
                       )}
                     </DialogTrigger>
-                    <DialogContent className="max-h-[600px] overflow-auto">
+                    <DialogContent className="max-h-[600px]">
                       <DialogHeader>
                         <DialogTitle>Confirm <b>delete</b> row <b>{arr[0]}</b>?</DialogTitle>
-                        <table className="w-full text-left my-4 select-text ">
+                        <table className="w-full text-left my-4 select-text">
                           <tbody>
                             <tr>
                               <td className="border p-2">{arr[0]}</td>
-                              <td className="border p-2">{arr[1]}</td>
+                              <td className="border p-2 max-w-[400px] overflow-auto">{arr[1]}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -398,40 +387,6 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup, sv
     </div >
   )
 }
-
-// Simple always open version
-// export const PopoverPicker = ({ color, onChange, editProp }) => {
-//   const popover = useRef();
-//   return (
-//     <div className="popover" ref={popover}>
-//       <RgbaColorPicker color={rgbaToObj(color)} onChange={onChange} />
-//     </div>
-//   );
-// };
-
-// function IconPicker() {
-//   const [input, setInput] = useState(false)
-
-//   return (
-//     <div>
-//       <h2>Sear</h2>
-
-//       <Input value={input} onChange={e => setInput(e.target.value)} />
-//       <p>Search https://fontawesome.com/search?ic=free</p>
-//       {/* <div className="flex flex-wrap max-h-60 overflow-auto">
-//         {svgs.map((filename, i) => (
-//           <img
-//             key={filename}
-//             src={`/svg/${filename}`}
-//             className="hover-grow w-8 h-8 cursor-pointer m-2"
-//             onClick={() => console.log(`Clicked FontAwesome icon-${i}`)}
-//             alt={filename}
-//           />
-//         ))}
-//       </div> */}
-//     </div>
-//   )
-// }
 
 export const PopoverPicker = ({ color, onChange, editProp }) => {
   const popover = useRef();

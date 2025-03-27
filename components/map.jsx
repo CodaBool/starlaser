@@ -42,7 +42,7 @@ function generateCircle(center, radius) {
 }
 
 export async function getIcon(d, fillRGBA) {
-  const icon = d.properties.icon || SVG[d.properties.type];
+  const icon = d.properties.icon || SVG[d.properties.type]
   const fill = fillRGBA || d.properties.fill
   const stroke = d.properties.stroke
 
@@ -347,15 +347,15 @@ export default function Map({ width, height, data, name, mobile, mini, params })
 
     // Now fetch icons asynchronously and inject them
     data.location.forEach(async (d, i) => {
-      if (d.properties.name === "Cressidium") {
-        console.log(d, i)
-      }
-      if (d.properties.icon) console.log("fetching icon", d.properties.name)
+      // if (d.properties.name === "Cressidium") {
+      //   console.log(d, i)
+      // }
+      // if (d.properties.icon) console.log("fetching icon", d.properties.name)
       const iconMarkup = await getIcon(d)
-      if (d.properties.icon) {
+      // if (d.properties.icon) {
 
-        console.log("finished fetch for icon", d.properties.name, " |result =", iconMarkup)
-      }
+      //   console.log("finished fetch for icon", d.properties.name, " |result =", iconMarkup)
+      // }
 
       if (iconMarkup) {
         location._groups[0][i].innerHTML = iconMarkup;

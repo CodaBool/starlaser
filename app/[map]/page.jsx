@@ -25,18 +25,13 @@ export default async function mapLobby({ params }) {
   // const content = fs.readFileSync(filePath, 'utf-8')
   const topojson = JSON.parse(content)
 
-  const svgDir = path.join(process.cwd(), "public/svg");
-  const svgFiles = await fs.promises.readdir(svgDir);
-  const svgList = svgFiles.filter(file => path.extname(file) === '.svg')
-  // console.log("svgs", svgList)
-
   // TODO: the layer name here will be different for each map
   const layers = Object.keys(topojson.objects)
   const layerObjects = layers.reduce((acc, layer) => {
     acc[layer] = feature(topojson, topojson.objects[layer]).features
     return acc
   }, {})
-  return <Cartographer data={layerObjects} name={map} svgs={svgList} />
+  return <Cartographer data={layerObjects} name={map} />
 }
 
 export async function generateStaticParams() {
