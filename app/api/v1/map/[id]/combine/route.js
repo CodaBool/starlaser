@@ -2,7 +2,7 @@
 
 import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
-import { authOptions } from '../../../auth/[...nextauth]/route'
+import { authOptions } from '../../../../auth/[...nextauth]/route'
 import fs from "fs"
 import path from "path"
 import { combineAndDownload } from "@/lib/utils"
