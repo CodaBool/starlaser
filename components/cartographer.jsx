@@ -8,6 +8,7 @@ import Editor from './editor'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { create } from 'zustand'
 import { feature } from 'topojson-client'
+import randomName from '@scaleway/random-name'
 
 export const useStore = create((set) => ({
   editorTable: null,
@@ -21,11 +22,12 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
   const [draw, setDraw] = useState()
   const params = useSearchParams()
   const router = useRouter()
-  const mini = params.get("mini") === "1"
   VIEW.zoom = params.get("z") || VIEW.zoom
   VIEW.longitude = params.get("lng") || VIEW.longitude
   VIEW.latitude = params.get("lat") || VIEW.latitude
-  if (params.get("calibrate")) stargazer = true
+  const locked = params.get("locked") === "1"
+  const showControls = params.get("controls") !== "0" && !mobile && !stargazer && !locked
+  const showEditor = params.get("editor") !== "0" && !mobile && !stargazer && !locked
 
   let loading = false
 
@@ -40,17 +42,56 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
     }
   }, [])
 
-  if (rawTopojson) {
+  // combine server topojson with a local geojson
+  if (rawTopojson && mapId && size) {
     if (typeof localStorage === 'undefined') {
-      loading = true
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-900 rounded-full" />
         </div>
       )
     }
-    const maps = JSON.parse(localStorage.getItem('maps'))
-    if (maps) {
+
+    const maps = JSON.parse(localStorage.getItem('maps')) || {}
+    if (mapId === "foundry") {
+      const uuid = params.get("uuid")
+      fetch(`/api/v1/map/${uuid}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.error) {
+            window.parent.postMessage({
+              type: 'error',
+              message: res.error,
+            }, '*')
+          } else {
+            if (res.type !== "FeatureCollection") {
+              window.parent.postMessage({
+                type: 'error',
+                message: res.error,
+              }, '*')
+              return
+            }
+            const prev = JSON.parse(localStorage.getItem('maps')) || {}
+            const mapKey = name + "-" + uuid
+            localStorage.setItem('maps', JSON.stringify({
+              ...prev, [mapKey]: {
+                geojson: res,
+                name: prev[mapKey]?.name || randomName('', ' '),
+                updated: Date.now(),
+                map: name,
+              }
+            }))
+            console.log("redirect to", `/${name}?id=${uuid}`)
+            router.replace(`/${name}?id=${uuid}&hamburger=0&search=0&link=foundry`)
+          }
+        })
+        .catch(message => {
+          window.parent.postMessage({
+            type: 'error',
+            message,
+          }, '*');
+        })
+    } else if (Object.keys(maps).length > 0) {
       const localGeojson = maps[name + "-" + mapId]
       if (localGeojson?.geojson) {
         localGeojson.geojson.features = localGeojson.geojson.features.map(feature => {
@@ -79,7 +120,7 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
 
   // wait until I know how large the window is
   // this only takes miliseconds it seems, so its fine to wait
-  if (!size) loading = true
+  if (!size || mapId === "foundry") loading = true
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -93,9 +134,9 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
       <Map
         id="map"
         dragRotate={false}
-        scrollZoom={!mini}
-        dragPan={!mini}
-        doubleClickZoom={!mini}
+        scrollZoom={!locked}
+        dragPan={!locked}
+        doubleClickZoom={!locked}
         attributionControl={false}
         initialViewState={VIEW}
         maxZoom={MAX_ZOOM}
@@ -103,10 +144,10 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
         style={{ width: size.width, height: size.height }}
         mapStyle={STYLE}
       >
-        {(!mobile && !mini && !stargazer && !rawTopojson) && <Controls setDraw={setDraw} draw={draw} name={name} params={params} setSize={setSize} />}
-        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} mini={mini} params={params} stargazer={stargazer} />
+        {showControls && <Controls setDraw={setDraw} draw={draw} name={name} params={params} setSize={setSize} />}
+        <MapComponent width={size.width} height={size.height} name={name} data={data} mobile={mobile} SCALE={SCALE} CENTER={CENTER} params={params} stargazer={stargazer} locked={locked} />
       </Map>
-      {(!mini && !stargazer && !rawTopojson) && <Editor draw={draw} mapName={name} />}
+      {showEditor && <Editor draw={draw} mapName={name} params={params} />}
       <div style={{ width: size.width, height: size.height, background: `radial-gradient(${BG})`, zIndex: -1, top: 0, position: "absolute" }}></div>
     </>
   )

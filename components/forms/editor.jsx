@@ -20,18 +20,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { RgbaColorPicker } from "react-colorful"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { CircleHelp, Image, Pencil, Plus, Save, Trash2 } from "lucide-react"
+import { CircleHelp, Image, Pencil, Plus, Save, Trash2, Link as Chain, Notebook, StickyNote, Code } from "lucide-react"
 import { AVAILABLE_PROPERTIES, getConsts } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useStore } from "../cartographer"
 import { getIcon } from "../map"
 import IconSelector from "../iconSelector"
 
-export default function EditorForm({ feature, draw, setPopup, mapName, popup }) {
+export default function EditorForm({ feature, draw, setPopup, mapName, popup, params }) {
   const { editorTable, setEditorTable } = useStore()
   const [isAddingRow, setIsAddingRow] = useState(false)
   const [errorStroke, setErrorStroke] = useState()
@@ -384,9 +389,70 @@ export default function EditorForm({ feature, draw, setPopup, mapName, popup }) 
         </Button>
       }
       <IconSelector mapName={mapName} onSelect={selectIcon} show={(!isAddingRow && !editorTable && !feature.properties.icon)} />
+      {params.get("link") && <Link editProp={editProp} handleSave={handleSave} />}
     </div >
   )
 }
+
+export const Link = ({ editProp, handleSave }) => {
+  const [documentId, setDocumentId] = useState()
+  const [open, setOpen] = useState()
+
+  const handleSubmit = doc => {
+    window.parent.postMessage({ type: 'listen', doc }, '*')
+  }
+
+  const saveUUID = () => {
+    editProp(documentId, "link")
+    handleSave()
+    setOpen(false)
+  }
+
+  useEffect(() => {
+    const listener = e => {
+      if (e.data.type === 'log') {
+        console.log("message from daddy", e.data.message)
+      } else if (e.data.type === 'uuid') {
+        setDocumentId(e.data.uuid)
+      }
+    }
+    window.addEventListener('message', listener)
+    return () => {
+      window.removeEventListener('message', listener)
+    }
+  }, [])
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="sm" onClick={() => setOpen(!open)} className="cursor-pointer w-full h-[30px]" variant="secondary">
+          <Chain className="mr-2" />
+          Link to Foundry
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="flex flex-col">
+        <p className='mb-3 text-gray-400'>Link a Foundry Document to this feature. A UUID can be entered manually or you can connect it by using the buttons.</p>
+        <hr className='border my-4 border-gray-500' />
+        <Input className="w-full mb-4" value={documentId || ""} placeholder="Foundry Document UUID" onChange={(e) => setDocumentId(e.target.value)} />
+        {documentId &&
+          <Button className="cursor-pointer w-full" onClick={saveUUID}>
+            <Chain className="ml-[.6em] inline" /> <span className="ml-[5px]">Link</span>
+          </Button>
+        }
+        <Button className="cursor-pointer w-full my-2 mt-6" variant="secondary" onClick={() => handleSubmit('journal')}>
+          <Notebook className="ml-[.6em] inline" /> <span className="ml-[5px]">Journal</span>
+        </Button>
+        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('journal page')}>
+          <StickyNote className="ml-[.6em] inline" /> <span className="ml-[5px]">Journal Page</span>
+        </Button>
+        <Button className="cursor-pointer w-full my-2" variant="secondary" onClick={() => handleSubmit('macro')}>
+          <Code className="ml-[.6em] inline" /> <span className="ml-[5px]">Macro</span>
+        </Button>
+      </PopoverContent>
+    </Popover>
+
+  );
+};
 
 export const PopoverPicker = ({ color, onChange, editProp }) => {
   const popover = useRef();

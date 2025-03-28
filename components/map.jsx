@@ -19,7 +19,7 @@ import turfCentroid from '@turf/centroid'
 import { domToPng } from 'modern-screenshot'
 import * as turf from '@turf/turf'
 import SearchBar from './searchbar'
-import Calibrate from './calibrate'
+import { Calibrate, Link } from './foundry'
 
 let projection, svg, zoom, path, g, tooling, clickCir, guideLabel, mode = new Set([])
 
@@ -45,6 +45,14 @@ export async function getIcon(d, fillRGBA) {
   const icon = d.properties.icon || SVG[d.properties.type]
   const fill = fillRGBA || d.properties.fill
   const stroke = d.properties.stroke
+
+  // if (d.properties.userCreated) {
+  //   // console.log(d)
+  //   window.parent.postMessage({
+  //     type: 'log',
+  //     message: d,
+  //   }, '*')
+  // }
 
   // Apply to all <path>, <circle>, <rect>, etc.
   const forceAttrs = (svg, fill, stroke) => {
@@ -80,15 +88,16 @@ export async function getIcon(d, fillRGBA) {
 }
 
 
-export default function Map({ width, height, data, name, mobile, mini, params }) {
+export default function Map({ width, height, data, name, mobile, params, locked }) {
   const { map } = useMap()
   const [tooltip, setTooltip] = useState()
   const [drawerOpen, setDrawerOpen] = useState()
   const [drawerContent, setDrawerContent] = useState()
   const { CENTER, SCALE, CLICK_ZOOM, NO_PAN, LAYER_PRIO } = getConsts(name)
 
+
   async function pan(d, locations, fit) {
-    if (mini && !fit) return
+    if (locked && !fit) return
     mode.add("zooming")
     let fly = true, lat, lng, coordinates = d.geometry.coordinates
     let zoomedOut = map.getZoom() < 6
@@ -154,7 +163,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   }
 
   function hover(e, { properties, geometry }) {
-    if ((mode.has("crosshair") && mobile) || mini) return
+    if ((mode.has("crosshair") && mobile) || locked) return
     const guide = geometry.type === "LineString"
     const location = geometry.type === "Point"
     const territory = geometry.type?.includes("Poly")
@@ -190,6 +199,9 @@ export default function Map({ width, height, data, name, mobile, mini, params })
   useEffect(() => {
     if (!map) return
     if (svg) svg.remove()
+
+    console.log("map component using data", data)
+
 
     // keep user features on top, also create a layering based on importance
     data.territory.sort((a, b) => {
@@ -296,9 +308,9 @@ export default function Map({ width, height, data, name, mobile, mini, params })
       .attr("height", d => d.properties.type === "star" ? 10 : 20)
       .attr('fill', d => color(name, d.properties, "fill", d.geometry.type))
       .attr("pointer-events", "bounding-box")
-      .attr('class', d => d.properties.unofficial === "unofficial" ? 'unofficial location' : 'location')
+      .attr('class', d => `${d.properties.unofficial === "unofficial" ? "unoffical" : ""} location ${d.properties.userCreated ? "user" : ""}`)
       .on('click', (e, d) => {
-        if (mode.has("measure") || (mode.has("crosshair") && mobile)) return
+        if (mode.has("measure") || (mode.has("crosshair") && mobile) || locked) return
         const bounds = map.getBounds()
         const diagonalDistance = turf.distance(
           turf.point([bounds.getWest(), bounds.getSouth()]),
@@ -398,7 +410,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
 
     // capture a webp screenshot
     if (params.get("img")) {
-      map.on('load', () => {
+      map.on('load', async var1 => {
 
         const userMadeLocations = data.location.filter(d => d.properties.userCreated && map.getBounds().contains(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1])))
         // console.log("User made locations currently on screen:", userMadeLocations)
@@ -414,44 +426,82 @@ export default function Map({ width, height, data, name, mobile, mini, params })
           };
         });
 
+        const userLocationElements2 = document.querySelectorAll('.user.location');
+
         window.parent.postMessage({
           type: 'featureData',
           featureData: userMadeLocationsWithPixels,
         }, '*')
 
-        domToPng(document.querySelector('#map'), { scale: 2 }).then((pngDataUrl) => {
-          const img1 = new Image();
-          const img2 = new Image();
-          img1.src = map.getCanvas().toDataURL()
-          img2.src = pngDataUrl
-          img1.onload = () => {
-            img2.onload = () => {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d')
+        window.parent.postMessage({
+          type: 'log',
+          message: "waiting for icons",
+        }, '*')
 
-              // Scale up canvas size
-              const scale = 2;
-              canvas.width = width * scale;
-              canvas.height = height * scale;
+        const checkIconsLoaded = async () => {
+          const checkInterval = 100; // milliseconds
+          const maxAttempts = 100; // maximum number of attempts before giving up
+          let attempts = 0;
 
-              console.log("screenshot size", canvas.width, canvas.height)
+          while (attempts < maxAttempts) {
+            const allIconsLoaded = Array.from(userLocationElements2).every(element => {
+              const svgContent = element.innerHTML;
+              return svgContent && svgContent.includes('<svg');
+            });
 
-              // Optionally, apply higher-quality rendering
-              ctx.imageSmoothingEnabled = true;
-              ctx.imageSmoothingQuality = 'high';
+            if (allIconsLoaded) {
+              return true;
+            }
 
-              // Set canvas size based on the images (they are expected to be the same size)
-              ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
-              ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            attempts++;
+          }
 
-              // Create a download link for the combined image
-              const webpImage = canvas.toDataURL('image/webp', .98)
-              window.parent.postMessage({
-                type: 'webpImage',
-                webpImage,
-              }, '*')
+          return false;
+        };
+
+        await checkIconsLoaded();
+
+        window.parent.postMessage({
+          type: 'log',
+          message: "icons loaded",
+        }, '*')
+
+        domToPng(document.querySelector('#map'), { scale: 2 }).then((d3PNG) => {
+          setTimeout(() => {
+            const img1 = new Image();
+            const img2 = new Image();
+            img1.src = map.getCanvas().toDataURL()
+            img2.src = d3PNG
+            img1.onload = () => {
+              img2.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d')
+
+                // Scale up canvas size
+                const scale = 2;
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+
+                console.log("screenshot size", canvas.width, canvas.height)
+
+                // Optionally, apply higher-quality rendering
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                // Set canvas size based on the images (they are expected to be the same size)
+                ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
+
+                // Create a download link for the combined image
+                const webpImage = canvas.toDataURL('image/webp', .98)
+                window.parent.postMessage({
+                  type: 'webpImage',
+                  webpImage,
+                }, '*')
+              };
             };
-          };
+          }, 0)
         });
       });
     }
@@ -461,7 +511,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     map.on("moveend", render)
     render()
 
-    if (mini) {
+    if (locked) {
       const featName = params.get("name")
       const x = parseFloat(params.get("x"))
       const y = parseFloat(params.get("y"))
@@ -491,7 +541,7 @@ export default function Map({ width, height, data, name, mobile, mini, params })
     }
   }, [map])
 
-  if (mini) return (<Tooltip {...tooltip} mobile={mobile} />)
+  if (locked) return (<Tooltip {...tooltip} mobile={mobile} />)
   if (params.get("calibrate")) return (
     <>
       <Calibrate mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
@@ -501,12 +551,13 @@ export default function Map({ width, height, data, name, mobile, mini, params })
 
   return (
     <>
+      {params.get("link") && <Link mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />}
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} map={map} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />
-      <Hamburger mode={mode} name={name} c={params.get("c") === "1"} />
+      {params.get("hamburger") !== "0" && <Hamburger mode={mode} name={name} c={params.get("c") === "1"} />}
       <Tooltip {...tooltip} mobile={mobile} />
-      <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />
+      {params.get("search") !== "0" && <SearchBar map={map} name={name} data={data} pan={pan} mobile={mobile} />}
       <div className="absolute mt-28 ml-11 mr-[.3em] cursor-pointer z-10 bg-[rgba(0,0,0,.3)] rounded-xl zoom-controls" >
         <ZoomIn size={34} onClick={() => map.zoomIn()} className='m-2 hover:stroke-blue-200' />
         <ZoomOut size={34} onClick={() => map.zoomOut()} className='m-2 mt-4 hover:stroke-blue-200' />

@@ -18,13 +18,12 @@ const s3 = new S3Client({
 })
 
 export default async function mapLobby({ params }) {
-  const { map, id } = await params
-  const skipCombine = id.length === 13
+  const { map, id, searchParams } = await params
+  const skipCombine = id.length === 13 || id === "foundry"
   const isUUID = id.length === 36
 
   let geojson
   if (!skipCombine) {
-    // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
     const mapDB = await db.map.findUnique({
       where: { id },
     })
@@ -67,7 +66,7 @@ export default async function mapLobby({ params }) {
 
   const topojson = JSON.parse(content)
   if (skipCombine) {
-    return <Cartographer rawTopojson={topojson} name={map} mapId={id} />
+    return <Cartographer rawTopojson={topojson} name={map} mapId={id} stargazer={id !== "foundry"} />
   }
 
   const [data, type] = combineAndDownload("topojson", topojson, geojson)

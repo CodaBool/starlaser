@@ -19,7 +19,6 @@ export default async function mapLobby({ params }) {
   path.resolve(`app/[map]/topojson/fallout.json`)
   path.resolve(`app/[map]/topojson/lancer.json`)
   path.resolve(`app/[map]/topojson/lancer_starwall.json`)
-  path.resolve(`public/svg`)
   // const content = await fs.promises.readFile(path.resolve(`app/[map]/topojson/${map}.json`), 'utf8')
   // const content = await fs.promises.readFile(process.cwd() + '/app/fallout/fallout.json', 'utf8')
   // const content = fs.readFileSync(filePath, 'utf-8')

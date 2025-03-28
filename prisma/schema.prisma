@@ -62,6 +62,7 @@ model Map {
 
 model User {
   id            String     @id @default(cuid())
+  secret        String     @unique @default(uuid(7))
   vip           Boolean    @default(false)
   email         String     @unique
   createdAt     DateTime   @default(now())

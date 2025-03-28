@@ -3,6 +3,9 @@
 import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../../../auth/[...nextauth]/route'
+import fs from "fs"
+import path from "path"
+import { combineAndDownload } from "@/lib/utils"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 const s3 = new S3Client({
   region: "auto",
@@ -44,10 +47,21 @@ export async function GET(req) {
     if (!clientGeojson) throw 'file not found'
     if (!response.Metadata.map) throw 'map does not have the required metadata'
 
+    const dataDir = path.join(process.cwd(), "/app", "[map]", "topojson");
+    const filePath = path.join(dataDir, `${response.Metadata.map}.json`)
+    const content = await fs.promises.readFile(filePath, 'utf8')
+
+    // WARN: for some reason a path.resolve is needed here otherwise it cannot find the file
+    path.resolve(`app/[map]/topojson/fallout.json`)
+    path.resolve(`app/[map]/topojson/lancer.json`)
+    path.resolve(`app/[map]/topojson/lancer_starwall.json`)
+    const topojson = JSON.parse(content)
     const geojson = JSON.parse(clientGeojson)
+    const [data, type] = combineAndDownload("geojson", topojson, geojson)
+    const combinedData = JSON.parse(data)
     // console.log("result", combinedData)
 
-    return Response.json(geojson)
+    return Response.json(combinedData)
   } catch (error) {
     console.error(error)
     if (typeof error === 'string') {

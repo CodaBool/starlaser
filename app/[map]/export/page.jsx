@@ -1,10 +1,10 @@
-import { ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download } from 'lucide-react'
+import { ArrowLeft, Heart, Map, Terminal, Plus, WifiOff, Cloud, ArrowRightFromLine, LogIn, Download, Link as Chain } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import db from "@/lib/db"
-import ClientMaps, { CloudMaps } from '@/components/clientMaps'
+import ClientMaps, { CloudMaps, FoundryLink } from '@/components/clientMaps'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -32,8 +32,6 @@ export default async function Export({ params }) {
     revalidatePath(path)
   }
 
-  console.log(cloud, user?.id, session)
-
   return (
     <div className='text-white mx-auto md:container p-4 mt-2'>
       <Link href={`/${map}`} className="w-[50px] block">
@@ -56,23 +54,40 @@ export default async function Export({ params }) {
               <p className='mb-3 text-gray-200'>This is the base core data. Without any user submitted geography data</p>
               <hr className='border my-2 border-gray-500' />
               <p className='my-2 text-gray-300'>Topojson is a newer version of Geojson, and the recommended format for Stargazer</p>
-              <a href={`/api/download/${map}`}>
+              <Link href={`/api/download/${map}`}>
                 <Button className="cursor-pointer w-full" variant="secondary">
                   <ArrowRightFromLine className="ml-[.6em] inline" /> Topojson
                 </Button>
-              </a>
+              </Link>
               <p className='my-2 text-gray-300'>Geojson is an extremely common spec for geography data</p>
-              <a href={`/api/download/${map}?format=geo`}>
+              <Link href={`/api/download/${map}?format=geo`}>
                 <Button className="cursor-pointer w-full my-2" variant="secondary">
                   <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">Geojson</span>
                 </Button>
-              </a>
+              </Link>
               <p className='my-2 text-gray-300'>KML can be imported into a <a href="https://www.google.com/maps/d/u/0/?hl=en" className='text-blue-300' target="_blank">Google Maps</a> layer. Which can be easily distributed publicly for free.</p>
-              <a href={`/api/download/${map}?format=kml`}>
+              <Link href={`/api/download/${map}?format=kml`}>
                 <Button className="cursor-pointer w-full" variant="secondary">
                   <ArrowRightFromLine className="ml-[.6em] inline" /> <span className="ml-[5px]">KML</span>
                 </Button>
-              </a>
+              </Link>
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button className="cursor-pointer rounded relative top-[-8px] md:mt-0 mt-2 md:ms-[32px]" variant="secondary"><Chain /> Foundry</Button>
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col w-[385px]">
+              {session
+                ? <>
+                  <p className='mb-3 text-gray-200'>Link Foundry to your Stargazer account by pasting this secret into the module settings</p>
+                  <hr className='border my-2 border-gray-500' />
+                  <p className='text-sm text-gray-400'>Warning: this exposes your Stargazer account to some risk. All connected players and enabled modules in Foundry can read this value once entered. Local maps are always safe, this risk only applies to Cloud maps.</p>
+                  <FoundryLink secret={user?.secret} />
+                </>
+                : <h3 className='text-gray-300 text-center'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}/${map}/export`} className='text-blue-300'>email address</Link> to link to Foundry <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+              }
             </PopoverContent>
           </Popover>
         </div>
@@ -90,7 +105,7 @@ export default async function Export({ params }) {
         <p>You have no {map} maps saved remotely</p>
       }
       {!user &&
-        <h3 className='text-gray-300'>Provide an <Link href="/api/auth/signin" className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
+        <h3 className='text-gray-300'>Provide an <Link href={`/api/auth/signin?callbackUrl=${process.env.NEXTAUTH_URL}/${map}/export`} className='text-blue-300'>email address</Link> to publish a map <LogIn className='animate-pulse inline relative top-[-1px] ms-1' size={18} /></h3>
       }
       <CloudMaps maps={cloud} revalidate={revalidate} mapName={map} />
     </div>

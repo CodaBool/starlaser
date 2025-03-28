@@ -8,7 +8,7 @@ import { getConsts } from "@/lib/utils";
 import { getIcon } from "./map";
 import { useStore } from "./cartographer";
 
-export default function Editor({ draw, mapName, mapId, svgs }) {
+export default function Editor({ draw, mapName, params }) {
   const { map } = useMap()
   const [popup, setPopup] = useState()
   const { TYPES } = getConsts(mapName)
@@ -39,8 +39,8 @@ export default function Editor({ draw, mapName, mapId, svgs }) {
   useEffect(() => {
     if (!popup || !draw) return
     // duplicate of controls save function
-    const urlParams = new URLSearchParams(window.location.search);
-    const mapId = mapName + "-" + urlParams.get('id')
+    // const urlParams = new URLSearchParams(window.location.search);
+    const mapId = mapName + "-" + params.get('id')
     const geojson = draw.getAll()
     if (!geojson.features.length) return
     const prev = JSON.parse(localStorage.getItem('maps')) || {}
@@ -73,7 +73,7 @@ export default function Editor({ draw, mapName, mapId, svgs }) {
             <X />
           </Button>
         </div>
-        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} />
+        <EditorForm feature={popup} mapName={mapName} draw={draw} setPopup={setPopup} popup={popup} params={params} />
       </div>
     );
   }

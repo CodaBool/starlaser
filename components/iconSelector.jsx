@@ -61,7 +61,7 @@ export default function IconSelector({ onSelect, mapName, show }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="cursor-pointer w-full h-[30px] icon-dialog-open" variant="secondary" hidden={!show}>
+        <Button size="sm" className="cursor-pointer w-full h-[30px] icon-dialog-open mb-2" variant="secondary" hidden={!show}>
           <Image className="mr-2 h-4 w-4" />
           Customize Icon
         </Button>

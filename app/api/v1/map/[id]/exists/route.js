@@ -3,7 +3,6 @@ import db from "@/lib/db"
 export async function GET(req) {
   try {
     const id = req.nextUrl.pathname.split('/')[4]
-    console.log("split", id)
     const map = await db.map.findUnique({
       where: { id },
     })

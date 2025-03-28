@@ -1,6 +1,7 @@
 import db from "@/lib/db"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from '../auth/[...nextauth]/route'
+import { v7 as uuidv7 } from 'uuid'
 
 export async function PUT(req) {
   try {
@@ -9,10 +10,21 @@ export async function PUT(req) {
     const body = await req.json()
     const user = await db.user.findUnique({ where: { email: session.user.email } })
     if (!user) throw "there is an issue with your account or session"
+
+    if (body.refreshSecret) {
+      const secret = uuidv7()
+      await db.user.update({
+        where: { id: user.id },
+        data: { secret }
+      })
+      return Response.json({ secret })
+    }
+
     await db.user.update({
       where: { id: user.id },
       data: { alias: body.alias }
     })
+
     return Response.json({ msg: "success" })
   } catch (error) {
     console.error(error)

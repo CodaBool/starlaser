@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy, Download } from 'lucide-react'
+import { Eye, Trash2, ArrowRightFromLine, Pencil, Save, Cloud, CloudDownload, Replace, CloudUpload, BookOpenCheck, Check, X, CloudOff, Copy, Download, RefreshCcw, EyeOff } from 'lucide-react'
 import { Input } from "./ui/input"
 import { Button } from '@/components/ui/button'
 import {
@@ -390,5 +390,50 @@ export function CloudMaps({ maps, revalidate, mapName }) {
       )
       }
     </div >
+  )
+}
+
+
+export function FoundryLink({ secret }) {
+  const [submitting, setSubmitting] = useState()
+  const [showSecret, setShowSecret] = useState()
+  const [secretValue, setSecretValue] = useState(secret)
+
+  async function refreshSecret() {
+    if (!window.confirm('Create a new secret? Only do this if your current secret was leaked. This will make any application using your current secret invalid.')) return
+    setSubmitting(true)
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      body: JSON.stringify({
+        refreshSecret: true,
+      })
+    })
+    const response = await res.json()
+    setSubmitting(false)
+    if (response.secret) {
+      toast.success("Successfully refreshed secret")
+      setSecretValue(response.secret)
+      setShowSecret(true)
+    } else {
+      console.error(response.error)
+      toast.warning("Could not refresh secret at this time")
+    }
+  }
+
+  return (
+    <>
+      {navigator.clipboard
+        ? <Button size="sm" className="cursor-pointer rounded my-4" variant="ghost" onClick={() => navigator.clipboard.writeText(secretValue)}><Copy />API Key</Button>
+        : <div className="flex items-center">
+          <Input value={secretValue} readOnly className="my-4 mx-0 flex-grow" type={showSecret ? 'text' : 'password'} />
+          <Button size="sm" className="cursor-pointer rounded ml-2" variant="outline" onClick={() => setShowSecret(!showSecret)}>
+            {showSecret ? <EyeOff /> : <Eye />}
+          </Button>
+        </div>
+      }
+      <Button size="sm" className="cursor-pointer rounded" variant="destructive" onClick={refreshSecret} disabled={submitting}>
+        <RefreshCcw />Request New Secret
+      </Button>
+    </>
   )
 }

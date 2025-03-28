@@ -62,7 +62,8 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
 
     // if no data exists set an id and save
     if (!mapsWithData.length || params.get("new")) {
-      // console.log("no data exists, or given create param")
+
+      console.log("no data exists, or given create param", params.get("new"), "maps =", savedMaps)
       // TODO: consider const uuid = crypto.randomUUID()
       const id = Date.now()
       setMapId(`${name}-${id}`)
@@ -93,6 +94,8 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
       // console.log("chose map from URL param")
       const mId = `${name}-${params.get("id")}`
       const geojson = savedMaps[mId]?.geojson
+
+      console.log("controls id", mId, geojson)
       if (geojson) {
         setMapId(mId)
         draw.add(savedMaps[mId].geojson || {})
@@ -115,7 +118,7 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
       } else {
         daysAgo = daysAgo + " days ago"
       }
-      // console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
+      console.log("found", mapsWithData.length, "previous maps for", mapName, "from", daysAgo)
       // TODO: need a way to have multiple stored maps for the same map
       const restore = window.confirm(`${mapsWithData.length === 1 ? "A previous session was found" : mapsWithData.length + " previous sessions found, one"} from ${daysAgo}. Would you like to ${mapsWithData.length === 1 ? "restore this session" : "choose a session to restore"}?`)
       if (restore) {
@@ -132,7 +135,7 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
         }
       } else {
         // TODO: toast system, show a message "fresh map started"
-        // console.log("start a new session")
+        console.log("start a new session")
 
         // duplicate of ?new=1 conditional
         const id = Date.now()

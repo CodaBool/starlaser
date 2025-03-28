@@ -9,7 +9,7 @@ import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
 import { getConsts } from '@/lib/utils'
 
-export default function Calibrate({ mode, g, width, height, mobile, svgRef, name }) {
+export function Calibrate({ mode, g, width, height, mobile, svgRef, name }) {
   const { map } = useMap()
   const { UNIT } = getConsts(name)
 
@@ -128,13 +128,67 @@ export default function Calibrate({ mode, g, width, height, mobile, svgRef, name
   )
 }
 
-/*
-i want a button which uses absolute positioning. Add an onClick function to it. The function should use a method similar to this
-```jsx
-window.parent.postMessage({
-                type: 'webpImage',
-                webpImage,
-              }, '*')
-              ```
-to pass the current zoom, lng (of the center of the screen), lat (of the center of the screen) to the parent window. The button should have the text Submit. Place the button at the top of the window. It can be placed 1em from the top with a 120px width. Use Tailwind css and luci... icon
-*/
+export function Link({ mode, g, width, height, mobile, svgRef, name }) {
+  const { map } = useMap()
+  const { UNIT } = getConsts(name)
+
+  useEffect(() => {
+    if (!map) return
+
+    const svg = d3
+      .select(map.getCanvasContainer())
+      .append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .style("position", "absolute")
+      .style("z-index", 6)
+      .attr('pointer-events', 'none')
+
+    const text = svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', 120)
+      .attr('class', 'textbox')
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'white')
+      .attr('opacity', 0.7)
+      .style('font-size', '1.8em')
+      .style('pointer-events', 'none')
+      .style('visibility', 'hidden')
+
+    const zoomText = svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height - 30)
+      .attr('class', 'zoom-textbox')
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'white')
+      .attr('opacity', 0.7)
+      .style('font-size', () => mobile ? '1.2em' : '1.8em')
+      .style('pointer-events', 'none')
+      .style('visibility', 'visible')
+
+
+    const handleSubmit = () => {
+      console.log('submitting',)
+
+      window.parent.postMessage({
+        type: 'link',
+        message: "wow"
+      }, '*')
+    }
+
+    const button = d3.select(map.getCanvasContainer())
+      .append('button')
+      .text('Submit')
+      .attr('class', 'absolute top-6 left-1/2 transform -translate-x-1/2 w-30 bg-[#302831] text-white py-2 px-4 rounded cursor-pointer')
+      .style('z-index', 10)
+      .on('click', handleSubmit)
+  }, [map])
+
+
+
+
+  return (
+    <>
+    </>
+  )
+}

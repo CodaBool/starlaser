@@ -24,15 +24,15 @@ export default function NotFoundPage({ map }) {
 
       <div className='max-h-[600px] overflow-auto pb-20'>
         <p className='md:text-lg text-black'>Uh oh, I couldn't find your map. Usually this is because your map is still being generated</p>
-        <p className='md:text-lg text-black'>to save on costs, I use aggressive caching. This unfortunately means changes to maps take 5 minutes to refresh/revalidate in the cache</p>
-        <p className='md:text-lg text-black'>However, if it's been over an hour, there is likely something wrong. Here are some things you can try:</p>
+        <p className='md:text-lg text-black'>to save on costs, I use aggressive caching. This unfortunately means changes to maps take 5 minutes to become cached. If it's been well over 5 minutes, there is likely something wrong. Here are some things you can try:</p>
+        <p className='md:text-lg text-black'></p>
 
         <ul className='list-disc list-inside ps-6'>
           <li>Ensure your map is visible in your account's export page</li>
           <li>Ensure your map is in a published state</li>
-          <li>Use the copy code button and try entering this into your URL instead</li>
-          <li>Try in an incognito browser</li>
-          <li>Safely recreate your map and publish. Make sure to make a backup after every action to ensure no data is lost.</li>
+          <li>Use the view button on Cloud map</li>
+          <li>Try the above steps from an incognito browser</li>
+          <li>Safely recreate your map and publish it again. Make sure to make a backup after every action to ensure no data is lost.</li>
         </ul>
 
         <p className='text-black mb-2'>If you are still experiencing issues, feel free to reach out:</p>
