@@ -8,6 +8,7 @@ import distance from '@turf/distance'
 import { point as turfPoint } from '@turf/helpers'
 import maplibregl from 'maplibre-gl'
 import { getConsts } from '@/lib/utils'
+import { toast } from "sonner"
 
 export function Calibrate({ mode, g, width, height, mobile, svgRef, name }) {
   const { map } = useMap()
@@ -128,9 +129,11 @@ export function Calibrate({ mode, g, width, height, mobile, svgRef, name }) {
   )
 }
 
-export function Link({ mode, g, width, height, mobile, svgRef, name }) {
+export function Link({ mode, g, width, height, mobile, svgRef, name, params }) {
   const { map } = useMap()
   const { UNIT } = getConsts(name)
+
+
 
   useEffect(() => {
     if (!map) return
@@ -168,12 +171,41 @@ export function Link({ mode, g, width, height, mobile, svgRef, name }) {
 
 
     const handleSubmit = () => {
-      console.log('submitting',)
+      const maps = JSON.parse(localStorage.getItem('maps') || '{}')
+      console.log('submitting', maps, params.get("id"), params.get("secret"), maps[params.get("id")])
 
-      window.parent.postMessage({
-        type: 'link',
-        message: "wow"
-      }, '*')
+      const id = params.get("id")
+      const secret = params.get("secret")
+      const map = maps[name + "-" + id]
+      if (!map || !id || !secret) {
+        console.log('ERR: missing map, uuid, or secret', map, id, secret)
+        toast.warning("Something was wrong with your request")
+        return
+      }
+
+      fetch('/api/map', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ geojson: map.geojson, id, secret, source: 'foundry iframe' }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            toast.warning(data.error)
+          } else {
+            toast.success(`Remote map for ${map.map} updated successfully`)
+            window.parent.postMessage({
+              type: 'link',
+              message: "success"
+            }, '*')
+          }
+        })
+        .catch(error => {
+          console.log(error)
+          toast.warning("A server error occurred")
+        })
     }
 
     const button = d3.select(map.getCanvasContainer())

@@ -54,9 +54,17 @@ export async function GET(req) {
 export async function PUT(req) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) throw "unauthorized"
     const body = await req.json()
-    const user = await db.user.findUnique({ where: { email: session.user.email } })
+    let user
+    console.log("put with", body)
+    if (body.secret) {
+      user = await db.user.findUnique({ where: { secret: body.secret } })
+      if (!user) throw "unauthorized"
+    } else if (session) {
+      user = await db.user.findUnique({ where: { email: session.user.email } })
+    } else {
+      throw "unauthorized"
+    }
     if (!user) throw "there is an issue with your account or session"
     const map = await db.map.findUnique({
       where: { id: body.id },
@@ -75,6 +83,8 @@ export async function PUT(req) {
       updates.guides = guides
       const newHash = crypto.createHash('sha256').update(JSON.stringify(body.geojson)).digest('hex')
       geojsonChange = map.hash !== newHash
+
+      // WARN: it might be possible that stale geojson is bundled with legit PUT data
       if (!geojsonChange) throw "this map is already in sync"
       updates.hash = newHash
     }
@@ -84,6 +94,15 @@ export async function PUT(req) {
     if (typeof body.published !== 'undefined') {
       updates.published = body.published
     }
+
+    console.log("updating postgres", {
+      name: updates.name,
+      published: updates.published,
+      guides: updates.guides,
+      locations: updates.locations,
+      territories: updates.territories,
+      hash: updates.hash,
+    })
 
     await db.map.update({
       where: { id: body.id },
@@ -95,6 +114,22 @@ export async function PUT(req) {
         territories: updates.territories,
         hash: updates.hash,
       }
+    })
+
+    console.log("updating R2", {
+      Body: JSON.stringify(body.geojson),
+      Bucket: "maps",
+      Key: map.id,
+      // CacheControl: "STRING_VALUE",
+      ContentType: "application/json",
+      // Expires: new Date("TIMESTAMP"),
+      Metadata: {
+        "user": `${user.id}`,
+        "map": `${map.map}`,
+        "alias": `${user.alias}`,
+        "email": `${user.email}`,
+        "published": `${map.published}`,
+      },
     })
 
     // only put R2 if the geojson has changed

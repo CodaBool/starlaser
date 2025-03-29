@@ -445,7 +445,8 @@ export default function Map({ width, height, data, name, mobile, params, locked 
 
           while (attempts < maxAttempts) {
             const allIconsLoaded = Array.from(userLocationElements2).every(element => {
-              const svgContent = element.innerHTML;
+              const svgContent = element.innerHTML
+              if (!svgContent && svgContent.includes('<svg')) console.log("loading icon", element, attempts, "/", maxAttempts)
               return svgContent && svgContent.includes('<svg');
             });
 
@@ -468,40 +469,38 @@ export default function Map({ width, height, data, name, mobile, params, locked 
         }, '*')
 
         domToPng(document.querySelector('#map'), { scale: 2 }).then((d3PNG) => {
-          setTimeout(() => {
-            const img1 = new Image();
-            const img2 = new Image();
-            img1.src = map.getCanvas().toDataURL()
-            img2.src = d3PNG
-            img1.onload = () => {
-              img2.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d')
+          const img1 = new Image();
+          const img2 = new Image();
+          img1.src = map.getCanvas().toDataURL()
+          img2.src = d3PNG
+          img1.onload = () => {
+            img2.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d')
 
-                // Scale up canvas size
-                const scale = 2;
-                canvas.width = width * scale;
-                canvas.height = height * scale;
+              // Scale up canvas size
+              const scale = 2;
+              canvas.width = width * scale;
+              canvas.height = height * scale;
 
-                console.log("screenshot size", canvas.width, canvas.height)
+              console.log("screenshot size", canvas.width, canvas.height)
 
-                // Optionally, apply higher-quality rendering
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
+              // Optionally, apply higher-quality rendering
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
 
-                // Set canvas size based on the images (they are expected to be the same size)
-                ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
+              // Set canvas size based on the images (they are expected to be the same size)
+              ctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
 
-                // Create a download link for the combined image
-                const webpImage = canvas.toDataURL('image/webp', .98)
-                window.parent.postMessage({
-                  type: 'webpImage',
-                  webpImage,
-                }, '*')
-              };
+              // Create a download link for the combined image
+              const webpImage = canvas.toDataURL('image/webp', .98)
+              window.parent.postMessage({
+                type: 'webpImage',
+                webpImage,
+              }, '*')
             };
-          }, 0)
+          };
         });
       });
     }
@@ -551,7 +550,7 @@ export default function Map({ width, height, data, name, mobile, params, locked 
 
   return (
     <>
-      {params.get("link") && <Link mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />}
+      {params.get("link") && <Link mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} params={params} />}
       <AutoResize svg={svg} zoom={zoom} projection={projection} mobile={mobile} width={width} height={height} setTooltip={setTooltip} positionTooltip={positionTooltip} center={CENTER} />
       <Sheet {...drawerContent} setDrawerOpen={setDrawerOpen} drawerOpen={drawerOpen} name={name} map={map} />
       <Toolbox mode={mode} svg={svg} width={width} height={height} projection={projection} mobile={mobile} name={name} />

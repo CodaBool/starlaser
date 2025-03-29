@@ -81,8 +81,8 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
                 map: name,
               }
             }))
-            console.log("redirect to", `/${name}?id=${uuid}`)
-            router.replace(`/${name}?id=${uuid}&hamburger=0&search=0&link=foundry`)
+            // console.log("redirect to", `/${name}?id=${uuid}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
+            router.replace(`/${name}?id=${uuid}&hamburger=0&search=0&link=foundry&secret=${params.get("secret")}`)
           }
         })
         .catch(message => {
@@ -128,6 +128,8 @@ export default function Cartographer({ name, data, stargazer, rawTopojson, mapId
       </div>
     )
   }
+
+  console.log("controls", showControls, "editor", showEditor, "locked", locked)
 
   return (
     <>
