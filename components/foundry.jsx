@@ -120,9 +120,6 @@ export function Calibrate({ mode, g, width, height, mobile, svgRef, name }) {
       .on('click', handleSubmit)
   }, [map])
 
-
-
-
   return (
     <>
     </>
@@ -214,6 +211,13 @@ export function Link({ mode, g, width, height, mobile, svgRef, name, params }) {
       .attr('class', 'absolute top-6 left-1/2 transform -translate-x-1/2 w-30 bg-[#302831] text-white py-2 px-4 rounded cursor-pointer')
       .style('z-index', 10)
       .on('click', handleSubmit)
+
+    const unsavedChangesText = d3.select(map.getCanvasContainer())
+      .append('div')
+      .attr('class', 'absolute top-16 left-1/2 transform -translate-x-1/2 w-30 text-white py-2 px-4 w-[200px] flex justify-center unsaved-text')
+      .style('z-index', 10)
+      .style('visibility', "hidden")
+      .html('<p><svg xmlns="http://www.w3.org/2000/svg" stroke="white" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce inline"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Unsaved Changes</p>')
   }, [map])
 
 

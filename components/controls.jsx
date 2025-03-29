@@ -153,7 +153,9 @@ export default function Controls({ name, setDraw, draw, params, setSize }) {
 
   function s(data) {
     // unsavedData = data
-    // console.log("save this!", data)
+    if (document.querySelector(".unsaved-text")) {
+      document.querySelector(".unsaved-text").style.visibility = 'visible'
+    }
     setSaveTrigger(p => !p)
   }
 

@@ -415,6 +415,13 @@ export default function Map({ width, height, data, name, mobile, params, locked 
         const userMadeLocations = data.location.filter(d => d.properties.userCreated && map.getBounds().contains(new maplibregl.LngLat(d.geometry.coordinates[0], d.geometry.coordinates[1])))
         // console.log("User made locations currently on screen:", userMadeLocations)
 
+        window.parent.postMessage({
+          type: 'log',
+          message: userMadeLocations,
+        }, '*')
+
+        // all userMadeLocations should have an icon prop added which uses
+
         const userMadeLocationsWithPixels = userMadeLocations.map(location => {
           const point = map.project(new maplibregl.LngLat(location.geometry.coordinates[0], location.geometry.coordinates[1]))
           return {
@@ -426,7 +433,7 @@ export default function Map({ width, height, data, name, mobile, params, locked 
           };
         });
 
-        const userLocationElements2 = document.querySelectorAll('.user.location');
+        const userLocationElements = document.querySelectorAll('.user.location');
 
         window.parent.postMessage({
           type: 'featureData',
@@ -444,7 +451,7 @@ export default function Map({ width, height, data, name, mobile, params, locked 
           let attempts = 0;
 
           while (attempts < maxAttempts) {
-            const allIconsLoaded = Array.from(userLocationElements2).every(element => {
+            const allIconsLoaded = Array.from(userLocationElements).every(element => {
               const svgContent = element.innerHTML
               if (!svgContent && svgContent.includes('<svg')) console.log("loading icon", element, attempts, "/", maxAttempts)
               return svgContent && svgContent.includes('<svg');
