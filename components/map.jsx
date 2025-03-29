@@ -421,6 +421,12 @@ export default function Map({ width, height, data, name, mobile, params, locked 
         }, '*')
 
         // all userMadeLocations should have an icon prop added which uses
+        userMadeLocations.forEach(location => {
+          if (!location.properties.icon) {
+            const type = location.properties.type;
+            location.properties.icon = `https://github.com/CodaBool/starlaser/raw/refs/heads/main/public/svg/default/${type}.svg`;
+          }
+        });
 
         const userMadeLocationsWithPixels = userMadeLocations.map(location => {
           const point = map.project(new maplibregl.LngLat(location.geometry.coordinates[0], location.geometry.coordinates[1]))
